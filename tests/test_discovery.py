@@ -366,14 +366,19 @@ def test_cancel_flushes_completed_and_stops_queued_work(
 
         task = asyncio.create_task(
             run_campaign(
-                enabled(max_concurrency=1, campaign_timeout_seconds=0.2),
+                # Include cold filesystem/manifest startup on hosted Linux runners.
+                # Event/task cases stop explicitly; only the deadline case expires.
+                enabled(
+                    max_concurrency=1,
+                    campaign_timeout_seconds=2 if method == "deadline" else 10,
+                ),
                 lab(1, 2, 3, 4, 5, 6),
                 root=tmp_path,
                 stop=stop,
                 connector=fake,
             )
         )
-        await asyncio.wait_for(blocked.wait(), 1)
+        await asyncio.wait_for(blocked.wait(), 5)
         if method == "task":
             task.cancel()
             with pytest.raises(asyncio.CancelledError):
@@ -381,7 +386,7 @@ def test_cancel_flushes_completed_and_stops_queued_work(
         else:
             if method == "event":
                 stop.set()
-            await asyncio.wait_for(task, 1)
+            await asyncio.wait_for(task, 5)
         assert active == 0 and started == 2
         # One completed, one active, one queued and at most one producer lookahead.
         assert generated <= 4

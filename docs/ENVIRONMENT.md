@@ -43,3 +43,10 @@ OpenSSL CLI (3.6.2 on this host), generating keys/certificates in temporary test
 folders. They do not require committed keys, a CA account, DNS, network services,
 or a paid API. CI's Linux OpenSSL supplies the same fixture-generation commands.
 Final validation is recorded in PROJECT_STATE; Git/Actions hold delivery status.
+
+The first Phase 2 Linux CI run passed all 39 protocol tests but exposed timing
+sensitivity in the earlier cancellation fixture's 200 ms campaign deadline. Its
+deadline case now allows 2 seconds; explicit event/task cases have a 10-second
+ceiling and all retain the same completed/incomplete, bounded queue, no-new-work
+and cleanup assertions. This gives cold manifest/filesystem startup room without
+changing production timing or relaxing traffic limits.
