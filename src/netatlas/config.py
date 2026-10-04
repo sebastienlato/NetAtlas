@@ -3,11 +3,13 @@
 import hashlib
 import json
 import os
+import re
 import tomllib
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
+from urllib.parse import urlsplit
 
-from pydantic import Field, IPvAnyNetwork, field_validator
+from pydantic import Field, IPvAnyNetwork, field_validator, model_validator
 
 from netatlas.domain import Model, Nonempty
 
@@ -18,25 +20,60 @@ class ApiSettings(Model):
 
 
 class MeasurementSettings(Model):
-    # Phase 1 must deliberately evolve this contract when the worker exists.
-    enabled: Literal[False] = False
+    enabled: bool = Field(default=False, strict=True)
     node_id: Nonempty = "local-dev"
-    operator_contact: str = ""
-    user_agent: Nonempty = "NetAtlas/0.1 (research; measurement disabled)"
+    operator_name: str = Field(default="", max_length=120)
+    operator_contact: str = Field(default="", max_length=512)
+    user_agent: Nonempty = "NetAtlas/0.2 (research; measurement disabled)"
     connect_timeout_seconds: float = Field(default=3, gt=0, le=30, allow_inf_nan=False)
     interaction_timeout_seconds: float = Field(default=5, gt=0, le=60, allow_inf_nan=False)
-    max_concurrency: int = Field(default=32, ge=1, le=1024, strict=True)
-    global_connections_per_second: float = Field(default=10, gt=0, le=1000, allow_inf_nan=False)
-    per_prefix_connections_per_second: float = Field(default=1, gt=0, le=100, allow_inf_nan=False)
+    max_concurrency: int = Field(default=32, ge=1, le=128, strict=True)
+    global_connections_per_second: float = Field(default=10, gt=0, le=100, allow_inf_nan=False)
+    per_prefix_connections_per_second: float = Field(default=1, gt=0, le=20, allow_inf_nan=False)
     max_response_bytes: int = Field(default=65536, ge=1, le=65536, strict=True)
-    exclusion_cidrs: tuple[IPvAnyNetwork, ...] = ()
+    queue_size: int = Field(default=128, ge=1, le=256, strict=True)
+    max_addresses: int = Field(default=4096, ge=1, le=4096, strict=True)
+    max_endpoints: int = Field(default=16384, ge=1, le=16384, strict=True)
+    campaign_timeout_seconds: float = Field(default=300, gt=0, le=3600, allow_inf_nan=False)
+    exclusion_cidrs: tuple[IPvAnyNetwork, ...] = Field(default=(), max_length=1024)
+    opt_out_cidrs: tuple[IPvAnyNetwork, ...] = Field(default=(), max_length=1024)
+    allow_cidrs: tuple[IPvAnyNetwork, ...] = Field(default=(), max_length=1024)
 
-    @field_validator("user_agent", "operator_contact")
+    @field_validator("user_agent", "operator_contact", "operator_name", "node_id")
     @classmethod
     def single_line(cls, value: str) -> str:
         if any(ord(char) < 32 or ord(char) == 127 for char in value):
             raise ValueError("identification fields must not contain control characters")
         return value
+
+    @model_validator(mode="after")
+    def enabled_identity(self) -> Self:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}", self.node_id):
+            raise ValueError("node_id must be a bounded identifier")
+        if self.enabled:
+            contact = self.operator_contact
+            url = urlsplit(contact)
+            email = re.fullmatch(r"[^\s@:/]+@[^\s@:/]+\.[^\s@:/]+", contact)
+            https = (
+                url.scheme == "https"
+                and url.hostname
+                and "." in url.hostname
+                and not url.username
+                and not url.password
+                and not url.query
+                and not url.fragment
+                and not any(char.isspace() for char in contact)
+            )
+            if not self.operator_name.strip() or not (email or https):
+                raise ValueError(
+                    "enabled measurement requires operator name and email/HTTPS contact"
+                )
+            if (
+                "measurement disabled" in self.user_agent.lower()
+                or "research" not in self.user_agent.lower()
+            ):
+                raise ValueError("enabled measurement requires an explicit research user-agent")
+        return self
 
 
 class LoggingSettings(Model):
@@ -44,6 +81,7 @@ class LoggingSettings(Model):
 
 
 class Settings(Model):
+    config_version: Literal[2] = 2
     api: ApiSettings = Field(default_factory=ApiSettings)
     measurement: MeasurementSettings = Field(default_factory=MeasurementSettings)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)

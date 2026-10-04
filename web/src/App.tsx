@@ -64,7 +64,7 @@ export function App() {
             exploration, and research.
           </p>
           <div className="phase-label">
-            <span className="dot" /> Phase 0 · Foundation
+            <span className="dot" /> Phase 1 · Bounded discovery
           </div>
         </section>
 
@@ -88,12 +88,12 @@ export function App() {
               with observations.
             </h2>
             <p>
-              The application shell and data contracts are ready. Discovery,
-              service analysis, and geographic search will arrive in the next
-              development phases.
+              Bounded TCP discovery is available through the local CLI. Service
+              analysis and geographic search will arrive in later development
+              phases.
             </p>
             <p className="empty-note">
-              No services have been measured. No live scan is running.
+              This preview shows no measured data and cannot start scans.
             </p>
             {apiState === "connected" ? (
               <a className="action" href="/api/v1/examples/observation">

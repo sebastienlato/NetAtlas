@@ -46,3 +46,27 @@ content hash alone must never collapse distinct timestamps/campaign observations
 IP+port is a service endpoint, not a reliable physical-device or ownership identity.
 The model's 64 KiB raw cap does not alone bound the entire future API request;
 ingestion must also enforce total envelope and collection-size limits.
+
+## Phase 1 discovery output
+
+Observation schema remains **1**. TCP discovery supplies no response or service.
+`open` means a completed TCP connect; `closed` with `connection_refused` means an
+explicit refusal. `timeout`/`connect_timeout` is ambiguous. Other failures use
+`error` and stable `network_unreachable`, `local_permission_denied`, or `socket_error`
+codes; raw exception strings are never persisted. Interrupted attempts emit no
+observation and are counted as incomplete in their campaign manifest.
+
+Each JSONL row links via target campaign UUID and effective-config SHA-256 to a
+**manifest version 1** in the same directory. The manifest records observation schema
+version, **config version 2**, full effective non-secret configuration, config hash,
+policy and registry versions/hash, scope/ports/seed/order, lab marker, scanner ID,
+software/Python versions, start/end times, final state and attempt/outcome counts.
+Its final SHA-256 covers the exact UTF-8 JSONL bytes including line endings. Random
+UUIDs identify campaigns and observations; rerunning a scope produces new identities.
+
+Manifest `status`: `running`, `completed`, `cancelled`, `deadline_exceeded`, `failed`.
+Final `attempted = completed + incomplete`; `completed` equals the JSONL row count
+and sum of outcome counts. Denied targets are preview decisions, not attempts.
+Reproduction means the same scope, eligibility and admission order under the pinned
+runtime/policy/config; it does not imply identical network outcomes, completion
+order, timestamps or IDs. See `docs/DISCOVERY.md` for file/cancellation limitations.

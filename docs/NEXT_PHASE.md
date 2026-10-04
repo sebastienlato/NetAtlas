@@ -1,53 +1,67 @@
-# PHASE 1 — FRESH WORK CHAT KICKOFF
+# PHASE 2 — FRESH WORK CHAT KICKOFF
 
 You are the authoritative developer and project manager for NetAtlas — Global
 Internet Exposure Search & Visualization, an independent university thesis project.
-The opened NetAtlas folder is the repository root. Complete exactly Phase 1 in this
-fresh Astra High Work chat; do not begin Phase 2.
+The opened NetAtlas folder is the repository root. Complete exactly Phase 2 in this
+fresh Astra High Work chat; do not begin Phase 3.
 
 First read AGENTS.md, PROJECT_STATE.md, README.md, ROADMAP.md, ARCHITECTURE.md,
-DECISIONS.md, CONTRIBUTING.md, SECURITY.md, and docs/DATA_MODEL.md. Inspect Git
-status/remotes, the installed toolchains, and existing code/tests. These files are
-authoritative; no earlier chat history is required. Phase 0 established a Python
-3.14/uv/FastAPI/Pydantic package, validated TOML settings and observation contracts,
-a local API and React/TypeScript/Vite web shell, locked dependencies, and CI. It has
-no measurement engine or real data. Respect existing user changes.
+DECISIONS.md, CONTRIBUTING.md, SECURITY.md, docs/DATA_MODEL.md and docs/DISCOVERY.md.
+Inspect Git status/remotes, toolchains, existing code and tests. Repository files
+are authoritative; no earlier chat history is required. Respect existing user changes.
 
-Implement Phase 1 — Bounded Discovery Engine: a modular asyncio TCP connect worker
-for explicit literal IPv4/IPv6 addresses and bounded small CIDRs/port sets; streaming
-target generation; target eligibility and exclusions; global and per-prefix rate
-budgets; bounded concurrency/queues; timeouts; cancellation/socket cleanup; honest
-open/refused/timeout/error outcomes; structured redacted logging; and versioned JSONL
-observations with a reproducible campaign manifest in ignored data/. Preserve domain
-and API separation. No protocol collectors, fingerprints, database, or global sweep.
+Phase 1 delivered package 0.2.0 on Python 3.14/uv with FastAPI/Pydantic and a
+React/TypeScript/Vite shell. The modular asyncio connect-only worker supports
+bounded literal IPv4/IPv6 scope, strict small CIDRs, streaming seeded ordering,
+conservative pinned IANA-derived policy, exclusions/opt-outs, shared global/per-prefix
+pacing, bounded queue/concurrency, deadlines, graceful cancellation and socket cleanup.
+CLI defaults dry-run; measurement requires enabled operator configuration plus
+`--measure`. Lab mode accepts only literal 127.0.0.1 and ::1. Version-1 observations
+and manifests are private ignored JSONL/local files under data/. Config version is 2.
+There is no protocol collector, real Internet dataset, database, search or geographic
+implementation. API/UI cannot initiate scans. Phase 1 validation comprises 28 Python
+and 3 web tests plus lint/types/build/offline smoke; verify current results yourself.
 
-Add a CLI dry-run default that previews scope/policy without connections. Measurement
-must require explicit enablement and validated operator identity. Evolve Phase 0's
-disabled-only config deliberately. Production policy must deny non-global/special-use,
-multicast and excluded/opt-out ranges; an allowlist cannot override those denials.
-Provide only a narrowly scoped explicit loopback lab mode for fixture tests. Bound
-target expansion before huge CIDRs can allocate memory or accidentally schedule vast
-runs. Record configuration/policy versions, seed, campaign and scanner identities.
-Enforce both global and per-prefix rates across concurrent tasks; ensure cancellation
-flushes completed results and closes resources without scheduling additional work.
+Implement Phase 2 — Protocol Evidence: a modular collector interface and HTTP, TLS,
+SSH and SMTP collectors using bounded ordinary unauthenticated handshakes. Preserve
+separation among discovery, collectors, domain, storage and API. Identify protocols
+from handshake evidence independently of conventional port numbers; retain honest
+unknown/ambiguous results. Plan and document a small, bounded probe-selection strategy
+and its traffic cost. Apply the same eligibility and global/per-prefix budgets to
+**every new connection**, including additional collector connections; do not silently
+multiply traffic. Keep dry-run previews accurate about planned interactions and caps.
 
-Use synthetic and loopback fixtures for meaningful tests, including eligibility,
-address boundaries, open/refused outcomes, deterministic timeout/error handling,
-rate/concurrency bounds, cancellation and JSONL/manifest integrity. Do not scan real
-Internet services as a smoke test. Do not implement credential guessing,
-authentication bypass, exploits, persistence, destructive operations, or changes to
-remote devices. NetAtlas collects ordinary unauthenticated exposure and does not use
-Shodan/Censys/commercial search data or mandatory paid APIs.
+Capture only bounded necessary raw evidence and typed protocol metadata. Evolve the
+observation schema explicitly with schema version and compatibility tests where
+needed; retain campaign/config/policy/scanner provenance and JSONL/manifest integrity.
+Implement HTTP without redirects, cookies, credentials, crawling or state-changing
+requests; retain bounded headers/status/body evidence. Preserve TLS certificate and
+negotiation evidence, including invalid/self-signed cases, without treating identity
+assertions as trusted. SNI/Host names, if supported, require explicit provenance and
+must not add unbounded DNS. SSH/SMTP greeting/handshake collection must never attempt
+authentication or send mail. No protocol inferred solely from its port. No fingerprint
+rule packs, device categories, vulnerability claims or Phase 3 work.
 
-Make routine architecture/dependency/implementation choices autonomously. The owner
-wants minimal friction and involvement. Ask only for a genuine blocker, credentials,
-permission, or unavoidable manual action after completing independent work. Keep the
-increment feasible within this single chat and avoid excessive microscopic tests.
+Use only synthetic and explicit loopback fixture services, including services on
+unconventional ports and malformed, binary, slow and oversized responses. Validate
+connect/interaction/total deadlines, cumulative byte and connection caps, all outcome
+semantics, cancellation/socket cleanup, hostile-content handling and evidence encoding.
+Cancellation must stop new work, flush completed observations and close resources.
+Preserve conservative production policy and narrow lab scope; an allowlist cannot
+override special-use, multicast, non-global, excluded or opt-out denials. No Internet
+services or sweeps as smoke tests. Never add credential guessing, authentication
+bypass, exploitation, persistence, destructive actions or remote modification. Do not
+depend on commercial device-search databases or mandatory paid APIs.
 
-When complete: run relevant validation and make check; update all authoritative docs
-with actual results, limitations and state; replace docs/NEXT_PHASE.md with a fully
-self-contained Phase 2 kickoff; review the diff/tracked files for secrets, captured
-data and generated artifacts; commit with a Phase 1 message; push if a remote exists;
-verify local HEAD equals the remote delivery branch and the working tree is clean.
-Report what was built, checks/results, commit hash, push/CI status, genuine blockers,
-and exact current state. Include the full Phase 2 kickoff in the response, then stop.
+Make routine engineering decisions autonomously. Ask only for genuine blockers,
+credentials, permissions or unavoidable manual actions after completing independent
+work. Keep testing proportionate. Do not add durable persistence, distributed workers,
+geolocation, search infrastructure, releases or tags in this phase.
+
+At completion run relevant validation and make check; update authoritative docs with
+actual results, limitations and state; replace docs/NEXT_PHASE.md with a self-contained
+Phase 3 kickoff; review tracked files/diff for secrets, captured data and generated
+artifacts; commit with a Phase 2 message; push; verify local HEAD matches the remote
+delivery branch and the working tree is clean. Report delivery, checks/results, commit
+hash, push/CI status, blockers and exact current state. Include the complete Phase 3
+kickoff, then stop.

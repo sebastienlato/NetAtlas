@@ -3,8 +3,10 @@
 NetAtlas measures ordinary unauthenticated network exposure. It does not guess
 credentials, bypass authentication, exploit vulnerabilities, gain persistence,
 modify devices, or carry out destructive actions. Service exposure is not itself
-evidence of a vulnerability. Phase 0 opens only its local development API/UI and
-does not implement measurement; configuration cannot enable a missing scanner.
+evidence of a vulnerability. Phase 1 implements bounded TCP connect-only discovery.
+Configuration defaults disabled and CLI defaults dry-run; enabled identity plus
+`--measure` are required. No application data is sent or captured. All implementation
+validation uses synthetic/loopback fixtures.
 
 ## Required before measurement
 
@@ -19,6 +21,22 @@ does not implement measurement; configuration cannot enable a missing scanner.
 - Tests use synthetic or local fixtures; developing a scanner does not authorize an
   Internet sweep. Later real campaigns document network/institutional permissions
   and operating constraints separately from ordinary development.
+
+## Phase 1 enforcement
+
+The immutable campaign configuration pins exclusion and opt-out CIDRs. Denials
+precede any allowlist; lab mode only accepts explicit `127.0.0.1` and `::1` literals.
+When receiving a new opt-out, stop any active campaign, update local configuration,
+preview, then restart. No hot-reload or distributed propagation exists yet. Policy
+is rechecked immediately before each connection. Identity validation checks syntax;
+it does not establish contact ownership or permission to measure a target.
+
+`docs/DISCOVERY.md` specifies hard scope/rate/concurrency/time bounds and graceful
+stop semantics. Logs omit addresses, contacts and raw exception text. Preview output
+shows requested scope intentionally. Private local manifests contain non-secret
+operator metadata and scope; observations contain endpoint addresses. Keep both
+under ignored `data/`; no credentials belong in any measurement setting. Graceful
+stop flushes results; force-kill/power-loss recovery is not promised in this phase.
 
 ## Evidence and privacy
 

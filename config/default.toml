@@ -1,4 +1,5 @@
-# Phase 0 validates these settings but contains NO network measurement engine.
+# Phase 1: discover is a dry run unless --measure AND enabled identity are supplied.
+config_version = 2
 [api]
 host = "127.0.0.1"
 port = 8000
@@ -6,15 +7,22 @@ port = 8000
 [measurement]
 enabled = false
 node_id = "local-dev"
+operator_name = ""
 operator_contact = ""
-user_agent = "NetAtlas/0.1 (research; measurement disabled)"
+user_agent = "NetAtlas/0.2 (research; measurement disabled)"
 connect_timeout_seconds = 3.0
 interaction_timeout_seconds = 5.0
 max_concurrency = 32
 global_connections_per_second = 10.0
 per_prefix_connections_per_second = 1.0
 max_response_bytes = 65536
+queue_size = 128
+max_addresses = 4096
+max_endpoints = 16384
+campaign_timeout_seconds = 300.0
 exclusion_cidrs = []
+opt_out_cidrs = []
+allow_cidrs = []
 
 [logging]
 level = "INFO"

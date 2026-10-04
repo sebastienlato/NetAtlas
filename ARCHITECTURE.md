@@ -1,7 +1,7 @@
 # Architecture
 
-Status: accepted Phase 0 direction. Only the modules listed as implemented in
-`PROJECT_STATE.md` exist today. A monorepo and modular Python package keep early
+Status: Phase 1 implemented discovery; later-phase direction retained. Only the
+modules listed as implemented in `PROJECT_STATE.md` exist today. A monorepo and modular Python package keep early
 development small; process/network boundaries are introduced when justified.
 
 ## Flow and boundaries
@@ -30,7 +30,7 @@ a search/detail request. The future scan control plane is separate and authentic
 ## Target policy and scheduling
 
 Targets are literal IPv4/IPv6 addresses with source and campaign provenance.
-Phase 1 begins with explicit addresses/small CIDRs, bounded streaming expansion,
+Phase 1 implements explicit addresses/small CIDRs, bounded streaming expansion,
 TCP connect discovery, and local JSONL results. Port sets and campaign size are
 explicit. No raw socket privileges are required. Exhaustive IPv6 enumeration is
 not viable; use documented seeds and routed-prefix sampling later.
@@ -38,9 +38,12 @@ not viable; use documented seeds and routed-prefix sampling later.
 Before measurement, policy intersects requested scope with allowed scope and
 removes IANA special-purpose/non-global ranges, multicast, operator exclusions,
 and opt-outs. `ipaddress.is_global` is one input, not proof of current routing or
-permission: maintain versioned IANA IPv4/IPv6 registry snapshots, routing data,
-explicit multicast checks, and boundary tests. Registry/dataset updates are
-reviewable maintenance actions, not unpinned network downloads during tests.
+permission: Phase 1 pins a conservative collapsed IANA IPv4/IPv6 deny snapshot,
+explicit multicast checks, and boundary tests. Runtime classification and IPv6
+global-unicast restriction add denials. Routing data is not implemented; later
+coverage/enrichment phases will address it. See `docs/DISCOVERY.md` for bounds.
+Registry/dataset updates are reviewable maintenance actions, not unpinned network
+downloads during tests.
 Built-in non-routable restrictions cannot be defeated by a user allowlist.
 A narrowly scoped loopback lab mode permits fixture servers; it must not create
 a broad private-network bypass. No lab targets may enter production campaigns.
@@ -77,7 +80,7 @@ UDP is deferred until a protocol-specific safe request/response size budget and
 rate limits exist; no broadcast, reflection, amplification, or spoofed-source probes.
 Evaluate established discovery/handshake tools (e.g. ZMap/ZGrab2) behind adapters
 only when Python throughput is measured to be a bottleneck and the same policy
-controls can be preserved. Do not launch external scanners in Phase 0.
+controls can be preserved. No external scanner adapter is implemented in Phase 1.
 
 ## Evidence and derivations
 
@@ -96,7 +99,10 @@ processing time; reprocessing must not mutate original observations.
 
 ## Storage, ingestion, search, and statistics
 
-Phase 1: bounded JSONL spool under ignored `data/`; no fake database adapter.
+Phase 1: bounded private JSONL spool under ignored `data/`, atomic campaign manifest,
+completed-result flush, final fsync and checksum; no database adapter. Graceful
+stops finalize metadata; hard kills may leave a running manifest or partial line.
+An advisory spool lock prevents concurrent local campaigns sharing that directory.
 Phase 4: PostgreSQL is authoritative, with typed endpoint/network fields, JSONB
 for protocol-specific attributes, migrations via Alembic/SQLAlchemy, and immutable
 observation rows. Add PostGIS for geographic points/radius/bounding-box queries.
@@ -153,8 +159,9 @@ add bounded queries, cursor pagination, validation, caching, authorization, and
 query cost/rate limits. Liveness and readiness become distinct once dependencies
 exist. No permissive CORS is needed: the development proxy is same-origin.
 
-Phase 0 uses ordinary Python logging without request access logs or response bodies.
-Later use structured logs with campaign/job IDs, stable error codes, and redaction;
+Phase 1 discovery emits redacted JSON logs with generated campaign/observation IDs,
+outcomes and completion counts. Scope/contact/raw exceptions stay out of these logs.
+The API still omits request access logs. Later add job IDs and operational metrics;
 Prometheus-compatible metrics for rates, queue depth, failures, latency, coverage,
 ingestion/index lag, and resource use; optional OpenTelemetry traces. No raw IP or
 endpoint labels in metrics: cardinality and privacy would be unacceptable at scale.

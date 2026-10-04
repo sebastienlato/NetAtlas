@@ -18,7 +18,7 @@ it("shows API connectivity and clearly identifies the empty foundation", async (
   await screen.findByText("Local API connected");
   expect(
     screen.getByText(
-      "No services have been measured. No live scan is running.",
+      "This preview shows no measured data and cannot start scans.",
     ),
   ).toBeTruthy();
   expect(

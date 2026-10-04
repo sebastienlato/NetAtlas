@@ -34,5 +34,6 @@ smoke:
 	uv run --locked netatlas config-check
 	uv run --locked netatlas example > /dev/null
 	uv run --locked netatlas schema > /dev/null
+	uv run --locked netatlas discover --target 192.0.2.0/30 --port 80 > /dev/null
 
 check: lint test build smoke

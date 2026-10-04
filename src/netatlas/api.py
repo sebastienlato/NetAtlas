@@ -13,7 +13,7 @@ from netatlas.examples import example_observation
 class Health(Model):
     status: Literal["ok"] = "ok"
     version: str = __version__
-    phase: Literal[0] = 0
+    phase: Literal[1] = 1
     measurement_enabled: Literal[False] = False
 
 

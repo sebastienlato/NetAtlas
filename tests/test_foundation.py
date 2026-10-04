@@ -17,8 +17,8 @@ def test_api_contract_and_synthetic_provenance() -> None:
     with TestClient(create_app(Settings())) as client:
         assert client.get("/healthz").json() == {
             "status": "ok",
-            "version": "0.1.0",
-            "phase": 0,
+            "version": "0.2.0",
+            "phase": 1,
             "measurement_enabled": False,
         }
         response = client.get("/api/v1/examples/observation")

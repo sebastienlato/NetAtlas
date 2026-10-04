@@ -8,7 +8,7 @@ actual blockers requiring credentials, permission, or a manual action. Do not us
 conversation history as a substitute for repository documentation.
 
 Run commands in the repository root. `make setup` installs locked dependencies;
-`make check` runs the complete proportional Phase 0 validation. Individual commands
+`make check` runs the complete proportional validation through Phase 1. Individual commands
 are in README. Avoid repeated broad checks without a code change or new concern.
 Use synthetic documentation addresses for committed fixtures and explicitly scoped
 loopback integration servers. No tests should connect to arbitrary public services.
@@ -30,7 +30,7 @@ to manifests, registries, command arguments, or lockfiles.
 
 Built-in defaults are mirrored by `config/default.toml`, checked by tests. Local
 overrides belong in ignored `config/local.toml`; configuration errors fail closed.
-Use ignored `data/` for future spool/observation files. Do not put measured evidence,
+Use ignored `data/` for spool/observation files. Do not put measured evidence,
 captured sensitive content, geolocation databases, caches, generated artifacts, or
 operator credentials into fixtures or Git. Commit small synthetic test data only.
 
