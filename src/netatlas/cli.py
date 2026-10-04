@@ -14,6 +14,8 @@ from pydantic import ValidationError
 from netatlas import __version__
 from netatlas.api import create_app
 from netatlas.config import Settings, load_settings
+from netatlas.derivations.engine import canonical, digest
+from netatlas.derivations.offline import apply_file, load_pack, validate_file
 from netatlas.discovery.engine import run_campaign
 from netatlas.discovery.policy import POLICY_SHA256, POLICY_VERSION, REGISTRY_VERSION
 from netatlas.discovery.scope import Scope
@@ -40,7 +42,7 @@ def main() -> None:
     parser.add_argument("--version", action="version", version=__version__)
     parser.add_argument("--config", type=Path, help="TOML path; overrides NETATLAS_CONFIG")
     parser.add_argument(
-        "command", choices=["config-check", "example", "schema", "serve", "discover"]
+        "command", choices=["config-check", "example", "schema", "serve", "discover", "fingerprint"]
     )
     parser.add_argument(
         "--target", action="append", default=[], help="literal IP or small strict CIDR"
@@ -49,7 +51,39 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--lab-loopback", action="store_true", help="only literal 127.0.0.1 / ::1")
     parser.add_argument("--measure", action="store_true", help="explicitly enable connections")
+    parser.add_argument("--pack", type=Path, help="bounded JSON rule pack; default bundled core")
+    parser.add_argument("--input", type=Path, help="offline observation JSONL")
+    parser.add_argument("--output", type=Path, help="new derived JSONL under ignored data/")
+    parser.add_argument("--validate", type=Path, help="replay and validate existing derived JSONL")
+    parser.add_argument("--inspect", action="store_true", help="inspect rule pack as escaped JSON")
     args = parser.parse_args()
+    if args.command == "fingerprint":
+        try:
+            pack = load_pack(args.pack)
+            if args.inspect:
+                if args.input or args.output or args.validate:
+                    raise ValueError("incompatible options")
+                print(
+                    json.dumps(
+                        {"pack": pack.model_dump(mode="json"), "sha256": digest(canonical(pack))},
+                        ensure_ascii=True,
+                        indent=2,
+                    )
+                )
+            else:
+                if args.input is None or bool(args.output) == bool(args.validate):
+                    raise ValueError("supply input and exactly one output or validation path")
+                result = (
+                    validate_file(args.input, args.validate, pack)
+                    if args.validate
+                    else apply_file(args.input, args.output, pack)
+                )
+                print(json.dumps(result))
+        except ValueError, OSError, RecursionError:
+            parser.exit(
+                2, "Fingerprint operation failed; check files, versions, bounds and options.\n"
+            )
+        return
     try:
         settings = load_settings(args.config)
     except OSError, ValueError, tomllib.TOMLDecodeError, ValidationError:

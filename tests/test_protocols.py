@@ -90,10 +90,13 @@ async def fixture(
     try:
         yield Endpoint(address=ip_address(host), port=server.sockets[0].getsockname()[1])
     finally:
-        server.close()
-        # Let already accepted sockets register their transports before aborting.
+        # Drain ready accept callbacks, then their transport-creation tasks before
+        # closing the listener. Python 3.14's Server._attach rejects late transports
+        # after close(), which can strand a socket during immediate client shutdown.
         await asyncio.sleep(0)
-        # Include TLS peers still inside the handshake, before connected() exists.
+        await asyncio.sleep(0)
+        server.close()
+        # Include peers still inside TLS setup or before wrapped() starts.
         server.abort_clients()
         for task in tasks:
             task.cancel()

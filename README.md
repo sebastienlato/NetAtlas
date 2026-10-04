@@ -7,12 +7,13 @@ commercial search database is used.
 
 ## Current delivery
 
-Phase 2 delivers bounded HTTP, TLS, SSH and SMTP protocol evidence on top of IPv4/IPv6
-TCP discovery, conservative policy, shared traffic budgets and private JSONL/manifest
-output. Protocols are recognized from handshakes, independent of conventional ports.
-**Discovery defaults to an offline preview.** The local API and web shell display
-no measured data and cannot start scans. The globe is decorative; fingerprints,
-search and geography remain later phases. No Internet campaign has been run.
+Phase 3 adds versioned offline fingerprint rules, traceable evidence/confidence,
+and a documented device-category taxonomy to bounded HTTP/TLS/SSH/SMTP discovery.
+The core pack recognizes three product assertions; other device classes remain
+unknown unless supported by explicit evidence. **Discovery defaults to an offline
+preview.** The API and web shell display no measured data and cannot start scans.
+The globe is decorative; storage, search and geography remain later phases.
+No Internet campaign has been run. See [fingerprints](docs/FINGERPRINTS.md).
 
 ## Start locally
 
@@ -56,6 +57,7 @@ auto-reload; restart after Python changes. Vite reloads web edits automatically.
 | `uv run --locked netatlas example` | Print a synthetic observation; performs no measurement |
 | `uv run --locked netatlas schema` | Print observation JSON Schema |
 | `uv run --locked netatlas discover --target 192.0.2.1 --port 80` | Preview explicit scope and policy without connecting |
+| `uv run --locked netatlas fingerprint --inspect` | Inspect the bundled offline rule pack |
 | `uv run --locked netatlas --version` | Print package version |
 
 For customization, copy `config/default.toml` to ignored `config/local.toml`:
@@ -81,7 +83,7 @@ scans. If changing its port, also update the development proxy in `web/vite.conf
 
 | Path | Responsibility |
 | --- | --- |
-| `src/netatlas/` | Domain/evidence models, config, discovery, protocol collectors, spool, CLI/API |
+| `src/netatlas/` | Domain/evidence models, config, discovery, collectors, derivations, spool, CLI/API |
 | `web/` | React/TypeScript application shell |
 | `tests/` | Offline Python tests; web tests live beside web code |
 | `config/default.toml` | Documented default configuration |

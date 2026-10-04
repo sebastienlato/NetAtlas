@@ -1,0 +1,616 @@
+{
+  "corpus_version": 1,
+  "provenance": "Entirely authored synthetic protocol strings; not a real-world accuracy benchmark. All observations use documentation addresses.",
+  "cases": [
+    {
+      "name": "nginx-exact",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: nginx\r\nContent-Length: 0\r\n\r\n",
+      "truncated": false,
+      "expected_rules": [
+        "http.nginx.exact"
+      ],
+      "expected_categories": [
+        "web_server"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "nginx-versioned",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: nginx/1.0-synthetic\r\nContent-Length: 0\r\n\r\n",
+      "truncated": false,
+      "expected_rules": [
+        "http.nginx.versioned"
+      ],
+      "expected_categories": [
+        "web_server"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "openssh-unconventional-port",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "SSH-2.0-OpenSSH_0.0synthetic\r\n",
+      "truncated": false,
+      "expected_rules": [
+        "ssh.openssh"
+      ],
+      "expected_categories": [
+        "ssh_server"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "postfix-explicit",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "220 mail.example ESMTP Postfix\r\n",
+      "truncated": false,
+      "expected_rules": [
+        "smtp.postfix"
+      ],
+      "expected_categories": [
+        "mail_server"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "postfix-parentheses",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "220 mail.example ESMTP (Postfix)\r\n",
+      "truncated": false,
+      "expected_rules": [
+        "smtp.postfix"
+      ],
+      "expected_categories": [
+        "mail_server"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "legacy-v1",
+      "pack": "core",
+      "schema_version": 1,
+      "raw": "HTTP/1.1 200 OK\r\nServer: nginx\r\nContent-Length: 0\r\n\r\n",
+      "truncated": false,
+      "expected_rules": [
+        "http.nginx.exact"
+      ],
+      "expected_categories": [
+        "web_server"
+      ],
+      "truth": "assertion",
+      "expected_notes": [
+        "legacy_v1"
+      ]
+    },
+    {
+      "name": "truncated-body-retains-header",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: nginx\r\nContent-Length: 50\r\n\r\nabc",
+      "truncated": true,
+      "expected_rules": [
+        "http.nginx.exact"
+      ],
+      "expected_categories": [
+        "web_server"
+      ],
+      "truth": "assertion",
+      "expected_notes": [
+        "truncated_evidence"
+      ]
+    },
+    {
+      "name": "spoofed-nginx-known-false-positive",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: nginx\r\nContent-Length: 0\r\n\r\n",
+      "truncated": false,
+      "expected_rules": [
+        "http.nginx.exact"
+      ],
+      "expected_categories": [
+        "web_server"
+      ],
+      "truth": "fictional peer spoofs nginx; physical product is not nginx",
+      "expected_notes": []
+    },
+    {
+      "name": "generic-http",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "nginx-in-body",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 5\r\n\r\nnginx",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "nginx-name-suffix",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: nginx-fake\r\nContent-Length: 0\r\n\r\n",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "nginx-wrong-case",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NGINX\r\nContent-Length: 0\r\n\r\n",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "openssh-in-comment",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "SSH-2.0-Other OpenSSH_0.0\r\n",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "bare-220",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "220 mail.example Postfix\r\n",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "postfix-hostname",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "220 Postfix ESMTP Other\r\n",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "postfix-word-boundary",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "220 mail.example ESMTP NotPostfix\r\n",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "unknown-protocol",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "DATABASE nginx OpenSSH_0.0 Postfix\r\n",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "missing-evidence",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": null,
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "malformed-http",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: nginx\r\nBroken\r\n\r\n",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "incomplete-header",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: nginx",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "malformed-ssh",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "SSH-2.0-OpenSSH_0.0",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "hostile-html",
+      "pack": "core",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 51\r\n\r\n<script>fetch(\"https://example.org/nginx\")</script>",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "no supported product assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "synthetic-web_server",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Length: 21\r\n\r\n[category=web_server]",
+      "truncated": false,
+      "expected_rules": [
+        "fixture.web-server"
+      ],
+      "expected_categories": [
+        "web_server"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "insufficient-web_server",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 21\r\n\r\n[category=web_server]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "category remains unknown without corroboration",
+      "expected_notes": []
+    },
+    {
+      "name": "synthetic-camera_nvr",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Length: 21\r\n\r\n[category=camera_nvr]",
+      "truncated": false,
+      "expected_rules": [
+        "fixture.camera-nvr"
+      ],
+      "expected_categories": [
+        "camera_nvr"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "insufficient-camera_nvr",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 21\r\n\r\n[category=camera_nvr]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "category remains unknown without corroboration",
+      "expected_notes": []
+    },
+    {
+      "name": "synthetic-router",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Length: 17\r\n\r\n[category=router]",
+      "truncated": false,
+      "expected_rules": [
+        "fixture.router"
+      ],
+      "expected_categories": [
+        "router"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "insufficient-router",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 17\r\n\r\n[category=router]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "category remains unknown without corroboration",
+      "expected_notes": []
+    },
+    {
+      "name": "synthetic-nas",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Length: 14\r\n\r\n[category=nas]",
+      "truncated": false,
+      "expected_rules": [
+        "fixture.nas"
+      ],
+      "expected_categories": [
+        "nas"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "insufficient-nas",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 14\r\n\r\n[category=nas]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "category remains unknown without corroboration",
+      "expected_notes": []
+    },
+    {
+      "name": "synthetic-printer",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Length: 18\r\n\r\n[category=printer]",
+      "truncated": false,
+      "expected_rules": [
+        "fixture.printer"
+      ],
+      "expected_categories": [
+        "printer"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "insufficient-printer",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 18\r\n\r\n[category=printer]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "category remains unknown without corroboration",
+      "expected_notes": []
+    },
+    {
+      "name": "synthetic-ssh_server",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Length: 21\r\n\r\n[category=ssh_server]",
+      "truncated": false,
+      "expected_rules": [
+        "fixture.ssh-server"
+      ],
+      "expected_categories": [
+        "ssh_server"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "insufficient-ssh_server",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 21\r\n\r\n[category=ssh_server]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "category remains unknown without corroboration",
+      "expected_notes": []
+    },
+    {
+      "name": "synthetic-vpn_appliance",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Length: 24\r\n\r\n[category=vpn_appliance]",
+      "truncated": false,
+      "expected_rules": [
+        "fixture.vpn-appliance"
+      ],
+      "expected_categories": [
+        "vpn_appliance"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "insufficient-vpn_appliance",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 24\r\n\r\n[category=vpn_appliance]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "category remains unknown without corroboration",
+      "expected_notes": []
+    },
+    {
+      "name": "synthetic-mail_server",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Length: 22\r\n\r\n[category=mail_server]",
+      "truncated": false,
+      "expected_rules": [
+        "fixture.mail-server"
+      ],
+      "expected_categories": [
+        "mail_server"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "insufficient-mail_server",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 22\r\n\r\n[category=mail_server]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "category remains unknown without corroboration",
+      "expected_notes": []
+    },
+    {
+      "name": "synthetic-database",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Length: 19\r\n\r\n[category=database]",
+      "truncated": false,
+      "expected_rules": [
+        "fixture.database"
+      ],
+      "expected_categories": [
+        "database"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "insufficient-database",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 19\r\n\r\n[category=database]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "category remains unknown without corroboration",
+      "expected_notes": []
+    },
+    {
+      "name": "synthetic-iot",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Length: 14\r\n\r\n[category=iot]",
+      "truncated": false,
+      "expected_rules": [
+        "fixture.iot"
+      ],
+      "expected_categories": [
+        "iot"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "insufficient-iot",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 14\r\n\r\n[category=iot]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "category remains unknown without corroboration",
+      "expected_notes": []
+    },
+    {
+      "name": "synthetic-industrial",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Length: 21\r\n\r\n[category=industrial]",
+      "truncated": false,
+      "expected_rules": [
+        "fixture.industrial"
+      ],
+      "expected_categories": [
+        "industrial"
+      ],
+      "truth": "assertion",
+      "expected_notes": []
+    },
+    {
+      "name": "insufficient-industrial",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Length: 21\r\n\r\n[category=industrial]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "category remains unknown without corroboration",
+      "expected_notes": []
+    },
+    {
+      "name": "conflicting-device-markers",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Length: 36\r\n\r\n[category=camera_nvr] [category=nas]",
+      "truncated": false,
+      "expected_rules": [
+        "fixture.camera-nvr",
+        "fixture.nas"
+      ],
+      "expected_categories": [
+        "camera_nvr",
+        "nas"
+      ],
+      "truth": "assertion",
+      "expected_notes": [
+        "multiple_products",
+        "multiple_categories"
+      ]
+    },
+    {
+      "name": "encoded-body",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nContent-Encoding: gzip\r\nContent-Length: 21\r\n\r\n[category=camera_nvr]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "assertion",
+      "expected_notes": [
+        "encoded_body_skipped"
+      ]
+    },
+    {
+      "name": "transfer-encoded-body",
+      "pack": "synthetic",
+      "schema_version": 2,
+      "raw": "HTTP/1.1 200 OK\r\nServer: NetAtlasFixture/1\r\nTransfer-Encoding: chunked\r\n\r\n[category=camera_nvr]",
+      "truncated": false,
+      "expected_rules": [],
+      "expected_categories": [],
+      "truth": "assertion",
+      "expected_notes": [
+        "encoded_body_skipped"
+      ]
+    }
+  ]
+}

@@ -50,3 +50,18 @@ deadline case now allows 2 seconds; explicit event/task cases have a 10-second
 ceiling and all retain the same completed/incomplete, bounded queue, no-new-work
 and cleanup assertions. This gives cold manifest/filesystem startup room without
 changing production timing or relaxing traffic limits.
+
+## Phase 3 verification — 2026-10-04
+
+Initial main tree was clean, origin remained the private GitHub repository.
+Project Python 3.14.7, uv 0.12.19, Node 26.8.1 and npm 11.19.0 were verified.
+Baseline `make check` passed 67 Python and 3 web tests. No dependency or runtime
+upgrade was needed; uv.lock changes only NetAtlas to 0.4.0. Tests use synthetic
+strings/documentation addresses and existing loopback fixtures. Product-signature
+primary references were read as documentation, never used as measurement targets.
+Final validation and limitations are in PROJECT_STATE; Git/Actions identify delivery.
+
+The first Phase 3 full run found an intermittent pre-existing TLS fixture shutdown
+warning. Ready accept callbacks and their transport-creation tasks now drain before
+listener close, so Python 3.14 does not attach accepted transports to an already
+closed server. No production networking change or warning filter was introduced.

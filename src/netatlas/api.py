@@ -14,7 +14,7 @@ from netatlas.observation import Observation
 class Health(Model):
     status: Literal["ok"] = "ok"
     version: str = __version__
-    phase: Literal[2] = 2
+    phase: Literal[3] = 3
     measurement_enabled: Literal[False] = False
 
 

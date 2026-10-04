@@ -24,7 +24,7 @@ implementation validation uses synthetic/loopback fixtures.
   Internet sweep. Later real campaigns document network/institutional permissions
   and operating constraints separately from ordinary development.
 
-## Enforcement through Phase 2
+## Enforcement through Phase 3
 
 The immutable campaign configuration pins exclusion and opt-out CIDRs. Denials
 precede any allowlist; lab mode only accepts explicit `127.0.0.1` and `::1` literals.
@@ -67,6 +67,24 @@ and opt-out/removal semantics before ingesting real captures. Operator opt-outs
 must stop new work and define how stored evidence/search projections are removed
 or restricted. Store raw sensitive evidence separately from public metadata.
 Keep production credentials outside effective-config hashes and committed files.
+
+## Offline derivation enforcement
+
+Phase 3 consumes bounded regular local JSON/JSONL files and declarative literal
+rules. It opens no sockets, executes no rule code, and never follows captured or
+provenance URLs. Shared bounded syntax parsing does not decode HTML, compressed
+bodies or certificate contents. Typed metadata and ports cannot override raw evidence.
+Pack/row/count/nesting limits and duplicate-key rejection bound the file boundary.
+Validation replays source and pack, including evidence offsets and hashes.
+
+Derived output copies labels and source/evidence hashes/selectors, not raw payloads
+or endpoint addresses. This minimizes duplication, not sensitivity: linkage hashes
+and rule labels still belong in private ignored storage. Files are mode 0600,
+published atomically without overwrite, and diagnostics omit validation details.
+No real-world ingestion, redaction/access controls, retention enforcement, signatures
+or adversarial-local-user filesystem guarantees are supplied by this phase.
+Keep original evidence private for replay; do not equate matching banners with
+trusted identity, calibrated probability, physical hardware or vulnerabilities.
 
 ## Application boundaries
 

@@ -1,7 +1,7 @@
 # Architecture decision record
 
 Accepted 2026-10-04. Revisit with evidence; record consequences rather than silently
-changing the design. Phase 2 adds protocol evidence to bounded discovery; planned
+changing the design. Phase 3 adds offline deterministic derivations; planned
 infrastructure remains absent.
 
 | ID | Choice and reason | Consequences / reconsider when |
@@ -29,6 +29,12 @@ infrastructure remains absent.
 | ADR-020 | Raw socket payload I/O and SSLObject/MemoryBIO, cumulative receive/send/retention caps; separate connect/interaction/endpoint/campaign deadlines. | TLS record traffic cannot bypass accounting. No hidden stream prefetch, retry, DNS, SNI or downgrade; kernel traffic/overhead is outside payload counters. Endpoint timer starts after first admission and includes later admission waits. |
 | ADR-021 | Preserve bounded peer DER chain with negotiated TLS metadata, verification explicitly not performed; no parsed identity trust claim. | Expired/self-signed captures work when OpenSSL completes the handshake; obsolete or structurally invalid handshakes may expose no certificate. No trust/OCSP/AIA request or client certificate. |
 | ADR-022 | Strict bounded syntax recognition, opaque base64 captures and typed metadata, independent TCP/interaction outcomes. | No product/device inference. Header values and greetings remain untrusted; no decoding active content. Connect-open persists through application errors. No durable ingestion or public evidence view. |
+
+| ADR-023 | Package 0.4.0; unchanged config v3 and observation/manifest v2; separate rule-pack/derivation schema 1. | Legacy foundation fingerprints are not detection inputs or mutated outputs. Explicit v1/v2 offline reads preserve source identity and content. |
+| ADR-024 | Bounded declarative literal rules, no dynamic regex/code; I/O-free syntax parsers shared by collectors and derivations. | Reparse raw syntax rather than trusting metadata. No traffic changes, network lookups, body decoding or new dependencies. |
+| ADR-025 | Source/pack canonical hashes, engine/taxonomy versions and precise raw-byte references; deterministic output omits processing clock. | Store operational processing times separately later. Same-version pack edits remain distinguishable; digests do not authenticate authorship. |
+| ADR-026 | Independent product/category candidates with asserted/corroborated ordinal confidence, unknowns and retained multiple candidates. | Confidence is not calibrated probability or identity proof. Core supports nginx/OpenSSH/Postfix assertions only; fictional taxonomy pack is explicitly synthetic. |
+| ADR-027 | Bounded streaming offline apply/inspect/replay CLI, private staged no-clobber output under ignored data/. | Stable generic errors and no raw-content duplication. No ingestion, deduplication, crash recovery, durable storage or public evidence interface. |
 
 ## Primary references consulted
 

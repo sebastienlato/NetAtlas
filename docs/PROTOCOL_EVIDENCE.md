@@ -143,8 +143,8 @@ single-spool lock and crash/power-loss limitations.
 
 ## Implementation and validation
 
-`collectors/protocols.py` defines the passive `Collector` interface and HTTP/SSH/SMTP
-parsers. `collectors/tls.py` adapts the active TLS handshake into typed metadata.
+`protocol_syntax.py` defines the shared I/O-free `Collector` interface and HTTP/SSH/SMTP
+parsers; `collectors/protocols.py` preserves the collector-facing exports. `collectors/tls.py` adapts the active TLS handshake into typed metadata.
 `collectors/io.py` owns bounded payload I/O; `collectors/runner.py` selects the plan
 using discovery's admission callback. None depend on storage or the API. Domain
 contracts in `evidence.py`/`observation.py` have no I/O. `discovery/engine.py` alone
@@ -163,3 +163,8 @@ Protocol references: [HTTP semantics](https://www.rfc-editor.org/rfc/rfc9110.htm
 [SSH identification](https://www.rfc-editor.org/rfc/rfc4253.html#section-4.2),
 [SMTP greetings](https://www.rfc-editor.org/rfc/rfc5321.html#section-4.2),
 and [Python SSLObject/MemoryBIO](https://docs.python.org/3.14/library/ssl.html).
+
+Phase 3 moved the syntax parsers without behavioral changes so offline derivations
+can reuse them without depending on collector execution. See
+[FINGERPRINTS.md](FINGERPRINTS.md). Collector output still contains no product or
+device claims; all new candidates are independent versioned derived records.

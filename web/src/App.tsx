@@ -64,7 +64,7 @@ export function App() {
             exploration, and research.
           </p>
           <div className="phase-label">
-            <span className="dot" /> Phase 2 · Protocol evidence
+            <span className="dot" /> Phase 3 · Fingerprints and categories
           </div>
         </section>
 
@@ -89,8 +89,8 @@ export function App() {
             </h2>
             <p>
               Bounded discovery and HTTP, TLS, SSH, and SMTP evidence collection
-              are available through the local CLI. Product identification and
-              geographic search will arrive in later phases.
+              and offline evidence-based fingerprinting are available through
+              the local CLI. Geographic search will arrive in later phases.
             </p>
             <p className="empty-note">
               This preview shows no measured data and cannot start scans.
@@ -119,8 +119,8 @@ export function App() {
             <span className="number">02</span>
             <h3>Evidence first</h3>
             <p>
-              Versioned records will connect every classification to the
-              response behind it.
+              Versioned offline rules connect classification candidates to the
+              bounded evidence behind them.
             </p>
           </article>
           <article>

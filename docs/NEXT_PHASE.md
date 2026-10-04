@@ -1,79 +1,96 @@
-# PHASE 3 — FRESH WORK CHAT KICKOFF
+# PHASE 4 — FRESH WORK CHAT KICKOFF
 
 You are the authoritative developer and project manager for NetAtlas — Global
 Internet Exposure Search & Visualization, an independent university thesis project.
-The opened NetAtlas folder is the repository root. Complete exactly Phase 3 in this
-fresh Astra High Work chat; do not begin Phase 4.
+The opened NetAtlas folder is the repository root. Complete exactly Phase 4 in this
+fresh Work chat; do not begin Phase 5.
 
 First read AGENTS.md, PROJECT_STATE.md, README.md, ROADMAP.md, ARCHITECTURE.md,
-DECISIONS.md, CONTRIBUTING.md, SECURITY.md, docs/DATA_MODEL.md, docs/DISCOVERY.md and
-docs/PROTOCOL_EVIDENCE.md. Inspect Git status/remotes, toolchains, code and tests.
-Repository files are authoritative; no earlier chat history is required. Respect
-existing user changes and make routine engineering decisions autonomously.
+DECISIONS.md, CONTRIBUTING.md, SECURITY.md, docs/DATA_MODEL.md, docs/DISCOVERY.md,
+docs/PROTOCOL_EVIDENCE.md and docs/FINGERPRINTS.md. Inspect Git status/remotes,
+toolchains, code and tests. Repository files are authoritative. Respect existing
+user changes and make routine engineering decisions without approval gates.
 
-Phase 2 delivered package 0.3.0 on Python 3.14/uv with FastAPI/Pydantic and a
-React/TypeScript/Vite shell. Configuration is version 3, observations/manifests are
-version 2, with an explicit legacy observation-v1 reader. The bounded asyncio worker
-retains strict literal IPv4/IPv6 scope, small CIDRs, conservative pinned policy,
-exclusions/opt-outs, shared global/per-prefix pacing, queue/concurrency limits,
-deadlines, cancellation and private ignored JSONL/manifest output under data/.
-CLI defaults dry-run; dialing requires enabled operator identity plus --measure.
-Protocol collection separately requires measurement.protocol_evidence = true.
-Lab mode accepts only literal 127.0.0.1 and ::1. API/UI cannot start measurements.
+Phase 3 delivered package 0.4.0 on Python 3.14/uv/FastAPI/Pydantic with a React/
+TypeScript/Vite shell. Config is v3; observations/manifests v2, with explicit v1
+observation compatibility. Rule-pack and derivation schemas are v1, engine is
+fingerprints-1 and taxonomy is netatlas-categories-1. No durable storage exists yet.
 
-Collectors identify HTTP, TLS, SSH and SMTP from bounded handshake syntax, never
-from conventional ports. Strategy greeting-http-tls-v1 permits at most two admitted
-connections, two GET / requests and one TLS handshake per endpoint, with cumulative
-receive/send/retention budgets including TLS records. SSH/SMTP are greeting-only;
-bare 220 remains ambiguous. TLS preserves unverified DER/negotiation evidence,
-including self-signed/expired certificates when the handshake succeeds. There is
-no DNS, SNI, named Host, redirects, cookies, authentication, mail or STARTTLS.
-Raw evidence is bounded base64; metadata remains hostile peer assertion. TCP
-reachability is separate from protocol outcome. Review documented coverage gaps.
+Discovery remains bounded literal IPv4/IPv6 and small CIDRs with pinned policy,
+exclusions/opt-outs, shared global/per-prefix pacing, queue/concurrency/deadlines,
+cancellation and private ignored JSONL/manifests. CLI defaults dry-run; measurement
+needs enabled operator identity and --measure. Protocol capture separately requires
+measurement.protocol_evidence = true. Lab mode permits only literal 127.0.0.1/::1.
+API/UI cannot initiate measurement. No Internet campaign has been run.
 
-Phase 2 validation passed make check with 67 Python and 3 web tests plus lint,
-strict types, builds and offline CLI smoke; the 39 protocol tests also passed with
-warnings treated as errors. Verify results yourself. TLS fixtures require the
-OpenSSL CLI and generate ephemeral keys/certificates in temporary directories.
-No new package dependency, real Internet dataset/campaign, rule pack, category
-engine, database, search, geography, distributed worker, release or tag exists.
+HTTP/TLS/SSH/SMTP collection uses at most two admitted connections, two GET / requests
+and one TLS handshake per endpoint, with cumulative wire/retention budgets. No DNS,
+SNI, named Host, redirects, cookies, authentication, mail, STARTTLS or active device
+commands. TCP reachability is distinct from protocol outcome. Raw base64 evidence
+and metadata are hostile peer assertions; TLS certificate verification is not performed.
 
-Implement Phase 3 — Fingerprints and Categories: versioned deterministic rule packs,
-evidence/confidence and a documented device-category taxonomy. Keep derivations
-separate from collectors, immutable observations, storage and API. Define stable
-rule identifiers/versions and pack provenance; produce reproducible derived records
-linked to source observation IDs and precise bounded evidence selectors. Reprocessing
-with the same pack must be deterministic; a changed pack must be distinguishable and
-must not rewrite raw observations. Explicitly handle v1/v2 input compatibility,
-missing/truncated/malformed evidence and unknown protocols.
+Phase 3 adds separate deterministic offline derivations with source UUID/schema/
+digest, pack ID/version/digest, engine/taxonomy version and precise decoded-byte
+selectors/hashes. The core pack has four literal rules for nginx, OpenSSH and Postfix
+assertions. Confidence is ordinal asserted/corroborated, never calibrated probability
+or identity proof. Preserve unknowns and multiple candidates; broader device classes
+have fictional test coverage only. Raw observations are never rewritten. Shared
+protocol_syntax.py is I/O-free; collectors and derivations remain separate.
 
-Use a small labeled synthetic corpus to exercise positive, negative, ambiguous and
-conflicting cases, false positives, confidence semantics and reprocessing. Cover the
-planned taxonomy without claiming every device class is detectable: web services,
-cameras/NVRs, routers, NAS, printers, SSH, VPN appliances, mail, databases, IoT and
-industrial systems may remain unknown when evidence is insufficient. A protocol
-alone does not establish a device category or product. Preserve multiple candidates
-where justified and explain uncertainty. No vulnerability or exploitation claims.
+Offline fingerprint apply/inspect/replay is bounded to regular files: 128 KiB pack,
+64 rules with four conditions, 16 MiB input/1024 rows, 1 MiB line, 32-level nesting,
+8192-byte body window, 128 candidates/record, 32 MiB output. Outputs are private,
+atomic and no-clobber under data/. No executable rules, arbitrary regex, active
+content, networking or raw-content logging. Deterministic records omit a processing
+clock; operational run timestamps may be separate. Preserve source/pack snapshots
+and engine version for replay. Existing embedded fingerprint shapes are placeholders.
 
-Provide a bounded offline path to apply/inspect the rules and validate its output.
-Treat rules and inputs as untrusted data: no executable rule code, arbitrary imports,
-unsafe deserialization, active HTML/URL handling or unbounded regex/input processing.
-Document evidence minimization and avoid logging raw content. Do not expand network
-probes or bypass existing traffic/policy limits to fill fingerprint gaps. Use only
-synthetic/documentation-address corpus records and explicit loopback fixtures;
-never public targets, commercial device-search databases or mandatory paid APIs.
+Phase 3 validation passed make check: 130 Python and 3 web tests plus lint, strict
+types, builds and offline smoke; all 130 Python tests also passed with warnings as
+errors. There are 63 fingerprint tests and 47 labeled synthetic corpus cases.
+An existing TLS fixture accept/close race was fixed without changing production
+collectors or suppressing warnings. Verify results yourself. TLS tests need OpenSSL
+and generate temporary keys/certificates. Runtime pins remain Python 3.14.7,
+uv 0.12.19, Node 26.8.1 and npm 11.19.0. No new Phase 3 dependency was added.
 
-Do not add credential guessing, authentication bypass, exploitation, persistence,
-remote modification or destructive actions. Stay within Phase 3: no durable database,
-ingestion pipeline, geolocation, search infrastructure, distributed workers, releases
-or tags. Ask only for genuine blockers, credentials, permissions or unavoidable
-manual actions after completing independent authorized work. Keep tests meaningful
-and proportionate; do not introduce routine approval gates.
+Implement Phase 4 — Durable Observation Pipeline: PostgreSQL schema/migrations,
+ingestion, content-addressed blobs, immutable observation/derivation history,
+current-service projections, deduplication, transactional outbox and local Compose
+setup. Follow ADR-005's PostgreSQL/SQLAlchemy/Alembic direction; inspect available
+container/database tooling before deciding local setup. No search cluster is needed.
+Do not implement geographic enrichment or search infrastructure in this phase.
+
+Define durable ingestion identity, acknowledgement and transaction boundaries.
+Observation UUID plus canonical content must distinguish exact replay from a
+same-ID/different-content conflict; blob content equality must never erase distinct
+measurement history. Preserve explicit v1/v2 compatibility and independent derivation
+versions. Keep source evidence, pack provenance and derived references traceable.
+Handle duplicate/reordered inputs, stale arrivals and negative attempts without
+losing last successful service evidence; define deterministic current-view ordering.
+Design recoverable blob/database publication and orphan cleanup without acknowledging
+non-durable data. Add a replayable outbox with idempotent consumers and tested failure
+boundaries. Keep scanner, domain, derivations, storage and API separable.
+
+Acceptance includes duplicate/reordered input, transaction failure/replay, upgrade
+migration, basic backup/restore and retention tests. Document/run reproducible local
+Compose commands and meaningful database integration tests. Use synthetic fixtures
+only; keep databases, datasets, blobs, observations, local config, credentials and
+generated outputs out of Git. Establish minimization/redaction, private access,
+retention expiry and opt-out/removal semantics for stored evidence and projections
+before any real-data ingestion; no real-data ingestion is authorized by this task.
+Do not add public upload/measurement controls or claim later API/search/UI work exists.
+
+Never add credential guessing, authentication bypass, exploitation, persistence on
+remote targets, remote modification or destructive device actions. Do not enlarge
+probe coverage or traffic budgets to fill storage/fingerprint gaps. No public-target
+smoke tests, commercial discovery databases, mandatory paid services, releases or tags.
+Ask only for genuine blockers, credentials, permissions or unavoidable manual actions
+after completing independent authorized work; do not introduce routine approval gates.
 
 At completion run relevant checks and make check; update authoritative docs with
 actual results, limitations and state; replace docs/NEXT_PHASE.md with a self-contained
-Phase 4 kickoff; review tracked files/diff for secrets, captures and generated data;
-commit with a Phase 3 message; push; verify local HEAD equals the remote delivery
+Phase 5 kickoff. Review tracked files/diff for secrets, captures and generated data;
+commit with a Phase 4 message; push; verify local HEAD equals the remote delivery
 branch and the working tree is clean. Report delivery, checks/results, commit hash,
-push/CI status, blockers and exact current state. Include the complete Phase 4 kickoff,
+push/CI status, blockers and exact current state. Include the complete Phase 5 kickoff,
 then stop.

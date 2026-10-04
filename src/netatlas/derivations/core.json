@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "pack_id": "netatlas-core",
+  "version": "1.0.0",
+  "taxonomy_version": "netatlas-categories-1",
+  "provenance": "NetAtlas authored literal assertion rules; primary upstream references reviewed 2026-10-04. Synthetic evaluation only; not a calibrated production catalog.",
+  "rules": [
+    {
+      "rule_id": "http.nginx.exact",
+      "version": "1.0.0",
+      "description": "Exact nginx Server assertion; indicates a web serving role, not underlying hardware.",
+      "provenance": "https://github.com/nginx/nginx/blob/master/src/http/ngx_http_header_filter_module.c",
+      "product": "nginx",
+      "category": "web_server",
+      "confidence": "asserted",
+      "conditions": [{"selector": "http.server", "operator": "equals", "value": "nginx"}]
+    },
+    {
+      "rule_id": "http.nginx.versioned",
+      "version": "1.0.0",
+      "description": "nginx slash-prefixed Server assertion; no version extraction or vulnerability claim.",
+      "provenance": "https://github.com/nginx/nginx/blob/master/src/http/ngx_http_header_filter_module.c",
+      "product": "nginx",
+      "category": "web_server",
+      "confidence": "asserted",
+      "conditions": [{"selector": "http.server", "operator": "prefix", "value": "nginx/"}]
+    },
+    {
+      "rule_id": "ssh.openssh",
+      "version": "1.0.0",
+      "description": "OpenSSH software-token assertion; does not establish operating system or device type.",
+      "provenance": "https://github.com/openssh/openssh-portable/blob/master/version.h",
+      "product": "OpenSSH",
+      "category": "ssh_server",
+      "confidence": "asserted",
+      "conditions": [{"selector": "ssh.software", "operator": "prefix", "value": "OpenSSH_"}]
+    },
+    {
+      "rule_id": "smtp.postfix",
+      "version": "1.0.0",
+      "description": "Postfix word in explicit SMTP greeting text after the hostname; peer assertion only.",
+      "provenance": "https://www.postfix.org/postconf.5.html#smtpd_banner",
+      "product": "Postfix",
+      "category": "mail_server",
+      "confidence": "asserted",
+      "conditions": [{"selector": "smtp.greeting", "operator": "word", "value": "Postfix"}]
+    }
+  ]
+}

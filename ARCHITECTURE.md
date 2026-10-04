@@ -1,6 +1,6 @@
 # Architecture
 
-Status: Phase 2 implemented protocol evidence and discovery; later-phase direction retained. Only the
+Status: Phase 3 implemented offline fingerprints/categories atop protocol evidence and discovery; later-phase direction retained. Only the
 modules listed as implemented in `PROJECT_STATE.md` exist today. A monorepo and modular Python package keep early
 development small; process/network boundaries are introduced when justified.
 
@@ -90,7 +90,7 @@ storage, FastAPI or UI. The engine supplies admission for every connection; pass
 syntax parsers implement a small Collector interface and TLS uses an active handshake
 adapter. Raw sockets and SSLObject/MemoryBIO give explicit byte accounting and closure.
 Configuration v3 leaves protocol collection disabled until explicitly selected. API
-health and the UI describe Phase 2 but still expose no measurement controls/data.
+health and the UI describe Phase 3 but still expose no measurement controls/data.
 
 ## Evidence and derivations
 
@@ -102,15 +102,20 @@ grouping. TLS/virtual hosts add service dimensions later. Deduplicate bounded ra
 content by SHA-256 in the persistence phase; preserve all timestamps and references
 even when bytes are shared. Negative results do not erase past positive evidence.
 
-Fingerprint rules have identifiers, versions, confidence, and evidence references.
-Separate product detection from device category, allow multiple classifications,
-and retain unknown results and conflicting evidence. Do not equate a product match
-with a confirmed vulnerability. Derived records include rule/dataset versions and
-processing time; reprocessing must not mutate original observations.
+Phase 3 implements `derivations/`: bounded JSON rule packs, a pure engine and an
+explicit offline file adapter. Collectors and derivations share only the I/O-free
+`protocol_syntax.py` and domain contracts; neither imports the other's execution
+layer. Product/category candidates stay separate from immutable observations and
+preserve uncertainty and multiple values. No port or protocol-only classification.
+Derived records carry source UUID/digest, pack ID/version/digest, engine/taxonomy
+version and precise byte selectors/hashes. Reprocessing never mutates observations.
+Deterministic records omit wall-clock processing time; later operational ingestion
+run metadata may carry it separately. See `docs/FINGERPRINTS.md` for confidence,
+taxonomy, compatibility, bounds and replay. No vulnerability or identity proof.
 
 ## Storage, ingestion, search, and statistics
 
-Phases 1–2: bounded private JSONL spool under ignored `data/`, atomic campaign manifest,
+Phases 1–3: bounded private JSONL spool under ignored `data/`, atomic campaign manifest,
 completed-result flush, final fsync and checksum; no database adapter. Graceful
 stops finalize metadata; hard kills may leave a running manifest or partial line.
 An advisory spool lock prevents concurrent local campaigns sharing that directory.

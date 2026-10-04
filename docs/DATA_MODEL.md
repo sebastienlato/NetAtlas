@@ -27,8 +27,9 @@ Targets retain canonical IP, campaign ID and source. Endpoint key is address,
 transport and port; it is not device or ownership identity. Only `open` observations
 may carry service/response evidence. Dates are aware and ordered; target and endpoint
 must agree, and optional network prefixes must contain the endpoint. No network or
-geographic enrichment is emitted by this phase. Existing fingerprint/classification
-shapes remain foundation placeholders; no rules or categories are implemented.
+geographic enrichment is emitted by this phase. Existing embedded fingerprint/classification
+shapes remain legacy foundation placeholders. Phase 3 derives separate records;
+it neither consumes those placeholders as evidence nor fills them into observations.
 
 The original optional top-level `response` is retained for legacy-shaped synthetic
 examples, but cannot coexist with `protocol_evidence`. New collectors put captures
@@ -73,7 +74,7 @@ For limits, selection, statuses and exact accounting, see
 
 ## Configuration and manifests
 
-Configuration is **version 3**, package **0.3.0**. Old explicit version-2 files fail
+Configuration is **version 3**, package **0.4.0**. Old explicit version-2 files fail
 closed. To migrate a local file, change its version to 3, compare against
 `config/default.toml`, and explicitly choose `measurement.protocol_evidence`. It
 remains false by default; old partial files that omit a version retain connect-only
@@ -102,3 +103,23 @@ leave a running manifest or partial last row. No durable ingestion, recovery,
 content-addressed storage or database exists yet. Future Phase 4 defines these
 boundaries and preserves observation/campaign identities rather than deduplicating
 measurements solely by raw content hash.
+
+## Phase 3 derivation contracts
+
+`derivations/models.py` defines bounded rule-pack schema **1**, derived-record schema
+**1**, engine **fingerprints-1**, taxonomy **netatlas-categories-1**. These contracts
+are separate from observations. A record contains source observation UUID, source
+schema version and canonical SHA-256; pack ID/version/digest; engine/taxonomy version;
+product/category states; stable diagnostic notes; and up to 128 candidates. Each
+candidate carries rule ID/version, optional product/category, ordinal confidence,
+and up to four precise byte references into original base64 captures. No raw content
+or endpoint is duplicated. Source and pack snapshots are required to replay.
+
+No random ID or processing clock appears in deterministic records. JSON defaults,
+sorted keys and compact ASCII serialization define digest bytes; input lexical
+formatting is excluded and arrays retain order. Operational run timestamps belong
+in a later envelope. Same source/pack/engine yields identical records; changed pack
+content changes its digest even if an author forgets a version bump. Unknown and
+multiple product/category values are explicit. `--validate` verifies output by full
+recomputation, not merely schema validation. See [FINGERPRINTS.md](FINGERPRINTS.md)
+for the exact rule language, confidence semantics, taxonomy and I/O limits.

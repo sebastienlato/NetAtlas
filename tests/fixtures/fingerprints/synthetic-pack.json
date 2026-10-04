@@ -1,0 +1,239 @@
+{
+  "schema_version": 1,
+  "pack_id": "netatlas-synthetic",
+  "version": "1.0.0",
+  "provenance": "Authored NetAtlas synthetic fixtures only. Fictional products, not real device signatures.",
+  "rules": [
+    {
+      "rule_id": "fixture.web-server",
+      "version": "1.0.0",
+      "description": "Fictional web_server marker pair for engine validation only.",
+      "provenance": "NetAtlas synthetic corpus v1; no measured devices.",
+      "product": "Fixture web_server",
+      "category": "web_server",
+      "confidence": "corroborated",
+      "conditions": [
+        {
+          "selector": "http.server",
+          "operator": "equals",
+          "value": "NetAtlasFixture/1"
+        },
+        {
+          "selector": "http.body",
+          "operator": "contains",
+          "value": "[category=web_server]"
+        }
+      ]
+    },
+    {
+      "rule_id": "fixture.camera-nvr",
+      "version": "1.0.0",
+      "description": "Fictional camera_nvr marker pair for engine validation only.",
+      "provenance": "NetAtlas synthetic corpus v1; no measured devices.",
+      "product": "Fixture camera_nvr",
+      "category": "camera_nvr",
+      "confidence": "corroborated",
+      "conditions": [
+        {
+          "selector": "http.server",
+          "operator": "equals",
+          "value": "NetAtlasFixture/1"
+        },
+        {
+          "selector": "http.body",
+          "operator": "contains",
+          "value": "[category=camera_nvr]"
+        }
+      ]
+    },
+    {
+      "rule_id": "fixture.router",
+      "version": "1.0.0",
+      "description": "Fictional router marker pair for engine validation only.",
+      "provenance": "NetAtlas synthetic corpus v1; no measured devices.",
+      "product": "Fixture router",
+      "category": "router",
+      "confidence": "corroborated",
+      "conditions": [
+        {
+          "selector": "http.server",
+          "operator": "equals",
+          "value": "NetAtlasFixture/1"
+        },
+        {
+          "selector": "http.body",
+          "operator": "contains",
+          "value": "[category=router]"
+        }
+      ]
+    },
+    {
+      "rule_id": "fixture.nas",
+      "version": "1.0.0",
+      "description": "Fictional nas marker pair for engine validation only.",
+      "provenance": "NetAtlas synthetic corpus v1; no measured devices.",
+      "product": "Fixture nas",
+      "category": "nas",
+      "confidence": "corroborated",
+      "conditions": [
+        {
+          "selector": "http.server",
+          "operator": "equals",
+          "value": "NetAtlasFixture/1"
+        },
+        {
+          "selector": "http.body",
+          "operator": "contains",
+          "value": "[category=nas]"
+        }
+      ]
+    },
+    {
+      "rule_id": "fixture.printer",
+      "version": "1.0.0",
+      "description": "Fictional printer marker pair for engine validation only.",
+      "provenance": "NetAtlas synthetic corpus v1; no measured devices.",
+      "product": "Fixture printer",
+      "category": "printer",
+      "confidence": "corroborated",
+      "conditions": [
+        {
+          "selector": "http.server",
+          "operator": "equals",
+          "value": "NetAtlasFixture/1"
+        },
+        {
+          "selector": "http.body",
+          "operator": "contains",
+          "value": "[category=printer]"
+        }
+      ]
+    },
+    {
+      "rule_id": "fixture.ssh-server",
+      "version": "1.0.0",
+      "description": "Fictional ssh_server marker pair for engine validation only.",
+      "provenance": "NetAtlas synthetic corpus v1; no measured devices.",
+      "product": "Fixture ssh_server",
+      "category": "ssh_server",
+      "confidence": "corroborated",
+      "conditions": [
+        {
+          "selector": "http.server",
+          "operator": "equals",
+          "value": "NetAtlasFixture/1"
+        },
+        {
+          "selector": "http.body",
+          "operator": "contains",
+          "value": "[category=ssh_server]"
+        }
+      ]
+    },
+    {
+      "rule_id": "fixture.vpn-appliance",
+      "version": "1.0.0",
+      "description": "Fictional vpn_appliance marker pair for engine validation only.",
+      "provenance": "NetAtlas synthetic corpus v1; no measured devices.",
+      "product": "Fixture vpn_appliance",
+      "category": "vpn_appliance",
+      "confidence": "corroborated",
+      "conditions": [
+        {
+          "selector": "http.server",
+          "operator": "equals",
+          "value": "NetAtlasFixture/1"
+        },
+        {
+          "selector": "http.body",
+          "operator": "contains",
+          "value": "[category=vpn_appliance]"
+        }
+      ]
+    },
+    {
+      "rule_id": "fixture.mail-server",
+      "version": "1.0.0",
+      "description": "Fictional mail_server marker pair for engine validation only.",
+      "provenance": "NetAtlas synthetic corpus v1; no measured devices.",
+      "product": "Fixture mail_server",
+      "category": "mail_server",
+      "confidence": "corroborated",
+      "conditions": [
+        {
+          "selector": "http.server",
+          "operator": "equals",
+          "value": "NetAtlasFixture/1"
+        },
+        {
+          "selector": "http.body",
+          "operator": "contains",
+          "value": "[category=mail_server]"
+        }
+      ]
+    },
+    {
+      "rule_id": "fixture.database",
+      "version": "1.0.0",
+      "description": "Fictional database marker pair for engine validation only.",
+      "provenance": "NetAtlas synthetic corpus v1; no measured devices.",
+      "product": "Fixture database",
+      "category": "database",
+      "confidence": "corroborated",
+      "conditions": [
+        {
+          "selector": "http.server",
+          "operator": "equals",
+          "value": "NetAtlasFixture/1"
+        },
+        {
+          "selector": "http.body",
+          "operator": "contains",
+          "value": "[category=database]"
+        }
+      ]
+    },
+    {
+      "rule_id": "fixture.iot",
+      "version": "1.0.0",
+      "description": "Fictional iot marker pair for engine validation only.",
+      "provenance": "NetAtlas synthetic corpus v1; no measured devices.",
+      "product": "Fixture iot",
+      "category": "iot",
+      "confidence": "corroborated",
+      "conditions": [
+        {
+          "selector": "http.server",
+          "operator": "equals",
+          "value": "NetAtlasFixture/1"
+        },
+        {
+          "selector": "http.body",
+          "operator": "contains",
+          "value": "[category=iot]"
+        }
+      ]
+    },
+    {
+      "rule_id": "fixture.industrial",
+      "version": "1.0.0",
+      "description": "Fictional industrial marker pair for engine validation only.",
+      "provenance": "NetAtlas synthetic corpus v1; no measured devices.",
+      "product": "Fixture industrial",
+      "category": "industrial",
+      "confidence": "corroborated",
+      "conditions": [
+        {
+          "selector": "http.server",
+          "operator": "equals",
+          "value": "NetAtlasFixture/1"
+        },
+        {
+          "selector": "http.body",
+          "operator": "contains",
+          "value": "[category=industrial]"
+        }
+      ]
+    }
+  ]
+}
