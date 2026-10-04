@@ -160,4 +160,5 @@ def main() -> None:
                 port=settings.api.port,
                 log_level=settings.logging.level.lower(),
                 access_log=False,
+                proxy_headers=False,
             )

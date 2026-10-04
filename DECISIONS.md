@@ -1,8 +1,8 @@
 # Architecture decision record
 
 Accepted 2026-10-04. Revisit with evidence; record consequences rather than silently
-changing the design. Phase 6 adds local PostgreSQL search; HTTP read routes and distributed infrastructure
-remain planned.
+changing the design. Phase 7 adds local synthetic read routes over PostgreSQL search; geographic UI and
+distributed infrastructure remain planned.
 
 | ID | Choice and reason | Consequences / reconsider when |
 | --- | --- | --- |
@@ -55,6 +55,12 @@ remain planned.
 | ADR-042 | Exact endpoint/source/candidate counts, deduplicated post-filter category/ASN/prefix/country/geography facets; explicit unknowns and truncation. | Multi-valued facets need not sum to totals. Counts describe selected observations, not worldwide prevalence or physical devices. |
 | ADR-043 | Product-label GIN text search; inet/JSONB/B-tree and geography/geometry indexes; bounded private CLI, 5-second query timeout. | No raw evidence indexing/display, public sanitizer, HTTP contract or concurrent service guarantee. Geographic areas test approximate points, not uncertainty-disk overlap. |
 | ADR-044 | Defer OpenSearch after the 2,048-endpoint/6,144-observation synthetic benchmark. | Local warm-cache exact queries fit the demonstration; nine indexes use 7.93 MiB. Reconsider with measured larger/concurrent workloads or missing search semantics, not assumed global scale. |
+
+| ADR-045 | Package 0.8.0; independent HTTP schema 1 and allowlisted models; POST JSON read routes. | Filters/cursors stay out of URLs; source envelopes/raw captures/protocol inspection remain private. No migration or collection change. |
+| ADR-046 | HMAC query/route-bound keysets, fixed measurement cutoff, 15-minute nonrenewing process-local tokens and 10000-hit cap. | Deterministic source ordering without offset shifts; live retained-data pages, not snapshots. Restart invalidates tokens. Actual expiry/suppression and implicit-current dataset validity apply every page. |
+| ADR-047 | Trusted-local synthetic access: loopback peer/Host/Origin, required non-secret read header, no CORS/forwarded trust, one in-flight request, body/SQL/output bounds. | No public authentication, distributed rate limit or production DB isolation claim. Requests cannot execute measurement, downloads or derivations. |
+| ADR-048 | Exact dataset gazetteer with stable-ID continuation and explicit uncertainty; metadata-only endpoint detail/history. | Same-name places remain distinct; source eligibility gates place availability. Stale/future bundles yield provenance/state without places; full polygons and evidence inspection deferred. |
+| ADR-049 | Generate the TypeScript read contract from actual OpenAPI with a fail-closed small schema converter and digest drift check. | No added generator dependency. Client supports cancellation, fixed same-origin paths, no credentials/redirects and known errors. Compile-time types do not validate runtime JSON. |
 
 ## Primary references consulted
 

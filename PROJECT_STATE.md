@@ -1,7 +1,7 @@
 # Project state
 
-Updated: 2026-10-04. **Phase 6 — Search and Aggregate Statistics is complete.**
-Phase 7 has not started. Package **0.7.0**; local query schema **1**; config **3**;
+Updated: 2026-10-04. **Phase 7 — Read API is complete.**
+Phase 8 has not started. Package **0.8.0**; HTTP schema **1**; local query schema **1**; config **3**;
 observation/manifest **2** with explicit v1 reads; fingerprint pack/result schemas
 **1**, engine **fingerprints-1**, taxonomy **netatlas-categories-1**; enrichment
 bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0004**.
@@ -57,8 +57,24 @@ bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0004**.
 - Migration 0004 adds nine indexes directly to immutable authoritative tables. No
   asynchronous search copies, separate consumer, raw indexing or eventual deletion lag.
   Reindex, populated upgrades, replay, Phase 4/5/6 backup restore preserve results.
-- API health/web shell describe Phase 6; they expose no stored-data read routes,
-  geographic UI, ingestion route or measurement controls. **OpenSearch is deferred**
+- **Phase 7:** separate typed local read transport with search/facets/places and
+  literal endpoint detail/history POST routes. Explicit metadata allowlists exclude
+  raw captures, source envelopes, protocol fields and evidence selectors. All labels
+  and URLs remain untrusted; transport escaping is not sensitive-data sanitization.
+- HMAC query/route-bound keyset cursors, 15-minute lifetime, 10,000-hit traversal cap,
+  fixed measurement cutoff and actual retention/implicit-current dataset validity
+  rechecks on each page. Live pages are not cross-request snapshots; writes/removals
+  can change counts and matches. No cached data can resurrect removed sources.
+- Loopback peer/Host/Origin checks, required browser-guard header, no CORS/credentials,
+  forwarded-header trust or access logs. Synthetic trusted-local use only. Bounded
+  streaming bodies, one in-flight read, 5-second SQL timeout, generic typed errors,
+  4 MiB JSON response cap. Health is process liveness, not database readiness.
+- Exact dataset-specific place disambiguation, stable IDs/admin/kind/provenance and
+  uncertainty; no remote geocoder. Places require a live unsuppressed associated
+  source; stale/future bundles return provenance/state with no places.
+- OpenAPI-derived TypeScript contract and same-origin cancellable client with drift
+  checking in make check. API/web status describes Phase 7; no geographic UI, evidence
+  viewer, ingestion route or measurement controls. **OpenSearch is deferred**
   based on the measured local synthetic workload, not assumed global-scale suitability.
 
 ## Architecture and operations
@@ -66,9 +82,11 @@ bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0004**.
 Domain/evidence/observation contracts are I/O-free. Discovery orchestrates policy;
 collectors acquire bounded bytes. Fingerprint/enrichment engines are pure and separate.
 Storage adapts them under the existing transaction/removal protocol. `search/` depends
-on query contracts and the storage connection/lock, never collector execution. No API
-or UI imports search or exposes its private metadata as a public response contract.
+on query contracts and the storage connection/lock, never collector execution.
+The read API adapts search through explicit allowlisted models; its HTTP response
+contract is separate from private dictionaries. The web shell has no data exploration UI.
 
+Read [API.md](docs/API.md) for routes, clocks, cursors, cost/access policy and client.
 Read [SEARCH.md](docs/SEARCH.md) for exact clocks/counts/filters/limits and
 [SEARCH_BENCHMARK.md](docs/SEARCH_BENCHMARK.md) for reproduction and measured results.
 Read [STORAGE.md](docs/STORAGE.md), [ENRICHMENT.md](docs/ENRICHMENT.md),
@@ -80,6 +98,32 @@ omit the override. The image context contains only docker/; transitive APT packa
 are not fully pinned. No runtime/dependency upgrades were needed.
 
 ## Verified validation
+
+- Full **make check-db COMPOSE=docker-compose** passed with **282 Python and 6 web
+  tests**: 42 new API acceptance cases, all prior search/storage migration/restore
+  tests, Ruff/format, strict mypy, Biome/TypeScript, OpenAPI client drift, Python/Vite
+  builds and offline CLI smoke. The local PostgreSQL/PostGIS volume and secret were
+  preserved; make db-migrate remains at 0004.
+- API tests compare route results against authored search truth for text/category/
+  ASN/places/radius/box/boundary/unknown/freshness/history. They cover IPv6 endpoint
+  detail/history, same-name places, stale/future bundles, missing radii, ambiguity,
+  ties/late inserts, cursor query/route/restart/lifetime binding and traversal caps.
+- Read-time suppression before cleanup, removal/replay and actual expiry exclude
+  data, including historical queries and continuations. Current dataset expiry is
+  rechecked on continuation. Hostile labels/URLs stay escaped JSON; raw bytes are
+  excluded, blob/DNS/measurement entry points are forbidden during the acceptance
+  read, and importing the API loads no discovery/collector module.
+- Streamed body/depth/size limits, loopback/Host/Origin policy, generic errors,
+  one-request admission, a real PostgreSQL statement timeout and response size cap
+  are tested. The TS client tests same-origin paths, IPv6 encoding, AbortSignal,
+  omitted credentials, redirect refusal and generic failures.
+- A real loopback HTTP smoke verified Phase 7 health, a bounded stored-data read,
+  no-store headers and cross-origin rejection; the temporary listener was stopped.
+
+The Phase 6 benchmark remains the search workload reference; this phase does not
+claim a new capacity benchmark.
+
+### Phase 6 baseline (retained historical record)
 
 - Full **`make check-db COMPOSE=docker-compose`** runs the required complete `make
   check` with PostgreSQL enabled: **240 Python and 3 web tests**, Ruff/format, strict
@@ -107,10 +151,10 @@ file cannot contain its own final hash. Verify local HEAD against
 
 ## Limitations and blockers
 
-No Phase 6 implementation blocker. No stored-data HTTP API, geographic UI, raw evidence
-viewer, real-data ingestion, field-level sanitizer, public authentication, production
+No Phase 7 implementation blocker. No geographic UI, raw evidence
+viewer, real-data ingestion, sensitive-content field sanitizer, public authentication, production
 role isolation, encrypted backup, distributed workers, release or tag exists. Local
-query dictionaries/offsets are not the Phase 7 HTTP contract. Private labels remain
+query dictionaries/offsets remain private; HTTP uses separate Phase 7 models. Labels remain
 untrusted; hashes do not authenticate peers or dataset publishers.
 
 Exact broad aggregates scale with matched rows. One lock serializes operations;
@@ -127,8 +171,8 @@ country/generalized polygons are not legal boundaries or device-location evidenc
 
 Historical queries use retained measurements through as_of and selected derivation
 identities, not ingestion-time knowledge snapshots. Actual source retention/suppression
-always wins. Offset pages can change across requests when data changes; deep offsets
-stop at 10000. API cursors/access/cost policies remain Phase 7 work. No current result
+always wins. Local CLI offset pages can change across requests; deep offsets stop at 10000.
+HTTP keysets bound traversal to 10000 hits and also use a live view; see API.md. No current result
 silently combines older evidence with a newer source's fields.
 
 Expiry/GC are explicit commands. Old restores need current suppressions before use;
@@ -139,5 +183,5 @@ failover, distributed throughput and production durability remain unqualified.
 
 ## Next
 
-**Phase 7 — Read API**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
-Do not begin Phase 7 in this Phase 6 chat.
+**Phase 8 — Geographic exploration UI**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
+Do not begin Phase 8 in this Phase 7 chat.

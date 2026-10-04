@@ -15,11 +15,13 @@ from netatlas.observation import Observation
 
 
 def test_api_contract_and_synthetic_provenance() -> None:
-    with TestClient(create_app(Settings())) as client:
+    with TestClient(
+        create_app(Settings()), base_url="http://127.0.0.1", client=("127.0.0.1", 50000)
+    ) as client:
         assert client.get("/healthz").json() == {
             "status": "ok",
-            "version": "0.7.0",
-            "phase": 6,
+            "version": "0.8.0",
+            "phase": 7,
             "measurement_enabled": False,
         }
         response = client.get("/api/v1/examples/observation")
@@ -30,7 +32,12 @@ def test_api_contract_and_synthetic_provenance() -> None:
         assert observation.response is not None
         assert base64.b64decode(observation.response.body_base64).endswith(b"NetAtlas fixture")
         assert client.get("/openapi.json").json()["info"]["title"] == "NetAtlas"
-        assert client.post("/api/v1/scan").status_code == 404
+        assert (
+            client.post(
+                "/api/v1/scan", headers={"X-NetAtlas-Read": "1"}, json={"schema_version": 1}
+            ).status_code
+            == 404
+        )
 
 
 def test_config_precedence_and_digest(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

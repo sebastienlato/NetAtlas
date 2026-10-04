@@ -24,7 +24,7 @@ implementation validation uses synthetic/loopback fixtures.
   Internet sweep. Later real campaigns document network/institutional permissions
   and operating constraints separately from ordinary development.
 
-## Measurement enforcement through Phase 6
+## Measurement enforcement through Phase 7
 
 The immutable campaign configuration pins exclusion and opt-out CIDRs. Denials
 precede any allowlist; lab mode only accepts explicit `127.0.0.1` and `::1` literals.
@@ -156,16 +156,32 @@ validity at query time. Direct indexes disappear with authoritative deletions in
 same transaction; replay reads live rows. The existing backup/quarantine policy
 still applies. Query size, result/facet counts, offsets, text length and geographic
 areas are bounded, with a 5-second statement timeout and shared local operator lock.
-No public access control, raw-content display or HTTP search routes are introduced.
+This Phase 6 CLI boundary adds no public access control or raw-content display;
+Phase 7 local HTTP policy is specified below.
 See [SEARCH.md](docs/SEARCH.md) for exact semantics and limitations.
 
 ## Application boundaries
 
-Phase 0 API and UI bind to loopback and have no authentication. Do not expose them
-as a public service. Future read API and authenticated measurement control plane
-are separate. Protect ingest endpoints from malformed/oversized events and workers
-from hostile protocols. Static analysis and validation do not replace these runtime
-controls; implement and test them in their respective phases.
+The API and UI bind to loopback. Phase 7 admits only literal loopback socket peers,
+local Host values and approved local HTTP Origins; the launcher ignores forwarded
+identity headers. Stored reads require the non-secret `X-NetAtlas-Read: 1` browser
+guard. No CORS, cookie credentials or public authentication is supplied. Local users
+and administrators remain trusted; do not forward this service to remote users.
+
+The HTTP layer exports declared metadata fields only. Raw blobs/source envelopes,
+protocol headers/bodies/certificates, scanner contact metadata and evidence selectors
+are excluded. JSON escapes controls/non-ASCII/HTML delimiters and responses are
+no-store/nosniff. Decoded labels/URLs remain hostile text, not sanitized HTML or safe
+links. This does not redact arbitrary sensitive information embedded in labels,
+authorize real-data ingestion, or replace Phase 9 evidence-display review.
+
+Every page rechecks source expiry and suppression. Signed cursors are short-lived,
+query/route-bound and contain no cached results; deletion cannot be reversed by
+continuation. Requests cannot initiate target traffic, DNS, downloads, enrichment,
+raw reads or writes. One in-flight read, streamed body/time bounds, 5-second DB
+statements, 10-second lock waits and 4 MiB output bounds limit local cost. Errors
+omit inputs/SQL/credentials and access logs stay disabled. Production service roles,
+authentication, TLS and broader resource controls remain Phase 12. See [API.md](docs/API.md).
 
 ## Reporting and response
 

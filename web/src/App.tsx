@@ -64,7 +64,7 @@ export function App() {
             exploration, and research.
           </p>
           <div className="phase-label">
-            <span className="dot" /> Phase 6 · Search and aggregate statistics
+            <span className="dot" /> Phase 7 · Local read API
           </div>
         </section>
 
@@ -91,8 +91,8 @@ export function App() {
               Bounded discovery and HTTP, TLS, SSH, and SMTP evidence collection
               and offline fingerprinting are available through the local CLI.
               Local storage and offline geographic enrichment support synthetic
-              fixtures. Local search and statistics are available; the
-              geographic interface will arrive in later phases.
+              fixtures. Bounded read API, search and statistics are available;
+              the geographic interface will arrive in later phases.
             </p>
             <p className="empty-note">
               This preview shows no measured data and cannot start scans.

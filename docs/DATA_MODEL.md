@@ -75,7 +75,7 @@ For limits, selection, statuses and exact accounting, see
 
 ## Configuration and manifests
 
-Configuration is **version 3**, package **0.7.0**. Old explicit version-2 files fail
+Configuration is **version 3**, package **0.8.0**. Old explicit version-2 files fail
 closed. To migrate a local file, change its version to 3, compare against
 `config/default.toml`, and explicitly choose `measurement.protocol_evidence`. It
 remains false by default; old partial files that omit a version retain connect-only
@@ -158,5 +158,13 @@ contracts. Migration 0004 adds indexes without modifying immutable documents.
 `search/service.py` returns bounded private metadata and exact counts with resolved
 query/source/version provenance. Current/history selection, actual retention versus
 as_of clocks, dataset validity, text scope, geography uncertainty and facet/count
-semantics are specified in [SEARCH.md](SEARCH.md). No HTTP wire contract is added;
-Phase 7 must define typed transport responses, cursors and access/cost policy.
+semantics are specified in [SEARCH.md](SEARCH.md). The local contract remains private;
+Phase 7 adds separate typed transport responses, cursors and access/cost policy below.
+
+## Phase 7 HTTP contract
+
+Package 0.8.0 adds HTTP schema 1 without changing stored/domain contracts or migration
+0004. `read_api/models.py` explicitly selects metadata fields; private search
+dictionaries and source envelopes are not wire models. Query-bound signed keysets,
+exact counts/uncertainty, generic errors and OpenAPI-derived TypeScript types are
+documented in [API.md](API.md). No raw evidence or geographic UI is exposed.

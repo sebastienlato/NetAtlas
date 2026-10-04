@@ -1,8 +1,8 @@
 # Phase 6 — local search and aggregate statistics
 
 Package 0.7.0 adds `netatlas.search`, query schema 1 and migration 0004. This is a
-private local Python/CLI interface over synthetic PostgreSQL data. There are no
-stored-data HTTP routes, public service, geographic UI, external index or real inputs.
+private local Python/CLI interface over synthetic PostgreSQL data. Phase 7 now adds a separate local HTTP adapter (see the final section); no
+public service, geographic UI, external index or real inputs exist.
 Collectors and domain/derivation engines do not import search. No query opens target
 connections, resolves names, reads raw blobs or initiates measurement.
 
@@ -34,8 +34,8 @@ Python callers use `search(engine, Query(...))`; the returned dictionary contain
 counts, bounded `hits`, bounded `facets`, and selected pack/dataset metadata including
 versions, validity, origins, attribution and licensing (without full rules or prefix/place
 collections). This local interface is not the eventual
-HTTP wire contract. Phase 7 must define its public-safe response models and access
-policy separately. SQLAlchemy hides parameters; no query logging is added.
+HTTP wire contract. Phase 7 defines its separate allowlisted models and local access
+policy in API.md; these private dictionaries remain separate. SQLAlchemy hides parameters; no query logging is added.
 
 ## Selection, clocks and version identity
 
@@ -144,7 +144,7 @@ A query statement times out after 5 seconds, with the existing 10-second lock wa
 Exact aggregates still scan broad result sets; row limits do not make their cost
 constant. One shared lock serializes search, ingestion, derivation, maintenance and
 backup. No concurrency/Internet-scale throughput or public rate-limit claim is made.
-The API phase must add its own transport, pagination and cost/access policy.
+The Phase 7 adapter adds separate transport, pagination and local cost/access policy.
 
 ## Indexes, replay and removal
 
@@ -187,3 +187,13 @@ new collection or changes probe budgets.
 Primary technical references: [PostgreSQL text indexes](https://www.postgresql.org/docs/18/textsearch-indexes.html),
 [JSON operators](https://www.postgresql.org/docs/18/functions-json.html),
 and [PostGIS ST_DWithin](https://postgis.net/docs/ST_DWithin.html).
+
+## Phase 7 HTTP adapter
+
+Package 0.8.0 reuses this SQL via a connection adapter under the same lock. Optional
+keyset predicates affect the page only; exact counts and facets are unchanged. An
+internal cutoff pins cursor measurement/freshness selection while a separate geo
+clock rechecks implicit-current dataset validity on every page. Ordinary Phase 6
+CLI behavior and private offset contract remain unchanged. Separate allowlisted
+HTTP models, signed cursors, typed errors, local policy and generated client are
+documented in [API.md](API.md). No raw reads, measurement or geographic UI are added.

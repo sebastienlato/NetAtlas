@@ -4,7 +4,7 @@ import json
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import Engine, text
+from sqlalchemy import Connection, Engine, text
 
 from netatlas.derivations.engine import canonical, digest
 from netatlas.derivations.offline import load_pack
@@ -16,21 +16,28 @@ TEXT_VECTOR = (
     "to_tsvector('simple', jsonb_path_query_array(d.document, '$.candidates[*].product')::text)"
 )
 VALID = """(e.document->>'dataset_state' = 'valid'
-    AND CAST(ds.document->>'valid_from' AS timestamptz) <= :at
-    AND CAST(ds.document->>'expires_at' AS timestamptz) > :at)"""
+    AND CAST(ds.document->>'valid_from' AS timestamptz) <= :geo_at
+    AND CAST(ds.document->>'expires_at' AS timestamptz) > :geo_at)"""
 GEO_STATE = f"""CASE WHEN ds.sha256 IS NULL THEN 'unknown'
-    WHEN CAST(ds.document->>'valid_from' AS timestamptz) > :at THEN 'not_yet_valid'
-    WHEN CAST(ds.document->>'expires_at' AS timestamptz) <= :at THEN 'stale'
+    WHEN CAST(ds.document->>'valid_from' AS timestamptz) > :geo_at THEN 'not_yet_valid'
+    WHEN CAST(ds.document->>'expires_at' AS timestamptz) <= :geo_at THEN 'stale'
     WHEN {VALID} AND e.point IS NOT NULL THEN 'known' ELSE 'unknown' END"""
 
 
-def compile_query(query: Query, now: datetime) -> tuple[str, dict[str, Any]]:
+def compile_query(
+    query: Query,
+    now: datetime,
+    *,
+    cutoff: datetime | None = None,
+    page_after: tuple[str, str, str] | None = None,
+) -> tuple[str, dict[str, Any]]:
     """Build parameterized SQL; only constant field/operator fragments are interpolated."""
-    at = query.as_of or now
+    at = query.as_of or cutoff or now
     if at > now:
         raise ValueError("as_of cannot be in the future")
     params: dict[str, Any] = {
         "now": now,
+        "geo_at": (query.as_of or now),
         "at": at,
         "fresh_after": at - timedelta(seconds=query.fresh_seconds),
         "pack": query.pack_sha256 or digest(canonical(load_pack())),
@@ -42,6 +49,12 @@ def compile_query(query: Query, now: datetime) -> tuple[str, dict[str, Any]]:
         "offset": query.offset,
         "facet_limit": query.facet_limit,
     }
+    page_filter = ""
+    if page_after is not None:
+        page_filter = """WHERE (finished_at,started_at,id) <
+            (CAST(:page_finish AS timestamptz),CAST(:page_start AS timestamptz),
+             CAST(:page_id AS uuid))"""
+        params.update(zip(("page_finish", "page_start", "page_id"), page_after, strict=True))
     scope = {"attempt": "true", "open": "o.outcome='open'", "evidence": "o.has_evidence"}[
         query.selection
     ]
@@ -171,7 +184,8 @@ def compile_query(query: Query, now: datetime) -> tuple[str, dict[str, Any]]:
             jsonb_array_length(candidates) AS candidate_count,
             jsonb_path_query_array(candidates,'$[*].product ? (@ != null)') AS products,
             jsonb_path_query_array(candidates,'$[*].category ? (@ != null)') AS categories
-        FROM matched ORDER BY finished_at DESC,started_at DESC,id DESC LIMIT :limit OFFSET :offset
+        FROM matched {page_filter} ORDER BY finished_at DESC,started_at DESC,id DESC
+        LIMIT :limit OFFSET :offset
     ) SELECT jsonb_build_object(
         'dataset',(SELECT document - 'places' - 'asn_prefixes' - 'city_prefixes'
             FROM enrichment_datasets WHERE sha256=:dataset),
@@ -186,17 +200,30 @@ def compile_query(query: Query, now: datetime) -> tuple[str, dict[str, Any]]:
     return sql, params
 
 
+def search_connection(
+    connection: Connection,
+    query: Query,
+    now: datetime,
+    *,
+    cutoff: datetime | None = None,
+    page_after: tuple[str, str, str] | None = None,
+    extra_hit: bool = False,
+) -> dict[str, Any]:
+    """Caller holds the pipeline lock; one SQL snapshot supplies counts and page."""
+    sql, params = compile_query(query, now, cutoff=cutoff, page_after=page_after)
+    if extra_hit:
+        params["limit"] += 1
+    connection.execute(text("SET LOCAL statement_timeout = '5s'"))
+    result: dict[str, Any] = connection.execute(text(sql), params).scalar_one()
+    result["selection"] = query.model_dump(mode="json") | {
+        "as_of": params["at"].isoformat(),
+        "pack_sha256": params["pack"],
+    }
+    result["retention_checked_at"] = now.isoformat()
+    return result
+
+
 def search(engine: Engine, query: Query) -> dict[str, Any]:
     """Return exact counts and bounded metadata in one serialized DB snapshot."""
     with transaction(engine) as connection:
-        # Capture the clock after waiting for the shared maintenance/ingest lock.
-        now = datetime.now(UTC)
-        sql, params = compile_query(query, now)
-        connection.execute(text("SET LOCAL statement_timeout = '5s'"))
-        result: dict[str, Any] = connection.execute(text(sql), params).scalar_one()
-        result["selection"] = query.model_dump(mode="json") | {
-            "as_of": params["at"].isoformat(),
-            "pack_sha256": params["pack"],
-        }
-        result["retention_checked_at"] = now.isoformat()
-        return result
+        return search_connection(connection, query, datetime.now(UTC))

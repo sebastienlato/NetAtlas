@@ -197,5 +197,13 @@ query time and actual source expiry in every mode. It selects one explicit datas
 hash and latest evaluation at/before as_of; unknown/stale mappings do not supply
 coordinates/ASN filters. Radius/box/boundary areas test representative points and
 retain provider radius metadata without claiming exact location. Migration 0004
-adds spatial and structured indexes. See [SEARCH.md](SEARCH.md); HTTP routes/UI and
+adds spatial and structured indexes. See [SEARCH.md](SEARCH.md); Phase 7 adds HTTP metadata routes; geographic UI and
 worldwide enrichment coverage remain unimplemented.
+
+## Phase 7 HTTP consumer
+
+The local read API now exposes selected source-linked approximate metadata and a
+dataset-specific place list with stable-ID continuation and attribution. It rechecks
+implicit-current dataset expiry on each page; stale/future place queries return
+metadata/state and no places. No downloader, global coverage, geometry export or
+map UI is added. See [API.md](API.md).

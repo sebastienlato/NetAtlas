@@ -7,16 +7,15 @@ commercial search database is used.
 
 ## Current delivery
 
-Phase 6 adds indexed PostgreSQL structured, product-text and geographic search,
-current/history selection, freshness filters and exact endpoint/observation/candidate
-counts with category/network facets. The bounded local CLI preserves explicit
-unknowns, source retention, dataset validity and exact pack/dataset identities.
+Phase 7 adds a bounded local read API for search, facets, places and endpoint
+history/detail, with typed OpenAPI/TypeScript contracts and signed continuation
+cursors. It preserves Phase 6 indexed search, exact counts, unknowns and retention.
 **Discovery defaults to an offline preview; durable ingestion accepts synthetic
-fixtures only.** The API and web shell display no stored data and cannot start
-scans. HTTP read routes and geographic UI remain future phases. No Internet campaign
-has run. See [search](docs/SEARCH.md), [measured synthetic workload](docs/SEARCH_BENCHMARK.md),
-[enrichment](docs/ENRICHMENT.md), [storage](docs/STORAGE.md) and
-[fingerprints](docs/FINGERPRINTS.md).
+fixtures only.** Read requests cannot initiate scans. The web shell remains an
+empty preview; geographic exploration and evidence inspection are future phases.
+No Internet campaign has run. See [API and local access policy](docs/API.md),
+[search](docs/SEARCH.md), [synthetic workload](docs/SEARCH_BENCHMARK.md),
+[enrichment](docs/ENRICHMENT.md) and [storage](docs/STORAGE.md).
 
 ## Start locally
 
@@ -45,14 +44,15 @@ make dev-web
 
 Open <http://127.0.0.1:5173>. The web development server proxies `/healthz` and
 `/api` to the API on port 8000. API documentation is at
-<http://127.0.0.1:8000/docs>. Stop either process with Ctrl-C. The API does not
-auto-reload; restart after Python changes. Vite reloads web edits automatically.
+<http://127.0.0.1:8000/docs>. Stop either process with Ctrl-C. Stored-data routes require the local database and `X-NetAtlas-Read: 1` header;
+see [API.md](docs/API.md) for the bounded JSON request contract. Health and the static
+example do not need the database. The API does not auto-reload; restart after Python changes. Vite reloads web edits automatically.
 
 | Command | Purpose |
 | --- | --- |
 | `make setup` | Install locked Python and web dependencies |
 | `make test` | Python discovery/contract/config/API tests and web component tests |
-| `make lint` | Ruff, format checks, strict mypy, Biome, strict TypeScript |
+| `make lint` | Contract drift check, Ruff, formatting, strict mypy, Biome/TypeScript |
 | `make format` | Apply Python/web lint fixes and formatting |
 | `make build` | Build Python wheel/source archive and static web assets |
 | `make smoke` | Exercise offline CLI commands |
@@ -92,7 +92,7 @@ scans. If changing its port, also update the development proxy in `web/vite.conf
 | Path | Responsibility |
 | --- | --- |
 | `src/netatlas/` | Domain/evidence models, config, discovery, collectors, derivations, spool, enrichment, storage pipeline, search, CLI/API |
-| `web/` | React/TypeScript application shell |
+| `web/` | React/TypeScript shell and OpenAPI-derived read client |
 | `tests/` | Offline Python tests; web tests live beside web code |
 | `config/default.toml` | Documented default configuration |
 | `docs/` | Data contracts, environment record, and next-phase kickoff |

@@ -15,6 +15,7 @@ test:
 	npm --prefix web test
 
 lint:
+	uv run --locked python -m netatlas.read_api.contract --check
 	uv run --locked ruff check .
 	uv run --locked ruff format --check .
 	uv run --locked mypy src tests

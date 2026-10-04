@@ -1,7 +1,7 @@
 # Architecture
 
-Status: Phase 6 adds indexed local PostgreSQL search and exact aggregate statistics
-atop immutable observations and independent derivations; later-phase direction retained. Only the
+Status: Phase 7 adds a bounded local read API and typed client over indexed PostgreSQL
+search, immutable observations and independent derivations; later-phase direction retained. Only the
 modules listed as implemented in `PROJECT_STATE.md` exist today. A monorepo and modular Python package keep early
 development small; process/network boundaries are introduced when justified.
 
@@ -25,7 +25,7 @@ Address sources -> policy/exclusions -> scheduler -> discovery workers
 The domain model has no I/O. Collectors depend on domain contracts, not the web
 framework or database. Ingestion validates untrusted worker output. Derivations
 are versioned and reproducible from evidence. Search is a disposable projection,
-not the system of record. The API never opens a target connection in response to
+not the system of record (the current indexes are directly on authoritative tables). The API never opens a target connection in response to
 a search/detail request. The future scan control plane is separate and authenticated.
 
 ## Target policy and scheduling
@@ -188,7 +188,7 @@ All downloads/outputs remain ignored. Details, provenance and commands are in
 Enrichment UPDATE triggers, cascade removal, orphan snapshot cleanup and replay
 verification extend existing retention/restore. Spatial backup restore and populated
 Phase 4 archive upgrade are tested. Phase 6 now supplies local search indexes/filters/facets;
-no stored-data HTTP service or geographic UI exists.
+Phase 7 exposes bounded metadata read routes; geographic UI remains Phase 8.
 
 React/TypeScript uses MapLibre for maps in Phase 8. Local/self-hosted tiles or a
 small offline regional basemap keep the demonstration independent of paid maps.
@@ -204,11 +204,25 @@ access control, retention rules, and an operator removal workflow before real in
 
 ## API, observability, and deployment
 
-FastAPI exposes typed versioned JSON contracts. Phase 0 has `/healthz` (process
-liveness only), `/api/v1/examples/observation`, and generated OpenAPI; later phases
-add bounded queries, cursor pagination, validation, caching, authorization, and
-query cost/rate limits. Liveness and readiness become distinct once dependencies
-exist. No permissive CORS is needed: the development proxy is same-origin.
+FastAPI retains `/healthz` (process liveness, not DB readiness), the static synthetic
+example and OpenAPI. Phase 7 adds POST search/facets/places/endpoint detail/history.
+`read_api/` owns explicit allowlisted transport models, signed query-bound keysets,
+metadata projection, error and local access/cost policy; `search/` owns SQL and
+selection semantics. The search connection adapter reuses the shared lock/snapshot.
+No source envelopes, raw blob reads, collection or enrichment execution is reachable.
+
+Cursors pin a measurement cutoff and expire after 15 minutes; actual source retention
+and implicit-current dataset validity are rechecked per page. Counts/facets cover
+the full matched set; continuation applies only to hits. There is no cross-request
+snapshot or cached result set. Exact totals can change with retained data. The
+HTTP offset is fixed at zero and traversal stops at 10000 hits.
+
+Loopback peers/Host/Origin, required read header, no forwarded trust/CORS and one
+in-flight data request provide a trusted-local synthetic demonstration boundary.
+Streaming body/time bounds, DB timeouts, escaped bounded JSON and generic errors
+limit cost/exposure. These are not public authentication, field-level sensitive-data
+sanitization or production roles. OpenAPI generates the TypeScript client contract;
+make check rejects drift. See [API.md](docs/API.md).
 
 Discovery emits redacted JSON logs with generated campaign/observation IDs,
 outcomes and completion counts. Scope/contact/raw exceptions stay out of these logs.
