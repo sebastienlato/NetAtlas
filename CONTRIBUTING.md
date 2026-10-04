@@ -8,7 +8,7 @@ actual blockers requiring credentials, permission, or a manual action. Do not us
 conversation history as a substitute for repository documentation.
 
 Run commands in the repository root. `make setup` installs locked dependencies;
-`make check` runs the complete proportional validation through Phase 5.
+`make check` runs the complete proportional validation through Phase 6.
 Use `make check-db` for the complete database acceptance suite; plain `make check`
 reports those tests skipped without `NETATLAS_TEST_DB=1`. See `docs/STORAGE.md` for
 Compose setup, standalone Compose override and isolated database/restore testing. Individual commands
@@ -20,6 +20,9 @@ Enrichment datasets/results are independent; use explicit clocks and checksum-pi
 local files, retain attribution, and see `docs/ENRICHMENT.md` for bounds and stale
 semantics. Downloads/generated subsets remain ignored. Real IP datasets are not
 measurement authorization.
+Search contracts, count/clock semantics and workload reproduction are in
+`docs/SEARCH.md` and `docs/SEARCH_BENCHMARK.md`. Keep queries out of collection and
+HTTP until their respective phase; do not test search with Internet measurements.
 Update rule/pack versions when semantics change, retain provenance, and extend the
 labeled synthetic corpus. Do not treat fixture-only signatures as real coverage.
 Changes to shared syntax/matching semantics require an engine-version review;

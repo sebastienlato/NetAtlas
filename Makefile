@@ -31,6 +31,7 @@ build:
 	npm --prefix web run build
 
 smoke:
+	uv run --locked netatlas-search --help > /dev/null
 	uv run --locked netatlas fingerprint --inspect > /dev/null
 	uv run --locked netatlas config-check
 	uv run --locked netatlas example > /dev/null

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "netatlas"
-version = "0.6.0"
+version = "0.7.0"
 description = "Independent Internet exposure measurement and geographic exploration"
 readme = "README.md"
 requires-python = ">=3.14,<3.15"
@@ -20,6 +20,7 @@ dependencies = [
 [project.scripts]
 netatlas = "netatlas.cli:main"
 netatlas-enrich = "netatlas.enrichment.cli:main"
+netatlas-search = "netatlas.search.cli:main"
 netatlas-store = "netatlas.storage.cli:main"
 
 [dependency-groups]

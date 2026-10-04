@@ -24,7 +24,7 @@ implementation validation uses synthetic/loopback fixtures.
   Internet sweep. Later real campaigns document network/institutional permissions
   and operating constraints separately from ordinary development.
 
-## Measurement enforcement through Phase 5
+## Measurement enforcement through Phase 6
 
 The immutable campaign configuration pins exclusion and opt-out CIDRs. Denials
 precede any allowlist; lab mode only accepts explicit `127.0.0.1` and `::1` literals.
@@ -136,10 +136,28 @@ Unknown/stale mappings and missing accuracy radii remain explicit. Raw observati
 network/geography fields are untouched. Dataset and result snapshots are immutable,
 private and source-linked; expiry/suppression removes dependent results and unused
 snapshots/places. Backups include spatial data and inherit the 7-day/quarantine policy.
-Downloads/offline outputs remain separate copies. Future current-query consumers must
+Downloads/offline outputs remain separate copies. Current search consumers
 check both source and dataset expiry, rather than treating historical valid results
 as fresh. No public geographic interface, real-data authorization or sanitized display
 is introduced. See [ENRICHMENT.md](docs/ENRICHMENT.md) for precise validation limits.
+
+## Search boundary (Phase 6)
+
+Local search reads only the synthetic private database. Product text indexes derived
+labels, not captures, headers, certificates, cookies or arbitrary source JSON. Hits
+are bounded metadata linked by source/derivation/dataset hashes; labels/addresses
+remain private and untrusted. This is not field-level sanitization or permission to
+enable real captures. CLI console output contains counts only; detailed output is
+escaped JSON in a new private ignored file. Independently remove those output copies.
+
+All modes check actual source expiry and persisted CIDR suppression; historical
+as_of cannot resurrect removed data. Current geography additionally checks dataset
+validity at query time. Direct indexes disappear with authoritative deletions in the
+same transaction; replay reads live rows. The existing backup/quarantine policy
+still applies. Query size, result/facet counts, offsets, text length and geographic
+areas are bounded, with a 5-second statement timeout and shared local operator lock.
+No public access control, raw-content display or HTTP search routes are introduced.
+See [SEARCH.md](docs/SEARCH.md) for exact semantics and limitations.
 
 ## Application boundaries
 

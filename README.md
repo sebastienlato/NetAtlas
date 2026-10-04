@@ -7,14 +7,16 @@ commercial search database is used.
 
 ## Current delivery
 
-Phase 5 adds versioned offline ASN/prefix and approximate-city enrichment, a place
-gazetteer, PostGIS points/boundaries and attribution metadata. Results stay separate
-from immutable observations and are replayable with their dataset snapshots.
+Phase 6 adds indexed PostgreSQL structured, product-text and geographic search,
+current/history selection, freshness filters and exact endpoint/observation/candidate
+counts with category/network facets. The bounded local CLI preserves explicit
+unknowns, source retention, dataset validity and exact pack/dataset identities.
 **Discovery defaults to an offline preview; durable ingestion accepts synthetic
-fixtures only.** The API and web shell display no measured data and cannot start
-scans. Search and geographic UI remain future phases. No Internet campaign has run.
-See [enrichment and the offline demo](docs/ENRICHMENT.md), [storage](docs/STORAGE.md)
-and [fingerprints](docs/FINGERPRINTS.md).
+fixtures only.** The API and web shell display no stored data and cannot start
+scans. HTTP read routes and geographic UI remain future phases. No Internet campaign
+has run. See [search](docs/SEARCH.md), [measured synthetic workload](docs/SEARCH_BENCHMARK.md),
+[enrichment](docs/ENRICHMENT.md), [storage](docs/STORAGE.md) and
+[fingerprints](docs/FINGERPRINTS.md).
 
 ## Start locally
 
@@ -56,6 +58,7 @@ auto-reload; restart after Python changes. Vite reloads web edits automatically.
 | `make smoke` | Exercise offline CLI commands |
 | `make check` | Lint, tests, builds, and CLI smoke; DB tests opt in |
 | `make check-db` | Start local Compose; full check including PostgreSQL/restore acceptance |
+| `uv run --locked netatlas-search --help` | Private local search with bounded JSON query/output |
 | `uv run --locked netatlas-enrich --help` | Offline dataset inspection, exact place lookup and enrichment |
 | `make db-migrate` | Apply packaged Alembic migrations to the local database |
 | `uv run --locked netatlas config-check` | Validate defaults and print configuration digest |
@@ -88,7 +91,7 @@ scans. If changing its port, also update the development proxy in `web/vite.conf
 
 | Path | Responsibility |
 | --- | --- |
-| `src/netatlas/` | Domain/evidence models, config, discovery, collectors, derivations, spool, enrichment, storage pipeline, CLI/API |
+| `src/netatlas/` | Domain/evidence models, config, discovery, collectors, derivations, spool, enrichment, storage pipeline, search, CLI/API |
 | `web/` | React/TypeScript application shell |
 | `tests/` | Offline Python tests; web tests live beside web code |
 | `config/default.toml` | Documented default configuration |
@@ -102,8 +105,10 @@ workflow; [SECURITY.md](SECURITY.md) defines measurement and data handling rules
 
 ## Planned stack and cost
 
-Python asyncio workers and FastAPI; Pydantic contracts; PostgreSQL as the implemented local source of truth, PostGIS points/boundaries implemented; PostgreSQL search first, then an optional OpenSearch
-projection; React/TypeScript/Vite and MapLibre for the eventual map. Start with
+Python asyncio workers and FastAPI; Pydantic contracts; PostgreSQL as the local
+source of truth with PostGIS points/boundaries and indexed search. OpenSearch is
+deferred by the local benchmark. React/TypeScript/Vite and MapLibre serve the eventual
+map. Start with
 bounded local fixtures, private file output and local durable ingestion. Deploy extra services only when the phase
 requires them. Dataset and infrastructure details are in the architecture.
 

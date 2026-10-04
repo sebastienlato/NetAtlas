@@ -1,7 +1,7 @@
 # Architecture
 
-Status: Phase 5 adds independent offline enrichment, dataset provenance and PostGIS
-points/boundaries atop the durable pipeline; later-phase direction retained. Only the
+Status: Phase 6 adds indexed local PostgreSQL search and exact aggregate statistics
+atop immutable observations and independent derivations; later-phase direction retained. Only the
 modules listed as implemented in `PROJECT_STATE.md` exist today. A monorepo and modular Python package keep early
 development small; process/network boundaries are introduced when justified.
 
@@ -91,7 +91,7 @@ storage, FastAPI or UI. The engine supplies admission for every connection; pass
 syntax parsers implement a small Collector interface and TLS uses an active handshake
 adapter. Raw sockets and SSLObject/MemoryBIO give explicit byte accounting and closure.
 Configuration v3 leaves protocol collection disabled until explicitly selected. API
-health and the UI describe Phase 5 but still expose no measurement controls/data.
+health and the UI describe Phase 6 but still expose no measurement controls/data.
 
 ## Evidence and derivations
 
@@ -121,7 +121,7 @@ completed-result flush, final fsync and checksum; no database adapter. Graceful
 stops finalize metadata; hard kills may leave a running manifest or partial line.
 An advisory spool lock prevents concurrent local campaigns sharing that directory.
 Phase 4 implements PostgreSQL with typed endpoint/time/outcome fields and private JSONB
-source envelopes, SQLAlchemy transactions and three packaged Alembic migrations. Raw
+source envelopes, SQLAlchemy transactions and four packaged Alembic migrations. Raw
 response/certificate bytes live in a private content-addressed filesystem; exact
 JSON-pointer references reconstruct and verify the original v1/v2 canonical source.
 Observation UUID plus source digest distinguishes replay from conflict; equal blobs
@@ -145,12 +145,21 @@ semantics. Phase 5 adds PostGIS and independent enrichment snapshots/results wit
 rewriting observations. No real-data ingestion or search cluster is enabled;
 partitions/object storage await demonstrated scale requirements.
 
-Search starts with PostgreSQL indexed structured filters, full-text search, and
-PostGIS. Add OpenSearch as an optional horizontally scalable denormalized index
-after benchmarks justify the operational cost. Index rebuilds must be possible
-from authoritative data. Current-service views track last successful observation,
-last attempt, freshness, and index lag separately. Statistics count unique endpoints
-and observations separately, state time windows, and include sampling/coverage bias.
+Phase 6 implements `search/` with bounded local JSON query/output, structured filters,
+product-label full-text search and PostGIS radius/box/boundary predicates. Queries
+select current attempt/open/evidence or retained history before applying filters.
+Exact counts distinguish endpoints, observations and candidates; facets deduplicate
+per source/endpoint and state truncation. Pack/dataset hashes and engines are explicit;
+current queries check dataset validity again. Historical as_of never bypasses actual
+source expiry or suppression. Read [SEARCH.md](docs/SEARCH.md) for precise semantics.
+
+Migration 0004 indexes authoritative rows directly: no asynchronous search projection,
+consumer, index lag or copied raw content. One query runs under the shared maintenance
+lock with a 5-second statement ceiling. Deletion updates indexes transactionally;
+REINDEX, populated upgrades and backup/restore preserve query results. The bounded
+synthetic benchmark in [SEARCH_BENCHMARK.md](docs/SEARCH_BENCHMARK.md) supports deferring
+OpenSearch. Broad exact aggregates remain proportional to the matched set; worldwide
+throughput, concurrent service operation and public API cost limits are unqualified.
 
 ## Enrichment and geographic UI
 
@@ -159,7 +168,7 @@ ASN/city longest-prefix matching and exact name gazetteer disambiguation. Bounde
 offline adapters verify file checksums and publish private results; they never fetch
 or measure. Origins preserve license/attribution, source/version/checksum and changes.
 Unknown/stale/not-yet-valid datasets yield explicit unknowns. Reproducibility includes
-an explicit evaluation clock; future current queries must separately filter expiry.
+an explicit evaluation clock; current queries separately filter dataset expiry.
 
 `storage/enrichment.py` persists canonical snapshots, source-linked independent
 results and gazetteer projections in the existing locked transaction/outbox protocol.
@@ -178,8 +187,8 @@ All downloads/outputs remain ignored. Details, provenance and commands are in
 
 Enrichment UPDATE triggers, cascade removal, orphan snapshot cleanup and replay
 verification extend existing retention/restore. Spatial backup restore and populated
-Phase 4 archive upgrade are tested. Search indexes/filters/facets belong to Phase 6;
-no geographic query service or UI is added here.
+Phase 4 archive upgrade are tested. Phase 6 now supplies local search indexes/filters/facets;
+no stored-data HTTP service or geographic UI exists.
 
 React/TypeScript uses MapLibre for maps in Phase 8. Local/self-hosted tiles or a
 small offline regional basemap keep the demonstration independent of paid maps.

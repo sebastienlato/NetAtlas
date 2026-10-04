@@ -123,3 +123,20 @@ only to produce the ignored Suva/Fiji demo subset with fictional IP mappings.
 Tests never download data and use authored synthetic fixtures. Full check-db passed
 212 Python / 3 web tests, including Phase 4 archive upgrade and Phase 5 spatial
 backup/restore. No Internet target was measured or real observation ingested.
+
+## Phase 6 verification — 2026-10-04
+
+Initial main tree was clean with the existing private origin. Python 3.14.7,
+uv 0.12.19, Node 26.8.1 and npm 11.19.0 were verified unchanged; no dependency
+was added. Docker 29.8.2 / standalone Compose 5.6.0 and Colima netatlas were already
+running. The existing PostgreSQL 18.3/PostGIS 3.6.4 container, volume and secret were
+preserved; migration 0004 adds search indexes without source/document rewrites.
+
+Full `make check-db COMPOSE=docker-compose` passed 240 Python / 3 web tests,
+lint/types, builds and offline smoke. Search adds 28 cases, including explicit
+truth counts/facets, geography/uncertainty, input/private output, retention/suppression,
+replay/reindex, old/new migrations and spatial/search backup restore. The benchmark
+used 2,048 synthetic endpoints/6,144 sources on Apple M4 Max / macOS arm64, with a
+2-CPU/2-GiB Colima VM. Final methodology/results and index size are in
+SEARCH_BENCHMARK.md; complete generated plans remain ignored. No Internet target
+measurement, real ingestion, OpenSearch, paid service or new runtime was used.

@@ -1,10 +1,11 @@
-# Durable observation pipeline — through Phase 5
+# Durable observation pipeline — through Phase 6
 
 Package 0.5.0 adds a local PostgreSQL 18.3 / SQLAlchemy / Alembic adapter, private
 content-addressed evidence, immutable history, current-service projections and a
 transactional outbox. Package 0.6.0 adds PostGIS 3.6.4, independent enrichment and
 gazetteer snapshots (migration 0003). **Only synthetic ingestion is enabled.** No
-search service, upload route, worker daemon or stored-data API/UI is implemented.
+HTTP search service, upload route, worker daemon or stored-data API/UI is implemented.
+Phase 6 adds a bounded local search adapter; see [SEARCH.md](SEARCH.md).
 The collector and offline derivation engine do not import storage.
 
 ## Local setup and checks
@@ -301,3 +302,19 @@ Older Phase 4 backups are migrated before maintenance/replay. Source deletion re
 enrichment rows; unused snapshots and their gazetteer projections are collected in
 that removal transaction. Independently downloaded datasets and offline outputs,
 including the demo subset, are outside DB retention and require separate handling.
+
+## Phase 6 search compatibility
+
+Package 0.7.0 migration 0004 adds nine indexes to the existing immutable tables;
+no source/schema rewrite or new search projection is needed. `make db-migrate`
+upgrades the existing database without changing credentials/volume. The local
+`netatlas-search` command requires no blobs and returns private bounded metadata
+with exact counts; no public display or real-data authorization is added.
+
+Queries share the pipeline advisory lock, check actual retention/suppressions and
+select exact derivation identities. Index rebuilds use REINDEX under that same lock;
+source deletion transactionally updates every index. Read [SEARCH.md](SEARCH.md)
+for clock, current/history, unknown and aggregation semantics. New tests compare
+search results across populated 0003 upgrades, Phase 5/6 archives and REINDEX; older
+0001/0002 upgrade and Phase 4 restore coverage remains. Restore applies 0004 before
+verification. Output files need separate retention handling.

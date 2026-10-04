@@ -75,7 +75,7 @@ For limits, selection, statuses and exact accounting, see
 
 ## Configuration and manifests
 
-Configuration is **version 3**, package **0.6.0**. Old explicit version-2 files fail
+Configuration is **version 3**, package **0.7.0**. Old explicit version-2 files fail
 closed. To migrate a local file, change its version to 3, compare against
 `config/default.toml`, and explicitly choose `measurement.protocol_evidence`. It
 remains false by default; old partial files that omit a version retain connect-only
@@ -150,3 +150,13 @@ shared datasets survive until unused. `verify` additionally reports `enrichments
 and validates the spatial projections as well as canonical replay. No query API
 contract is introduced. Dataset validity is evaluated at the recorded clock;
 current searches must check expiry again at their own query clock.
+
+## Phase 6 local query contract
+
+`search/models.py` defines query schema 1 independently of observation/enrichment
+contracts. Migration 0004 adds indexes without modifying immutable documents.
+`search/service.py` returns bounded private metadata and exact counts with resolved
+query/source/version provenance. Current/history selection, actual retention versus
+as_of clocks, dataset validity, text scope, geography uncertainty and facet/count
+semantics are specified in [SEARCH.md](SEARCH.md). No HTTP wire contract is added;
+Phase 7 must define typed transport responses, cursors and access/cost policy.

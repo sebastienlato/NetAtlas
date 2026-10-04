@@ -1,7 +1,7 @@
 # Architecture decision record
 
 Accepted 2026-10-04. Revisit with evidence; record consequences rather than silently
-changing the design. Phase 5 adds offline enrichment and PostGIS; search and distributed infrastructure
+changing the design. Phase 6 adds local PostgreSQL search; HTTP read routes and distributed infrastructure
 remain planned.
 
 | ID | Choice and reason | Consequences / reconsider when |
@@ -49,6 +49,12 @@ remain planned.
 | ADR-037 | Natural Earth v5.1.2 Suva/Fiji subset with source-file hashes, public-domain attribution and explicitly fictional documentation-IP/ASN mappings. DB-IP Lite/GeoNames CC BY 4.0 reviewed, not imported. | Freely usable offline demo without accounts. Downloads/generated subsets stay outside Git; no claim of real ASN or IP location accuracy and no project license grant. |
 | ADR-038 | Migration 0003 adds PostGIS, immutable normalized snapshots/results and dataset-specific gazetteer, geography points and split MultiPolygon boundaries. | Source retention cascades to results; shared snapshots survive until unused. Topology is checked in PostGIS; no search workload/index or API added. Restore upgrades older archives before maintenance/replay. |
 | ADR-039 | Build natively from the existing PostgreSQL 18.3 multi-platform digest plus PostGIS 3.6.4 package pins. | Avoid amd64-only upstream PostGIS image on arm64; preserve volume/credentials and keep extension creation in migration. OS/transitive APT dependencies are not bit-for-bit pinned; package disappearance fails the build and requires a reviewed pin update. |
+
+| ADR-040 | Package 0.7.0; local query schema 1; migration 0004 indexes immutable source/derivation tables directly. | No new asynchronous copy/consumer or projection lag; transactional deletion and REINDEX/restore preserve search. Observation/config/derivation schemas stay unchanged. |
+| ADR-041 | Select current attempt/open/evidence before filters, or all retained history; exact pack/dataset hash and engine identities. | No stale-match fallback, arbitrary version winner or cross-source enrichment. Historical as_of uses retained truth, never bypasses actual source expiry/suppression. |
+| ADR-042 | Exact endpoint/source/candidate counts, deduplicated post-filter category/ASN/prefix/country/geography facets; explicit unknowns and truncation. | Multi-valued facets need not sum to totals. Counts describe selected observations, not worldwide prevalence or physical devices. |
+| ADR-043 | Product-label GIN text search; inet/JSONB/B-tree and geography/geometry indexes; bounded private CLI, 5-second query timeout. | No raw evidence indexing/display, public sanitizer, HTTP contract or concurrent service guarantee. Geographic areas test approximate points, not uncertainty-disk overlap. |
+| ADR-044 | Defer OpenSearch after the 2,048-endpoint/6,144-observation synthetic benchmark. | Local warm-cache exact queries fit the demonstration; nine indexes use 7.93 MiB. Reconsider with measured larger/concurrent workloads or missing search semantics, not assumed global scale. |
 
 ## Primary references consulted
 

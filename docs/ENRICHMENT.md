@@ -189,3 +189,13 @@ Restore into an empty PostGIS-capable server automatically applies newer migrati
 then expiry and replay verification. Integration tests cover populated Phase 4
 archive restore to 0003 and Phase 5 spatial archive restore, plus lost acknowledgement,
 transaction rollback, tampered projection detection and shared-snapshot removal.
+
+## Phase 6 query consumer
+
+The local search adapter now enforces the required dataset validity check at current
+query time and actual source expiry in every mode. It selects one explicit dataset
+hash and latest evaluation at/before as_of; unknown/stale mappings do not supply
+coordinates/ASN filters. Radius/box/boundary areas test representative points and
+retain provider radius metadata without claiming exact location. Migration 0004
+adds spatial and structured indexes. See [SEARCH.md](SEARCH.md); HTTP routes/UI and
+worldwide enrichment coverage remain unimplemented.
