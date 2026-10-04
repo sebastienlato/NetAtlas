@@ -1,0 +1,101 @@
+# NetAtlas
+
+**Global Internet Exposure Search & Visualization** — an independent university
+thesis project that will measure Internet-facing services, preserve the evidence,
+and make it searchable by network and geography. No Shodan, Censys, or other
+commercial search database is used.
+
+## Current delivery
+
+Phase 0 provides a runnable Python package/CLI, FastAPI health and synthetic-example
+API, React web shell, validated TOML configuration, versioned observation models,
+tests, and the architecture/roadmap. **There is no scanner or real measurement data
+yet.** The globe is decorative; geographic search is a later phase.
+
+## Start locally
+
+Prerequisites: Git, Make, [uv](https://docs.astral.sh/uv/), Node **26.8.1** and npm
+**11.19.0**. Python **3.14.7** is pinned in `.python-version`; uv can provision it.
+Use `nvm install && nvm use` if nvm is available. No database, Docker, paid service,
+account credential, or API key is needed to run Phase 0. Install dependencies once:
+
+```sh
+make setup
+make check
+```
+
+Start the two components in separate terminals from the repository root:
+
+```sh
+make dev-api
+```
+
+```sh
+make dev-web
+```
+
+Open <http://127.0.0.1:5173>. The web development server proxies `/healthz` and
+`/api` to the API on port 8000. API documentation is at
+<http://127.0.0.1:8000/docs>. Stop either process with Ctrl-C. The API does not
+auto-reload; restart after Python changes. Vite reloads web edits automatically.
+
+| Command | Purpose |
+| --- | --- |
+| `make setup` | Install locked Python and web dependencies |
+| `make test` | Python contract/config/API tests and web component tests |
+| `make lint` | Ruff, format checks, strict mypy, Biome, strict TypeScript |
+| `make format` | Apply Python/web lint fixes and formatting |
+| `make build` | Build Python wheel/source archive and static web assets |
+| `make smoke` | Exercise offline CLI commands |
+| `make check` | Lint, tests, builds, and CLI smoke checks |
+| `uv run --locked netatlas config-check` | Validate defaults and print configuration digest |
+| `uv run --locked netatlas example` | Print a synthetic observation; performs no measurement |
+| `uv run --locked netatlas schema` | Print observation JSON Schema |
+| `uv run --locked netatlas --version` | Print package version |
+
+For customization, copy `config/default.toml` to ignored `config/local.toml`:
+
+```sh
+uv run --locked netatlas --config config/local.toml config-check
+NETATLAS_CONFIG=config/local.toml make dev-api
+```
+
+Precedence is built-in defaults, then the explicit `--config` file (or
+`NETATLAS_CONFIG` when no CLI file is given). Files may override a subset of fields.
+There is no implicit working-directory config load or `.env` reader. Unknown keys
+and invalid values fail validation; explicit missing files are errors. Phase 0
+rejects `measurement.enabled = true`. The API binds to loopback only. If changing
+its port, also update the development proxy in `web/vite.config.ts`.
+
+## Repository guide
+
+| Path | Responsibility |
+| --- | --- |
+| `src/netatlas/` | Domain models, configuration, CLI, API, synthetic fixture |
+| `web/` | React/TypeScript application shell |
+| `tests/` | Offline Python tests; web tests live beside web code |
+| `config/default.toml` | Documented default configuration |
+| `docs/` | Data contracts, environment record, and next-phase kickoff |
+| `.github/workflows/ci.yml` | Same quality checks on GitHub |
+
+Read [PROJECT_STATE.md](PROJECT_STATE.md) first in a fresh chat, followed by
+[ROADMAP.md](ROADMAP.md), [ARCHITECTURE.md](ARCHITECTURE.md), and
+[DECISIONS.md](DECISIONS.md). [CONTRIBUTING.md](CONTRIBUTING.md) defines the one-phase
+workflow; [SECURITY.md](SECURITY.md) defines measurement and data handling rules.
+
+## Planned stack and cost
+
+Python asyncio workers and FastAPI; Pydantic contracts; PostgreSQL/PostGIS as the
+eventual source of truth; PostgreSQL search first, then an optional OpenSearch
+projection; React/TypeScript/Vite and MapLibre for the eventual map. Start with
+bounded local fixtures and file output. Deploy extra services only when the phase
+requires them. Dataset and infrastructure details are in the architecture.
+
+Local development and a thesis demonstration require no paid services. Continuous
+worldwide collection is a separate capacity problem requiring bandwidth, compute,
+storage, suitable hosting/network policy, and operational staffing. No worldwide
+performance or coverage claim is made by this foundation.
+
+No project redistribution license has been selected in Phase 0. Keep the repository
+private pending the owner's/university's publication and licensing decision. This
+does not block implementation; dependency and dataset licenses still apply.

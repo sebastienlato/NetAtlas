@@ -1,0 +1,39 @@
+# Local configuration, credentials, and captured data
+.env
+.env.*
+!.env.example
+config/local*.toml
+data/
+captures/
+results/
+artifacts/
+*.db
+*.db-*
+*.sqlite*
+*.pcap
+*.pcapng
+*.pem
+*.key
+*.log
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage*
+htmlcov/
+# Web and builds
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+# Workstation/editor files
+.DS_Store
+.idea/
+.vscode/
+tmp/
+.cache/
