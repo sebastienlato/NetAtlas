@@ -13,7 +13,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from sqlalchemy import Engine, create_engine, text
-from sqlalchemy.exc import DBAPIError
+from sqlalchemy.exc import DBAPIError, NoResultFound
 
 from netatlas.config import Settings
 from netatlas.derivations.engine import canonical, digest
@@ -126,7 +126,7 @@ def test_duplicate_conflict_and_blob_dedup_preserve_history(pipeline: Pipeline) 
     with pytest.raises(ValueError, match="conflict"):
         pipeline.ingest(canonical(changed), synthetic=True)
     assert pipeline.load(first.observation_id) == first
-    assert pipeline.verify() == {"observations": 2, "derivations": 0}
+    assert pipeline.verify() == {"observations": 2, "derivations": 0, "enrichments": 0}
 
 
 def test_reordered_negative_and_empty_open_preserve_last_evidence(pipeline: Pipeline) -> None:
@@ -211,7 +211,7 @@ def test_v1_v2_and_independent_pack_versions_replay(pipeline: Pipeline) -> None:
     assert pipeline.derive(row.observation_id, pack) == first
     changed = type(pack).model_validate(pack.model_dump() | {"version": "1.0.1"})
     assert pipeline.derive(row.observation_id, changed) != first
-    assert pipeline.verify() == {"observations": 1, "derivations": 2}
+    assert pipeline.verify() == {"observations": 1, "derivations": 2, "enrichments": 0}
     assert scalar(pipeline, "SELECT count(*) FROM packs") == 2
     assert scalar(pipeline, "SELECT count(*) FROM outbox") == 3
 
@@ -424,7 +424,7 @@ def test_upgrade_backfill_and_idempotent_migration(empty_engine: Engine) -> None
         assert result["expires_at"] == row.finished_at + timedelta(days=30)
         assert result["document"] == row.model_dump(mode="json")
         assert (
-            connection.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0002"
+            connection.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0003"
         )
 
 
@@ -443,7 +443,11 @@ def test_backup_restore_history_blobs_derivations_outbox(
     restored_engine = create_engine(pipeline.engine.url.set(database=name), hide_parameters=True)
     try:
         store = BlobStore(tmp_path / "restored-blobs")
-        assert restore(restored_engine, store, saved) == {"observations": 1, "derivations": 1}
+        assert restore(restored_engine, store, saved) == {
+            "observations": 1,
+            "derivations": 1,
+            "enrichments": 0,
+        }
         recovered = Pipeline(restored_engine, store)
         assert recovered.load(row.observation_id) == row
         assert recovered.ingest(canonical(row), synthetic=True) == "replayed"
@@ -563,3 +567,189 @@ def test_backup_rejects_mismatched_compose_server(
         backup(pipeline.engine, pipeline.blobs, output)
     assert not output.exists()
     assert list(output.parent.iterdir()) == []
+
+
+def test_enrichment_spatial_replay_and_source_preservation(pipeline: Pipeline) -> None:
+    from test_enrichment import AT, dataset
+
+    from netatlas.storage.enrichment import store_enrichment
+
+    row = observation()
+    before = canonical(row)
+    pipeline.ingest(before, synthetic=True)
+    first = store_enrichment(pipeline, row.observation_id, dataset(), AT)
+    assert store_enrichment(pipeline, row.observation_id, dataset(), AT) == first
+    assert canonical(pipeline.load(row.observation_id)) == before
+    assert pipeline.verify() == {"observations": 1, "derivations": 0, "enrichments": 1}
+    assert scalar(pipeline, "SELECT count(*) FROM outbox") == 2
+    with pipeline.engine.connect() as connection:
+        # A dateline box contains both islands, never Greenwich. Geography distances are metres.
+        area = connection.execute(
+            text("""
+            SELECT ST_Covers(boundary, ST_SetSRID(ST_Point(179.5,-17.5),4326)),
+                   ST_Covers(boundary, ST_SetSRID(ST_Point(-179.5,-17.5),4326)),
+                   ST_Covers(boundary, ST_SetSRID(ST_Point(0,-17.5),4326)),
+                   ST_SRID(boundary) FROM places WHERE id='fixture:east'
+        """)
+        ).one()
+        assert tuple(area) == (True, True, False, 4326)
+        assert connection.execute(
+            text("""
+            SELECT ST_DWithin(a.point,b.point,120000) AND NOT ST_DWithin(a.point,b.point,1000)
+            FROM places a, places b WHERE a.id='fixture:east' AND b.id='fixture:west'
+        """)
+        ).scalar_one()
+        assert (
+            connection.execute(
+                text("SELECT count(*) FROM places WHERE name='Example Harbor'")
+            ).scalar_one()
+            == 2
+        )
+    changed = type(dataset()).model_validate(dataset().model_dump() | {"version": "1.0.1"})
+    assert store_enrichment(pipeline, row.observation_id, changed, AT) != first
+    assert pipeline.verify()["enrichments"] == 2
+
+
+def test_unknown_and_stale_enrichment_has_no_spatial_claim(pipeline: Pipeline) -> None:
+    from test_enrichment import AT, dataset
+
+    from netatlas.storage.enrichment import store_enrichment
+
+    for row, at in (
+        (observation(address="198.51.100.1"), AT),
+        (observation(), dataset().expires_at),
+    ):
+        pipeline.ingest(canonical(row), synthetic=True)
+        store_enrichment(pipeline, row.observation_id, dataset(), at)
+    assert scalar(pipeline, "SELECT count(*) FROM enrichments WHERE point IS NOT NULL") == 0
+    assert pipeline.verify()["enrichments"] == 2
+
+
+@pytest.mark.parametrize("stage", ["before_commit", "after_commit"])
+def test_enrichment_transaction_failure_and_lost_ack(pipeline: Pipeline, stage: str) -> None:
+    from test_enrichment import AT, dataset
+
+    from netatlas.storage.enrichment import store_enrichment
+
+    row = observation()
+    pipeline.ingest(canonical(row), synthetic=True)
+    failed = Pipeline(pipeline.engine, pipeline.blobs, hook=fail_at(stage))
+    with pytest.raises(RuntimeError):
+        store_enrichment(failed, row.observation_id, dataset(), AT)
+    assert scalar(pipeline, "SELECT count(*) FROM enrichments") == int(stage == "after_commit")
+    assert scalar(pipeline, "SELECT count(*) FROM enrichment_datasets") == int(
+        stage == "after_commit"
+    )
+    store_enrichment(pipeline, row.observation_id, dataset(), AT)
+    assert pipeline.verify()["enrichments"] == 1
+    assert scalar(pipeline, "SELECT count(*) FROM outbox") == 2
+
+
+@pytest.mark.parametrize("table", ["enrichment_datasets", "places", "enrichments"])
+def test_enrichment_history_updates_rejected(pipeline: Pipeline, table: str) -> None:
+    from test_enrichment import AT, dataset
+
+    from netatlas.storage.enrichment import store_enrichment
+
+    row = observation()
+    pipeline.ingest(canonical(row), synthetic=True)
+    store_enrichment(pipeline, row.observation_id, dataset(), AT)
+    with (
+        pytest.raises(DBAPIError, match="immutable history"),
+        pipeline.engine.begin() as connection,
+    ):
+        connection.execute(text(f"UPDATE {table} SET document=document"))
+
+
+def test_enrichment_retention_shared_snapshots_and_no_resurrection(pipeline: Pipeline) -> None:
+    from test_enrichment import AT, dataset
+
+    from netatlas.storage.enrichment import store_enrichment
+
+    old = observation(age=29 * 86400)
+    new = observation(address="2001:db8:1::1")
+    for row in (old, new):
+        pipeline.ingest(canonical(row), synthetic=True)
+        store_enrichment(pipeline, row.observation_id, dataset(), AT)
+    pipeline.maintain(now=datetime.now(UTC) + timedelta(days=2))
+    assert pipeline.verify()["enrichments"] == 1
+    assert scalar(pipeline, "SELECT count(*) FROM enrichment_datasets") == 1
+    pipeline.maintain(suppress="2001:db8::/32")
+    for table in ("enrichments", "enrichment_datasets", "places"):
+        assert scalar(pipeline, f"SELECT count(*) FROM {table}") == 0
+    with pytest.raises(NoResultFound):
+        store_enrichment(pipeline, new.observation_id, dataset(), AT)
+    pipeline.consume(replay=True)
+    assert scalar(pipeline, "SELECT count(*) FROM enrichments") == 0
+
+
+def test_invalid_spatial_topology_rolls_back_dataset(pipeline: Pipeline) -> None:
+    from test_enrichment import AT, dataset
+
+    from netatlas.enrichment.models import Dataset
+    from netatlas.storage.enrichment import store_enrichment
+
+    data = dataset().model_dump(mode="json")
+    # Closed but self-intersecting bow tie: PostGIS validates topology, never silently repairs it.
+    data["places"][0]["boundary"]["coordinates"] = [[[[0, 0], [1, 1], [0, 1], [1, 0], [0, 0]]]]
+    row = observation()
+    pipeline.ingest(canonical(row), synthetic=True)
+    with pytest.raises(DBAPIError):
+        store_enrichment(pipeline, row.observation_id, Dataset.model_validate(data), AT)
+    assert scalar(pipeline, "SELECT count(*) FROM enrichment_datasets") == 0
+    assert scalar(pipeline, "SELECT count(*) FROM enrichments") == 0
+
+
+def test_enrichment_projection_corruption_detected(pipeline: Pipeline) -> None:
+    from test_enrichment import AT, dataset
+
+    from netatlas.storage.enrichment import store_enrichment
+
+    row = observation()
+    pipeline.ingest(canonical(row), synthetic=True)
+    store_enrichment(pipeline, row.observation_id, dataset(), AT)
+    with pipeline.engine.begin() as connection:
+        connection.execute(text("ALTER TABLE enrichments DISABLE TRIGGER immutable_enrichment"))
+        connection.execute(text("UPDATE enrichments SET point=NULL"))
+        connection.execute(text("ALTER TABLE enrichments ENABLE TRIGGER immutable_enrichment"))
+    with pytest.raises(ValueError, match="integrity"):
+        pipeline.verify()
+
+
+@pytest.mark.parametrize("legacy_archive", [False, True])
+def test_enrichment_backup_restore_and_phase4_upgrade(
+    empty_engine: Engine, tmp_path: Path, legacy_archive: bool
+) -> None:
+    from test_enrichment import AT, dataset
+
+    from netatlas.storage.enrichment import store_enrichment
+
+    migrate(empty_engine, "0002" if legacy_archive else "head")
+    pipeline = Pipeline(empty_engine, BlobStore(tmp_path / "blobs"))
+    row = observation()
+    pipeline.ingest(canonical(row), synthetic=True)
+    pipeline.derive(row.observation_id, load_pack())
+    if not legacy_archive:
+        store_enrichment(pipeline, row.observation_id, dataset(), AT)
+    saved = tmp_path / "backups" / "spatial"
+    backup(empty_engine, pipeline.blobs, saved)
+    name = "netatlas_restore_" + uuid4().hex
+    subprocess.run([*compose_command(), "createdb", "-U", "postgres", name], check=True)
+    target = create_engine(empty_engine.url.set(database=name), hide_parameters=True)
+    try:
+        blobs = BlobStore(tmp_path / "restored")
+        assert restore(target, blobs, saved) == {
+            "observations": 1,
+            "derivations": 1,
+            "enrichments": int(not legacy_archive),
+        }
+        recovered = Pipeline(target, blobs)
+        assert recovered.load(row.observation_id) == row
+        migrate(target)
+        assert scalar(recovered, "SELECT version_num FROM alembic_version") == "0003"
+        assert scalar(recovered, "SELECT postgis_lib_version()") == "3.6.4"
+        store_enrichment(recovered, row.observation_id, dataset(), AT)
+        assert recovered.verify()["enrichments"] == 1
+    finally:
+        target.dispose()
+        subprocess.run([*compose_command(), "dropdb", "-U", "postgres", name], check=True)

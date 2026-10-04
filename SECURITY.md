@@ -24,7 +24,7 @@ implementation validation uses synthetic/loopback fixtures.
   Internet sweep. Later real campaigns document network/institutional permissions
   and operating constraints separately from ordinary development.
 
-## Measurement enforcement through Phase 4
+## Measurement enforcement through Phase 5
 
 The immutable campaign configuration pins exclusion and opt-out CIDRs. Denials
 precede any allowlist; lab mode only accepts explicit `127.0.0.1` and `::1` literals.
@@ -121,6 +121,25 @@ Restores are into separate empty databases and expire old evidence before verifi
 Archives are trusted operator SQL, never accepted from peers. OS/container admins
 retain access, and unlink is not guaranteed forensic erasure. Exact commands,
 transaction boundaries and limitations are in [STORAGE.md](docs/STORAGE.md).
+
+## Enrichment boundary (Phase 5)
+
+Offline enrichment never resolves names, downloads provenance URLs, measures targets
+or treats geographic gaps as reasons to expand probes. Bounded datasets require exact
+file checksums and explicit version/license/attribution metadata. Operators review
+rights and validity windows; hashes do not authenticate publishers. Only synthetic
+observations may enter the database. Natural Earth demo geography is public domain;
+its documentation-IP/ASN associations are clearly fictional.
+
+IP geography means approximate area context, never precise person/device location.
+Unknown/stale mappings and missing accuracy radii remain explicit. Raw observation
+network/geography fields are untouched. Dataset and result snapshots are immutable,
+private and source-linked; expiry/suppression removes dependent results and unused
+snapshots/places. Backups include spatial data and inherit the 7-day/quarantine policy.
+Downloads/offline outputs remain separate copies. Future current-query consumers must
+check both source and dataset expiry, rather than treating historical valid results
+as fresh. No public geographic interface, real-data authorization or sanitized display
+is introduced. See [ENRICHMENT.md](docs/ENRICHMENT.md) for precise validation limits.
 
 ## Application boundaries
 

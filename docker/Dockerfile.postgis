@@ -1,0 +1,9 @@
+# Keep Phase 4's major version, data directory, locale and multi-architecture base.
+FROM postgres:18.3@sha256:7e32e9833a6fb1c92c32552794cb6ed569d51b445a54907d35fc112ef39684db
+# Build natively on arm64 and amd64; upstream postgis/postgis is amd64-only.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       postgresql-18-postgis-3=3.6.4+dfsg-2.pgdg13+1 \
+       postgresql-18-postgis-3-scripts=3.6.4+dfsg-2.pgdg13+1 \
+    && rm -rf /var/lib/apt/lists/*
+# Extension creation belongs to the migration, including existing databases.

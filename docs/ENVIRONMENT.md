@@ -101,3 +101,25 @@ scheduling: the documented fallback GET occurred before the SMTP banner. That
 fixture now allows a 200 ms greeting window and a 1-second interaction ceiling,
 retaining its no-GET assertion. Production defaults, protocol logic and budgets
 are unchanged. Final delivery/CI status is identified by Git history and Actions.
+
+## Phase 5 verification — 2026-10-04
+
+Initial main tree was clean with origin present; Python/uv/Node/npm pins remain
+unchanged and no Python/web dependency was added. The existing Colima netatlas
+profile was stopped at inspection; it was restarted with the existing 2 CPU /
+2 GiB / 20 GiB configuration. A private coordinated pre-upgrade backup was saved.
+
+Compose now builds a native architecture image using the same PostgreSQL 18.3
+multi-platform digest and pinned `postgresql-18-postgis-3`/scripts packages
+`3.6.4+dfsg-2.pgdg13+1`. The upstream PostGIS image documents amd64-only support,
+so a small Dockerfile avoids emulation on this arm64 host. Only the docker/ directory
+is sent as build context. Existing volume/secret were preserved. No global Docker
+plugin installation was needed; standalone Compose used its classic builder fallback.
+The server reports PostgreSQL 18.3 and PostGIS 3.6.4, with PROJ network access off.
+Transitive APT packages are not fully pinned; see ADR-039 for reproducibility limits.
+
+Migration 0003 and spatial replay passed. Natural Earth v5.1.2 downloads were used
+only to produce the ignored Suva/Fiji demo subset with fictional IP mappings.
+Tests never download data and use authored synthetic fixtures. Full check-db passed
+212 Python / 3 web tests, including Phase 4 archive upgrade and Phase 5 spatial
+backup/restore. No Internet target was measured or real observation ingested.

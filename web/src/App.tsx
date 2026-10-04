@@ -64,7 +64,7 @@ export function App() {
             exploration, and research.
           </p>
           <div className="phase-label">
-            <span className="dot" /> Phase 4 · Durable observation pipeline
+            <span className="dot" /> Phase 5 · Network and geographic enrichment
           </div>
         </section>
 
@@ -90,8 +90,8 @@ export function App() {
             <p>
               Bounded discovery and HTTP, TLS, SSH, and SMTP evidence collection
               and offline fingerprinting are available through the local CLI.
-              Local durable storage supports synthetic fixtures. Geographic
-              search will arrive in later phases.
+              Local storage and offline geographic enrichment support synthetic
+              fixtures. Geographic search will arrive in later phases.
             </p>
             <p className="empty-note">
               This preview shows no measured data and cannot start scans.

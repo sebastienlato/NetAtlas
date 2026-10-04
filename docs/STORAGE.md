@@ -1,8 +1,9 @@
-# Phase 4 — durable observation pipeline
+# Durable observation pipeline — through Phase 5
 
 Package 0.5.0 adds a local PostgreSQL 18.3 / SQLAlchemy / Alembic adapter, private
 content-addressed evidence, immutable history, current-service projections and a
-transactional outbox. **Only synthetic ingestion is enabled.** No PostGIS, geography,
+transactional outbox. Package 0.6.0 adds PostGIS 3.6.4, independent enrichment and
+gazetteer snapshots (migration 0003). **Only synthetic ingestion is enabled.** No
 search service, upload route, worker daemon or stored-data API/UI is implemented.
 The collector and offline derivation engine do not import storage.
 
@@ -31,7 +32,11 @@ pg_restore clients. TLS tests still require the local OpenSSL executable.
 `init-local` creates mode-0600 random `data/storage/postgres-password` and private
 `connection.json` (host, port, database; no credential printed). Compose mounts the
 password as a secret, publishes only `127.0.0.1:55432`, and uses a named PostgreSQL
-volume. The image is pinned by version **and multi-platform digest** in compose.yaml.
+volume. The PostgreSQL base is pinned by version **and multi-platform digest** in
+`docker/Dockerfile.postgis`; PostGIS server/scripts packages are pinned to
+`3.6.4+dfsg-2.pgdg13+1`. Compose builds this image natively for arm64/amd64.
+`db-up` includes `--build`; APT transitive OS packages can change, so this is not a
+bit-for-bit image reproduction guarantee. Missing pinned packages fail closed.
 Connections require SCRAM passwords. The DB owner account is for trusted local
 operators/tests only; it is not an application/public role. PostgreSQL's local socket
 inside the container is trusted for operator backup commands. Container/OS admins
@@ -145,7 +150,10 @@ Alembic 0001 creates `observations`, `evidence_refs`, `blobs`, `packs`, `derivat
 `current_services`, `outbox`, `consumer_receipts`, `consumer_observations` and history
 UPDATE-rejection triggers. 0002 transactionally backfills 30-day source expiry and
 adds `suppressions` and 90-day `tombstones`. Tests upgrade a populated 0001 and verify
-original JSON plus expiry and restored immutability. Migrations are packaged with
+original JSON plus expiry and restored immutability. 0003 adds PostGIS and enrichment
+without rewriting original rows; populated Phase 4 and spatial Phase 5 restores are
+tested. See [ENRICHMENT.md](ENRICHMENT.md) for schema and offline demonstration.
+Migrations are packaged with
 the wheel. Downgrades intentionally fail; restore a tested backup instead.
 
 Endpoint key is `(canonical address, transport, port)`. Current pointers independently
@@ -249,7 +257,7 @@ uv run --locked netatlas-store restore --input data/storage/backups/drill-1 --da
 ```
 
 Restore requires a separately created **empty** `netatlas_restore_*` database, verifies
-the archive and each copied blob, uses pg_restore's single transaction, expires old
+the archive and each copied blob, uses pg_restore's single transaction, applies newer migrations, expires old
 rows, then reconstructs sources and replays derivations. It writes a separate blob
 root `data/storage/netatlas_restore_drill/blobs`; it does not switch the active DB.
 If restore is interrupted, inspect the destination and verify it; do not assume a
@@ -268,3 +276,28 @@ References: [PostgreSQL synchronous commit](https://www.postgresql.org/docs/18/r
 [pg_restore](https://www.postgresql.org/docs/18/app-pgrestore.html),
 [Alembic shared connections](https://alembic.sqlalchemy.org/en/latest/cookbook.html#sharing-a-connection-across-one-or-more-programmatic-migration-commands),
 [Compose secrets](https://docs.docker.com/reference/compose-file/secrets/).
+
+## Phase 5 upgrade and operational compatibility
+
+Before replacing a Phase 4 container, take a locked backup with its existing matching
+clients, then run `make db-up COMPOSE=docker-compose` and `make db-migrate`. Keep the
+named volume and existing secret; this remains PostgreSQL 18.3 at the same data path.
+The build context is restricted to `docker/`, so credentials/datasets are never sent
+to the image builder. A fresh database gets PostGIS through migration 0003, not an
+image init hook; existing databases follow exactly the same migration. Only the core
+PostGIS extension is enabled, not raster, topology or geocoder extensions.
+
+`netatlas-store enrich --id UUID --dataset PATH --sha256 FILE_SHA --at ISO_TIME`
+computes a separate result from an unexpired source and a checksum-pinned local
+bundle. It does not accept a supplied result. Source/dataset/result/outbox writes
+share the existing lock and commit semantics. Results use the existing source-level
+`derivation` event kind. `verify` now returns an additional `enrichments` count and
+checks all stored points/boundaries against immutable snapshots.
+
+Backups include the extension declaration and spatial tables; restore needs the
+PostGIS packages installed. Empty means no user tables, including no preinitialized
+spatial_ref_sys. The custom image deliberately adds no PostGIS template/init hook.
+Older Phase 4 backups are migrated before maintenance/replay. Source deletion removes
+enrichment rows; unused snapshots and their gazetteer projections are collected in
+that removal transaction. Independently downloaded datasets and offline outputs,
+including the demo subset, are outside DB retention and require separate handling.

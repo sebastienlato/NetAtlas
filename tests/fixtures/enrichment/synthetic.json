@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "id": "synthetic-demonstration",
+  "version": "1.0.0",
+  "valid_from": "2026-10-01T00:00:00Z",
+  "expires_at": "2026-11-01T00:00:00Z",
+  "origins": [
+    {
+      "id": "fixture",
+      "version": "1.0.0",
+      "source_url": "urn:netatlas:authored-synthetic-enrichment",
+      "source_sha256": "eedb2fac6e0ca5d1bc6cb14212086cc985f4b1e6c8665eb19f5ff80e74802c75",
+      "license": "Authored fixture; repository terms",
+      "license_url": "urn:netatlas:repository-terms",
+      "attribution": "NetAtlas authored synthetic fixture, not real routing or location data",
+      "modifications": "Fictional places, areas and documentation IP/ASN mappings; hash covers authored row JSON before model defaults."
+    }
+  ],
+  "places": [
+    {
+      "id": "fixture:east",
+      "origin": "fixture",
+      "name": "Example Harbor",
+      "country_code": "FJ",
+      "admin_code": "E",
+      "point": [
+        179.5,
+        -17.5
+      ],
+      "boundary": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                170.0,
+                -20.0
+              ],
+              [
+                180.0,
+                -20.0
+              ],
+              [
+                180.0,
+                -10.0
+              ],
+              [
+                170.0,
+                -10.0
+              ],
+              [
+                170.0,
+                -20.0
+              ]
+            ]
+          ],
+          [
+            [
+              [
+                -180.0,
+                -20.0
+              ],
+              [
+                -170.0,
+                -20.0
+              ],
+              [
+                -170.0,
+                -10.0
+              ],
+              [
+                -180.0,
+                -10.0
+              ],
+              [
+                -180.0,
+                -20.0
+              ]
+            ]
+          ]
+        ]
+      },
+      "boundary_kind": "synthetic"
+    },
+    {
+      "id": "fixture:west",
+      "origin": "fixture",
+      "name": "Example Harbor",
+      "country_code": "US",
+      "admin_code": "W",
+      "point": [
+        -179.5,
+        -17.5
+      ]
+    },
+    {
+      "id": "fixture:unknown",
+      "origin": "fixture",
+      "name": "Unknown Point",
+      "country_code": "FJ"
+    }
+  ],
+  "asn_prefixes": [
+    {
+      "prefix": "192.0.2.0/24",
+      "origin": "fixture",
+      "asns": [
+        64496
+      ]
+    },
+    {
+      "prefix": "192.0.2.0/25",
+      "origin": "fixture",
+      "asns": [
+        64497,
+        64498
+      ]
+    },
+    {
+      "prefix": "2001:db8::/32",
+      "origin": "fixture",
+      "asns": [
+        64496
+      ]
+    },
+    {
+      "prefix": "2001:db8:1::/48",
+      "origin": "fixture",
+      "asns": [
+        64499
+      ]
+    }
+  ],
+  "city_prefixes": [
+    {
+      "prefix": "192.0.2.0/24",
+      "origin": "fixture",
+      "place_id": "fixture:east"
+    },
+    {
+      "prefix": "192.0.2.128/25",
+      "origin": "fixture",
+      "place_id": "fixture:west",
+      "accuracy_radius_km": 250,
+      "radius_basis": "dataset_reported"
+    },
+    {
+      "prefix": "2001:db8::/32",
+      "origin": "fixture",
+      "place_id": "fixture:west"
+    },
+    {
+      "prefix": "2001:db8:1::/48",
+      "origin": "fixture",
+      "place_id": "fixture:east"
+    },
+    {
+      "prefix": "203.0.113.0/24",
+      "origin": "fixture",
+      "place_id": "fixture:unknown"
+    }
+  ]
+}

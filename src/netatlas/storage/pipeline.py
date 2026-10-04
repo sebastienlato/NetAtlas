@@ -18,6 +18,7 @@ from netatlas.domain import ObservationV1
 from netatlas.observation import Observation
 from netatlas.storage.blobs import BlobStore
 from netatlas.storage.database import transaction
+from netatlas.storage.enrichment import verify_enrichments
 
 ObservationRecord = ObservationV1 | Observation
 Hook = Callable[[str], None]
@@ -306,7 +307,11 @@ class Pipeline:
                 if record != expected or digest(canonical(record)) != row["id"]:
                     raise ValueError("derivation integrity failure")
                 derived += 1
-            return {"observations": count, "derivations": derived}
+            return {
+                "observations": count,
+                "derivations": derived,
+                "enrichments": verify_enrichments(self, connection),
+            }
 
     @staticmethod
     def _event(connection: Connection, subject: UUID, kind: str) -> None:
@@ -401,6 +406,12 @@ class Pipeline:
                 text("""
                 DELETE FROM packs WHERE NOT EXISTS (
                     SELECT 1 FROM derivations WHERE pack_sha256=packs.sha256)
+            """)
+            )
+            connection.execute(
+                text("""
+                DELETE FROM enrichment_datasets WHERE NOT EXISTS (
+                    SELECT 1 FROM enrichments WHERE dataset_sha256=enrichment_datasets.sha256)
             """)
             )
             connection.execute(

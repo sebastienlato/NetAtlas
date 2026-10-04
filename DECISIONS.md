@@ -1,7 +1,7 @@
 # Architecture decision record
 
 Accepted 2026-10-04. Revisit with evidence; record consequences rather than silently
-changing the design. Phase 4 adds the local durable pipeline; geography/search and distributed infrastructure
+changing the design. Phase 5 adds offline enrichment and PostGIS; search and distributed infrastructure
 remain planned.
 
 | ID | Choice and reason | Consequences / reconsider when |
@@ -43,6 +43,12 @@ remain planned.
 | ADR-032 | Transactional outbox with per-consumer receipts and an idempotent same-DB mirror. | Atomic DB effects only; replay reads live source truth. External consumers need deletion/idempotency contracts before adoption. |
 | ADR-033 | Synthetic-only ingestion; private local owner access; 30-day source expiry; whole-record redaction/removal and persistent CIDR suppression. | No public raw view or silent evidence edits. Explicit maintenance, 90-day replay tombstones, separately managed spools and 7-day backup policy; production roles/encryption remain deferred. |
 | ADR-034 | Pinned PostgreSQL 18.3 image/digest, two Alembic migrations, coordinated DB/blob backup and empty-database restore. | Real PostgreSQL integration required in CI. Local tests use generated credentials and isolated disposable databases; no real data or Internet probes. |
+
+| ADR-035 | Package 0.6.0, enrichment dataset/result schema 1 and engine enrichment-1; observation/fingerprint/config schemas unchanged. | Pure independent derivations; explicit evaluation clock and archived canonical bundle allow deterministic stale-result replay. Current queries must check dataset expiry themselves. |
+| ADR-036 | Bounded normalized ASN/city prefixes with independent IPv4/IPv6 longest-prefix matching; stable place IDs, unknown radii, multi-origin ASNs and same-name alternatives. | No network lookups, nearest-city guessing, inferred identity or exhaustive coverage. Larger import/index adapters require later evidence; invalid/equal-prefix conflicts fail closed. |
+| ADR-037 | Natural Earth v5.1.2 Suva/Fiji subset with source-file hashes, public-domain attribution and explicitly fictional documentation-IP/ASN mappings. DB-IP Lite/GeoNames CC BY 4.0 reviewed, not imported. | Freely usable offline demo without accounts. Downloads/generated subsets stay outside Git; no claim of real ASN or IP location accuracy and no project license grant. |
+| ADR-038 | Migration 0003 adds PostGIS, immutable normalized snapshots/results and dataset-specific gazetteer, geography points and split MultiPolygon boundaries. | Source retention cascades to results; shared snapshots survive until unused. Topology is checked in PostGIS; no search workload/index or API added. Restore upgrades older archives before maintenance/replay. |
+| ADR-039 | Build natively from the existing PostgreSQL 18.3 multi-platform digest plus PostGIS 3.6.4 package pins. | Avoid amd64-only upstream PostGIS image on arm64; preserve volume/credentials and keep extension creation in migration. OS/transitive APT dependencies are not bit-for-bit pinned; package disappearance fails the build and requires a reviewed pin update. |
 
 ## Primary references consulted
 

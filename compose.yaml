@@ -1,7 +1,10 @@
 name: netatlas
 services:
   db:
-    image: postgres:18.3@sha256:7e32e9833a6fb1c92c32552794cb6ed569d51b445a54907d35fc112ef39684db
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.postgis
+    image: netatlas-postgis:18.3-3.6.4
     environment:
       POSTGRES_DB: netatlas
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password

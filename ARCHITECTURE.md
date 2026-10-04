@@ -1,6 +1,7 @@
 # Architecture
 
-Status: Phase 4 implements the local durable pipeline atop offline derivations, protocol evidence and discovery; later-phase direction retained. Only the
+Status: Phase 5 adds independent offline enrichment, dataset provenance and PostGIS
+points/boundaries atop the durable pipeline; later-phase direction retained. Only the
 modules listed as implemented in `PROJECT_STATE.md` exist today. A monorepo and modular Python package keep early
 development small; process/network boundaries are introduced when justified.
 
@@ -90,7 +91,7 @@ storage, FastAPI or UI. The engine supplies admission for every connection; pass
 syntax parsers implement a small Collector interface and TLS uses an active handshake
 adapter. Raw sockets and SSLObject/MemoryBIO give explicit byte accounting and closure.
 Configuration v3 leaves protocol collection disabled until explicitly selected. API
-health and the UI describe Phase 4 but still expose no measurement controls/data.
+health and the UI describe Phase 5 but still expose no measurement controls/data.
 
 ## Evidence and derivations
 
@@ -120,7 +121,7 @@ completed-result flush, final fsync and checksum; no database adapter. Graceful
 stops finalize metadata; hard kills may leave a running manifest or partial line.
 An advisory spool lock prevents concurrent local campaigns sharing that directory.
 Phase 4 implements PostgreSQL with typed endpoint/time/outcome fields and private JSONB
-source envelopes, SQLAlchemy transactions and two packaged Alembic migrations. Raw
+source envelopes, SQLAlchemy transactions and three packaged Alembic migrations. Raw
 response/certificate bytes live in a private content-addressed filesystem; exact
 JSON-pointer references reconstruct and verify the original v1/v2 canonical source.
 Observation UUID plus source digest distinguishes replay from conflict; equal blobs
@@ -140,8 +141,9 @@ removal, persisted CIDR suppression and 90-day tombstone/event metadata are impl
 Expiry/cleanup are explicit operator commands, not a scheduler. Compose and coordinated
 PostgreSQL/blob backup/restore drills use a pinned PostgreSQL image. See
 [STORAGE.md](docs/STORAGE.md) for exact contracts, access limits and restore/removal
-semantics. No real-data ingestion, PostGIS or search cluster is enabled. Add PostGIS
-in Phase 5; partitions/object storage await demonstrated scale requirements.
+semantics. Phase 5 adds PostGIS and independent enrichment snapshots/results without
+rewriting observations. No real-data ingestion or search cluster is enabled;
+partitions/object storage await demonstrated scale requirements.
 
 Search starts with PostgreSQL indexed structured filters, full-text search, and
 PostGIS. Add OpenSearch as an optional horizontally scalable denormalized index
@@ -152,19 +154,32 @@ and observations separately, state time windows, and include sampling/coverage b
 
 ## Enrichment and geographic UI
 
-Prefer freely downloadable, license-compatible datasets. Candidate sources include
-RIPE RIS/Route Views for routing/ASN and DB-IP Lite for approximate city placement;
-evaluate exact release/license, freshness, checksum, and attribution in Phase 5.
-GeoLite2 is optional because its acquisition requires registration/license acceptance.
-Do not bake a dataset whose terms have not been checked into the repository.
-Support unknown locations, stale mappings, missing city data, and accuracy radius.
-An IP location does not locate the person, device, or street address with certainty.
+Phase 5 implements `enrichment/`: I/O-free dataset/result contracts, pure independent
+ASN/city longest-prefix matching and exact name gazetteer disambiguation. Bounded
+offline adapters verify file checksums and publish private results; they never fetch
+or measure. Origins preserve license/attribution, source/version/checksum and changes.
+Unknown/stale/not-yet-valid datasets yield explicit unknowns. Reproducibility includes
+an explicit evaluation clock; future current queries must separately filter expiry.
 
-Use a freely usable offline place gazetteer for country/region/city lookup, with
-disambiguation for same-name places, administrative codes, and bounding areas.
-Coordinates use WGS84. Radius queries use meter-aware PostGIS geography operations;
-bounding boxes must handle the antimeridian. City/country membership should use
-dataset identifiers or boundaries, not string equality or rounded coordinates alone.
+`storage/enrichment.py` persists canonical snapshots, source-linked independent
+results and gazetteer projections in the existing locked transaction/outbox protocol.
+Migration 0003 creates PostGIS, WGS84 geography points and geometry MultiPolygons.
+Points support metre-aware distances; boundaries require antimeridian splitting and
+valid topology. Optional provider radii remain unknown when absent. Place IDs, not
+name equality or nearest centroids, supply associations. Geographic context never
+locates a person/device precisely or establishes country membership of a device.
+
+A pinned Natural Earth 5.1.2 subset (Suva/Fiji) supplies real public-domain places and
+generalized boundary data in the offline demo. Its IP/ASN associations are fictional
+documentation fixtures. DB-IP Lite/GeoNames license terms were reviewed, but their
+datasets were not imported; global routing/geo import/coverage remains unimplemented.
+All downloads/outputs remain ignored. Details, provenance and commands are in
+[ENRICHMENT.md](docs/ENRICHMENT.md).
+
+Enrichment UPDATE triggers, cascade removal, orphan snapshot cleanup and replay
+verification extend existing retention/restore. Spatial backup restore and populated
+Phase 4 archive upgrade are tested. Search indexes/filters/facets belong to Phase 6;
+no geographic query service or UI is added here.
 
 React/TypeScript uses MapLibre for maps in Phase 8. Local/self-hosted tiles or a
 small offline regional basemap keep the demonstration independent of paid maps.
@@ -199,8 +214,8 @@ configuration digest payload or logs. Save policy/dataset versions and seed alon
 with configuration. Tests use synthetic data, deterministic clocks, loopback
 fixtures, controlled load, and documented benchmark workloads.
 
-The API/web shell runs as two local processes. Phase 4 supplies Compose for the local
-PostgreSQL database. The deployment path is containers, a same-origin TLS reverse
+The API/web shell runs as two local processes. Phase 5 extends Compose with a native arm64/amd64 PostGIS build on the pinned
+PostgreSQL 18.3 base and pinned PostGIS packages. The deployment path is containers, a same-origin TLS reverse
 proxy, internal data services, and separated worker/control-plane networks. Worker
 authentication, lease heartbeats, retry semantics, and backpressure precede multi-node
 operation. Reproducibility includes runtime pins, dependency locks, CI, migrations,

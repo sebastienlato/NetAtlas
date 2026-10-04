@@ -11,7 +11,7 @@ from pathlib import Path
 from sqlalchemy import Connection, Engine, text
 
 from netatlas.storage.blobs import BlobStore
-from netatlas.storage.database import private_directory, sync_directory, transaction
+from netatlas.storage.database import migrate, private_directory, sync_directory, transaction
 from netatlas.storage.pipeline import Pipeline
 
 
@@ -144,6 +144,7 @@ def restore(engine: Engine, blobs: BlobStore, source: Path) -> dict[str, int]:
                 check=True,
                 timeout=120,
             )
+    migrate(engine)  # Older Phase 4 archives gain spatial tables without rewriting sources.
     pipeline = Pipeline(engine, blobs)
     # Expired evidence is not made readable on restoration. Reapply any newer opt-outs
     # from the operator's separate suppression register before other use.

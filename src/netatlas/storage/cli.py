@@ -4,6 +4,7 @@ import argparse
 import json
 import re
 import subprocess
+from datetime import datetime
 from pathlib import Path
 from uuid import UUID
 
@@ -11,9 +12,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 
 from netatlas.derivations.offline import load_pack, read_observation, rows
+from netatlas.enrichment.offline import load_dataset
 from netatlas.storage.backup import backup, restore
 from netatlas.storage.blobs import BlobStore
 from netatlas.storage.database import initialize_local, local_engine, migrate
+from netatlas.storage.enrichment import store_enrichment
 from netatlas.storage.pipeline import Pipeline
 
 
@@ -29,6 +32,11 @@ def main() -> None:
     derive = sub.add_parser("derive")
     derive.add_argument("--id", type=UUID, required=True)
     derive.add_argument("--pack", type=Path)
+    enrichment = sub.add_parser("enrich")
+    enrichment.add_argument("--id", type=UUID, required=True)
+    enrichment.add_argument("--dataset", type=Path, required=True)
+    enrichment.add_argument("--sha256", required=True)
+    enrichment.add_argument("--at", type=datetime.fromisoformat, required=True)
     consume = sub.add_parser("consume")
     consume.add_argument("--consumer", default="local-mirror")
     consume.add_argument("--limit", type=int, default=100)
@@ -105,6 +113,12 @@ def main() -> None:
                     result = {"inserted": inserted, "replayed": replayed}
                 case "derive":
                     result = {"derivation": pipeline.derive(args.id, load_pack(args.pack))}
+                case "enrich":
+                    result = {
+                        "enrichment": store_enrichment(
+                            pipeline, args.id, load_dataset(args.dataset, args.sha256), args.at
+                        )
+                    }
                 case "consume":
                     result = pipeline.consume(
                         args.consumer, limit=args.limit, replay=args.replay, after=args.after

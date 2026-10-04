@@ -48,7 +48,7 @@ db-init:
 	uv run --locked netatlas-store init-local
 
 db-up: db-init
-	$(COMPOSE) up -d --wait
+	$(COMPOSE) up -d --build --wait
 
 db-down:
 	$(COMPOSE) stop

@@ -26,8 +26,9 @@ is supplied. Local Python imports must use this new module for the current model
 Targets retain canonical IP, campaign ID and source. Endpoint key is address,
 transport and port; it is not device or ownership identity. Only `open` observations
 may carry service/response evidence. Dates are aware and ordered; target and endpoint
-must agree, and optional network prefixes must contain the endpoint. No network or
-geographic enrichment is emitted by this phase. Existing embedded fingerprint/classification
+must agree, and optional network prefixes must contain the endpoint. Collectors
+emit no derived network/geographic fields; Phase 5 results are separate records.
+Existing embedded fingerprint/classification
 shapes remain legacy foundation placeholders. Phase 3 derives separate records;
 it neither consumes those placeholders as evidence nor fills them into observations.
 
@@ -74,7 +75,7 @@ For limits, selection, statuses and exact accounting, see
 
 ## Configuration and manifests
 
-Configuration is **version 3**, package **0.5.0**. Old explicit version-2 files fail
+Configuration is **version 3**, package **0.6.0**. Old explicit version-2 files fail
 closed. To migrate a local file, change its version to 3, compare against
 `config/default.toml`, and explicitly choose `measurement.protocol_evidence`. It
 remains false by default; old partial files that omit a version retain connect-only
@@ -125,10 +126,27 @@ for the exact rule language, confidence semantics, taxonomy and I/O limits.
 
 ## Durable adapter (Phase 4)
 
-Migration head 0002 stores original v1/v2 canonical digests and private envelope
+Migrations 0001/0002 store original v1/v2 canonical digests and private envelope
 JSONB with base64 values replaced by content hashes. `evidence_refs` preserves exact
 pointers; reconstruction reinstates verified blob bytes and checks the original
 source digest. This is an internal representation, not a wire-version change.
 Independent pack/derivation JSONB and source/pack/engine/taxonomy keys preserve replay.
 Typed endpoint/time/outcome columns support separate latest attempt/open/evidence
 pointers. Ingestion, outbox, expiry and deletion semantics are defined in STORAGE.
+
+## Phase 5 enrichment contracts
+
+`enrichment/models.py` defines dataset/result schema **1**, engine **enrichment-1**.
+Results link source UUID/schema/hash, dataset ID/version/canonical hash, explicit
+UTC evaluation time, source attribution/license/version/checksum, ASN/city prefix
+matches and stable place IDs. Unknown/stale/missing-radius semantics are explicit.
+Optional observation network/geography fields remain legacy placeholders and are
+neither used as enrichment evidence nor rewritten. See [ENRICHMENT.md](ENRICHMENT.md).
+
+Migration **0003** persists independent bundle snapshots, gazetteer places and
+source-linked results. WGS84 geography points support metre distances; split geometry
+MultiPolygons preserve approximate boundaries. Removal cascades with observations;
+shared datasets survive until unused. `verify` additionally reports `enrichments`
+and validates the spatial projections as well as canonical replay. No query API
+contract is introduced. Dataset validity is evaluated at the recorded clock;
+current searches must check expiry again at their own query clock.
