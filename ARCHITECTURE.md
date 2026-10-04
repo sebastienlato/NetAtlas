@@ -1,6 +1,6 @@
 # Architecture
 
-Status: Phase 3 implemented offline fingerprints/categories atop protocol evidence and discovery; later-phase direction retained. Only the
+Status: Phase 4 implements the local durable pipeline atop offline derivations, protocol evidence and discovery; later-phase direction retained. Only the
 modules listed as implemented in `PROJECT_STATE.md` exist today. A monorepo and modular Python package keep early
 development small; process/network boundaries are introduced when justified.
 
@@ -90,7 +90,7 @@ storage, FastAPI or UI. The engine supplies admission for every connection; pass
 syntax parsers implement a small Collector interface and TLS uses an active handshake
 adapter. Raw sockets and SSLObject/MemoryBIO give explicit byte accounting and closure.
 Configuration v3 leaves protocol collection disabled until explicitly selected. API
-health and the UI describe Phase 3 but still expose no measurement controls/data.
+health and the UI describe Phase 4 but still expose no measurement controls/data.
 
 ## Evidence and derivations
 
@@ -99,7 +99,7 @@ compatibility reader. Append immutable
 observations; never overwrite evidence with a later guess. Use an observation UUID
 for ingestion idempotency and endpoint identity `(address, transport, port)` for
 grouping. TLS/virtual hosts add service dimensions later. Deduplicate bounded raw
-content by SHA-256 in the persistence phase; preserve all timestamps and references
+content by SHA-256 in the storage adapter; preserve all timestamps and references
 even when bytes are shared. Negative results do not erase past positive evidence.
 
 Phase 3 implements `derivations/`: bounded JSON rule packs, a pure engine and an
@@ -119,18 +119,29 @@ Phases 1–3: bounded private JSONL spool under ignored `data/`, atomic campaign
 completed-result flush, final fsync and checksum; no database adapter. Graceful
 stops finalize metadata; hard kills may leave a running manifest or partial line.
 An advisory spool lock prevents concurrent local campaigns sharing that directory.
-Phase 4: PostgreSQL is authoritative, with typed endpoint/network fields, JSONB
-for protocol-specific attributes, migrations via Alembic/SQLAlchemy, and immutable
-observation rows. Add PostGIS for geographic points/radius/bounding-box queries.
-Keep raw blobs on local content-addressed disk for a small deployment and behind
-an object-storage interface for scale. Use time-based partitions, retention, index
-size monitoring, and explicit backup/restore procedures as volume justifies them.
+Phase 4 implements PostgreSQL with typed endpoint/time/outcome fields and private JSONB
+source envelopes, SQLAlchemy transactions and two packaged Alembic migrations. Raw
+response/certificate bytes live in a private content-addressed filesystem; exact
+JSON-pointer references reconstruct and verify the original v1/v2 canonical source.
+Observation UUID plus source digest distinguishes replay from conflict; equal blobs
+never collapse distinct measurements. History UPDATE triggers reject silent changes.
+Independent pack snapshots and deterministic derivations remain replayable.
 
-Ingestion uses validation, schema version checks, idempotent observation IDs,
-transactions, dead-letter/quarantine handling, and acknowledgments only after
-durable commit. A transactional outbox makes index/derivation delivery recoverable.
-Start with in-process work and database job leases. Introduce a broker only after
-measured backlog/coordination requires it; do not deploy Kafka or Kubernetes early.
+The local pipeline serializes writes, reads, GC and backup under one DB advisory
+lock. Fsynced blobs precede a synchronous DB commit; acknowledgements follow commit.
+Rollback may leave orphans; locked cleanup removes only unreferenced bytes. Projection
+and outbox changes share the observation transaction. Current pointers independently
+track latest attempt, open connection and nonempty evidence by finish/start/UUID.
+A DB consumer commits its idempotent effect and receipt together; external delivery,
+distributed leases and a broker remain future work.
+
+Synthetic-only ingestion, private OS/loopback access, 30-day source expiry, whole-record
+removal, persisted CIDR suppression and 90-day tombstone/event metadata are implemented.
+Expiry/cleanup are explicit operator commands, not a scheduler. Compose and coordinated
+PostgreSQL/blob backup/restore drills use a pinned PostgreSQL image. See
+[STORAGE.md](docs/STORAGE.md) for exact contracts, access limits and restore/removal
+semantics. No real-data ingestion, PostGIS or search cluster is enabled. Add PostGIS
+in Phase 5; partitions/object storage await demonstrated scale requirements.
 
 Search starts with PostgreSQL indexed structured filters, full-text search, and
 PostGIS. Add OpenSearch as an optional horizontally scalable denormalized index
@@ -188,13 +199,13 @@ configuration digest payload or logs. Save policy/dataset versions and seed alon
 with configuration. Tests use synthetic data, deterministic clocks, loopback
 fixtures, controlled load, and documented benchmark workloads.
 
-Local Phase 0 runs as two processes. Phase 4 introduces Compose for local database
-services when needed. The deployment path is containers, a same-origin TLS reverse
+The API/web shell runs as two local processes. Phase 4 supplies Compose for the local
+PostgreSQL database. The deployment path is containers, a same-origin TLS reverse
 proxy, internal data services, and separated worker/control-plane networks. Worker
 authentication, lease heartbeats, retry semantics, and backpressure precede multi-node
 operation. Reproducibility includes runtime pins, dependency locks, CI, migrations,
-and fixture datasets. Deployment and restore tests are future acceptance criteria,
-not claims about this skeleton.
+and fixture datasets. A local synthetic database/blob restore drill is tested; production deployment,
+failover and distributed recovery remain future acceptance criteria.
 
 ## Capacity and thesis validity
 

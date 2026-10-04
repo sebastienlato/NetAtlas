@@ -74,7 +74,7 @@ For limits, selection, statuses and exact accounting, see
 
 ## Configuration and manifests
 
-Configuration is **version 3**, package **0.4.0**. Old explicit version-2 files fail
+Configuration is **version 3**, package **0.5.0**. Old explicit version-2 files fail
 closed. To migrate a local file, change its version to 3, compare against
 `config/default.toml`, and explicitly choose `measurement.protocol_evidence`. It
 remains false by default; old partial files that omit a version retain connect-only
@@ -99,10 +99,9 @@ Manifest status remains `running`, `completed`, `cancelled`, `deadline_exceeded`
 or `failed`. Graceful stops flush/fsync completed rows, retain the checksum and count
 interrupted endpoints as incomplete; partial exchanges from cancelled endpoints are
 not emitted as complete observations. Hard kill/disk failure/power loss can still
-leave a running manifest or partial last row. No durable ingestion, recovery,
-content-addressed storage or database exists yet. Future Phase 4 defines these
-boundaries and preserves observation/campaign identities rather than deduplicating
-measurements solely by raw content hash.
+leave a running manifest or partial last row. Spool writes themselves do not provide database durability. Phase 4 adds a separate
+synthetic-only ingest adapter; it preserves observation/campaign identities instead
+of deduplicating measurements solely by raw content hash. See [STORAGE.md](STORAGE.md).
 
 ## Phase 3 derivation contracts
 
@@ -123,3 +122,13 @@ content changes its digest even if an author forgets a version bump. Unknown and
 multiple product/category values are explicit. `--validate` verifies output by full
 recomputation, not merely schema validation. See [FINGERPRINTS.md](FINGERPRINTS.md)
 for the exact rule language, confidence semantics, taxonomy and I/O limits.
+
+## Durable adapter (Phase 4)
+
+Migration head 0002 stores original v1/v2 canonical digests and private envelope
+JSONB with base64 values replaced by content hashes. `evidence_refs` preserves exact
+pointers; reconstruction reinstates verified blob bytes and checks the original
+source digest. This is an internal representation, not a wire-version change.
+Independent pack/derivation JSONB and source/pack/engine/taxonomy keys preserve replay.
+Typed endpoint/time/outcome columns support separate latest attempt/open/evidence
+pointers. Ingestion, outbox, expiry and deletion semantics are defined in STORAGE.

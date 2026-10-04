@@ -23,4 +23,6 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: make setup
-      - run: make check
+      - run: make check-db
+      - if: always()
+        run: docker compose down --volumes

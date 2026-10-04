@@ -38,3 +38,23 @@ smoke:
 	uv run --locked netatlas discover --target 192.0.2.0/30 --port 80 > /dev/null
 
 check: lint test build smoke
+
+# Database acceptance is explicit locally and mandatory in CI.
+COMPOSE ?= docker compose
+
+.PHONY: db-init db-up db-down db-migrate check-db
+
+db-init:
+	uv run --locked netatlas-store init-local
+
+db-up: db-init
+	$(COMPOSE) up -d --wait
+
+db-down:
+	$(COMPOSE) stop
+
+db-migrate:
+	uv run --locked netatlas-store migrate
+
+check-db: db-up
+	NETATLAS_TEST_DB=1 $(MAKE) check

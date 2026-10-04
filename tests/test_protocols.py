@@ -86,22 +86,41 @@ async def fixture(
         tasks.add(task)
         task.add_done_callback(tasks.discard)
 
-    server = await asyncio.start_server(connected, host, 0)
+    # Own the accept task and its transports explicitly. Server.close() races
+    # asyncio's untracked transport-creation callbacks during very short TLS peers.
+    # A fixed number of sleep(0) calls cannot guarantee those callbacks have drained.
+    loop = asyncio.get_running_loop()
+    transports: set[asyncio.Transport] = set()
+    listener = socket.socket(socket.AF_INET6 if ":" in host else socket.AF_INET)
+    listener.setblocking(False)
+    listener.bind((host, 0))
+    listener.listen()
+
+    async def accept() -> None:
+        while True:
+            accepted, _ = await loop.sock_accept(listener)
+            try:
+                transport, _ = await loop.connect_accepted_socket(
+                    lambda: asyncio.StreamReaderProtocol(asyncio.StreamReader(), connected),
+                    accepted,
+                )
+            except BaseException:
+                accepted.close()
+                raise
+            transports.add(transport)
+
+    accept_task = asyncio.create_task(accept())
     try:
-        yield Endpoint(address=ip_address(host), port=server.sockets[0].getsockname()[1])
+        yield Endpoint(address=ip_address(host), port=listener.getsockname()[1])
     finally:
-        # Drain ready accept callbacks, then their transport-creation tasks before
-        # closing the listener. Python 3.14's Server._attach rejects late transports
-        # after close(), which can strand a socket during immediate client shutdown.
-        await asyncio.sleep(0)
-        await asyncio.sleep(0)
-        server.close()
-        # Include peers still inside TLS setup or before wrapped() starts.
-        server.abort_clients()
+        accept_task.cancel()
+        await asyncio.gather(accept_task, return_exceptions=True)
+        listener.close()
+        for transport in transports:
+            transport.abort()
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
-        await server.wait_closed()
     assert not errors
 
 

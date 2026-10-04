@@ -1,0 +1,25 @@
+name: netatlas
+services:
+  db:
+    image: postgres:18.3@sha256:7e32e9833a6fb1c92c32552794cb6ed569d51b445a54907d35fc112ef39684db
+    environment:
+      POSTGRES_DB: netatlas
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    secrets:
+      - postgres-password
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d netatlas"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: "no"
+secrets:
+  postgres-password:
+    file: ./data/storage/postgres-password
+volumes:
+  postgres-data:

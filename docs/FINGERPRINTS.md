@@ -208,3 +208,12 @@ headers, untrusted rules/JSON/file types/resource limits, no networking, private
 atomic output, no-clobber and redacted CLI failures. See PROJECT_STATE for actual
 check counts and final validation. No real observations or generated outputs are
 committed, and no Internet measurement was performed.
+
+## Durable replay (Phase 4)
+
+The Phase 3 adapter above remains unchanged. Package 0.5.0 additionally provides
+`netatlas-store derive --id UUID [--pack PATH]` for already-ingested synthetic sources.
+It stores a canonical pack snapshot and independently versioned result in one DB
+transaction, then publishes an outbox event. `netatlas-store verify` reconstructs
+sources and recomputes all retained derivations. No fingerprint is embedded back
+into the observation. See [STORAGE.md](STORAGE.md) for durability and retention.

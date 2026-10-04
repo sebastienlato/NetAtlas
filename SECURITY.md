@@ -24,7 +24,7 @@ implementation validation uses synthetic/loopback fixtures.
   Internet sweep. Later real campaigns document network/institutional permissions
   and operating constraints separately from ordinary development.
 
-## Enforcement through Phase 3
+## Measurement enforcement through Phase 4
 
 The immutable campaign configuration pins exclusion and opt-out CIDRs. Denials
 precede any allowlist; lab mode only accepts explicit `127.0.0.1` and `::1` literals.
@@ -52,7 +52,7 @@ Certificates and response bytes are opaque, bounded base64; metadata remains hos
 No credentials or session tokens are used as inputs. Received Set-Cookie or secret
 content is not reused, logged, rendered or committed. Raw bytes may still be sensitive
 inside the private ignored spool, which is why real ingestion/access/retention controls
-remain a Phase 4 prerequisite. Test keys are generated ephemerally, not committed.
+are defined by the Phase 4 synthetic-only storage boundary. Test keys are generated ephemerally, not committed.
 
 ## Evidence and privacy
 
@@ -62,8 +62,9 @@ enumerate private data, fetch camera streams, or crawl files. Never execute capt
 content or render active HTML; use escaped text/hex and explicit safe downloads.
 Do not include raw response content, credentials, or full query strings in logs.
 
-Phase 4 must establish access controls, minimization/redaction, retention expiry,
-and opt-out/removal semantics before ingesting real captures. Operator opt-outs
+Phase 4 implements the local synthetic-only storage boundary described below.
+Real captures remain prohibited; a future explicit authorization and hardened
+access/redaction deployment are required to enable them. Operator opt-outs
 must stop new work and define how stored evidence/search projections are removed
 or restricted. Store raw sensitive evidence separately from public metadata.
 Keep production credentials outside effective-config hashes and committed files.
@@ -81,10 +82,45 @@ Derived output copies labels and source/evidence hashes/selectors, not raw paylo
 or endpoint addresses. This minimizes duplication, not sensitivity: linkage hashes
 and rule labels still belong in private ignored storage. Files are mode 0600,
 published atomically without overwrite, and diagnostics omit validation details.
-No real-world ingestion, redaction/access controls, retention enforcement, signatures
-or adversarial-local-user filesystem guarantees are supplied by this phase.
+The standalone offline adapter has no retention enforcement or public redaction
+interface. Phase 4 storage adds the separate controls below, without automatically
+managing old spools/offline outputs. No signatures or adversarial-local-user
+filesystem guarantees are supplied.
 Keep original evidence private for replay; do not equate matching banners with
 trusted identity, calibrated probability, physical hardware or vulnerabilities.
+
+## Durable storage boundary (Phase 4)
+
+`netatlas-store ingest` requires `--synthetic` and only accepts documentation-address
+or literal loopback fixtures, with bounded files and explicit v1/v2 validation.
+The adapter is local only; no upload route or real-data override exists. An address
+allowlist is not proof that content is synthetic; operators must author the fixtures.
+
+Raw responses/certificates are private mode-0600 blobs under mode-0700 directories.
+Private JSONB envelopes can also contain sensitive peer metadata. Database access
+uses a generated local SCRAM password and loopback-only published port. Credentials
+stay under ignored data/, outside configuration hashes and logs. The local DB owner
+is trusted; separate application roles, encryption and remote access are not provided.
+CLI output is limited to counts, UUID/digests and generic errors, never captured bytes.
+No field-level sanitizer is claimed: sensitive content is removed as an entire
+observation with its derivations/references/projections; retained history stays exact.
+
+Sources expire 30 days after measurement, including late arrivals. Reads reject
+expired sources; explicit `expire`/`collect` commands physically remove rows and
+unreferenced blobs. Run expiry at least daily and at session start; no daemon exists.
+Persistent CIDR suppression immediately removes matching history and blocks new
+input/replay. Minimal replay tombstones and removed-source outbox metadata last
+90 days; suppression entries remain until an independently reviewed policy change.
+Local consumer projections are deleted atomically and cannot resurrect via old events.
+
+A DB suppression does not update scanner configuration or erase other files. Stop
+campaigns, update `opt_out_cidrs`, remove matching spools/derived files, and handle
+backup copies. Backups are private with a 7-day maximum policy; removal requests
+require disposal or quarantine and current suppression reapplication before reuse.
+Restores are into separate empty databases and expire old evidence before verification.
+Archives are trusted operator SQL, never accepted from peers. OS/container admins
+retain access, and unlink is not guaranteed forensic erasure. Exact commands,
+transaction boundaries and limitations are in [STORAGE.md](docs/STORAGE.md).
 
 ## Application boundaries
 

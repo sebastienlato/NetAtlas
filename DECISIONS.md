@@ -1,8 +1,8 @@
 # Architecture decision record
 
 Accepted 2026-10-04. Revisit with evidence; record consequences rather than silently
-changing the design. Phase 3 adds offline deterministic derivations; planned
-infrastructure remains absent.
+changing the design. Phase 4 adds the local durable pipeline; geography/search and distributed infrastructure
+remain planned.
 
 | ID | Choice and reason | Consequences / reconsider when |
 | --- | --- | --- |
@@ -10,7 +10,7 @@ infrastructure remains absent.
 | ADR-002 | Python 3.14, asyncio, FastAPI, Pydantic v2; available local runtime, structured asynchronous I/O, typed contracts and schema generation. | Python TCP connect discovery is the initial correctness baseline. Benchmark before considering native/ZMap adapters; no global-scale throughput claim. |
 | ADR-003 | uv and `uv.lock`; npm and `package-lock.json`; exact local runtime pins. | Setup uses locked installs. Node 26.8.1 is the verified local version, not an assertion of LTS status. Refresh pins deliberately; CI uses the same versions. |
 | ADR-004 | React + TypeScript + Vite; Biome, Vitest, Testing Library. | Small typed shell now; MapLibre, map assets and generated API client arrive with the real UI. No mandatory commercial map SDK. |
-| ADR-005 | PostgreSQL/PostGIS authoritative storage; JSONL before persistence phase. | Avoid SQLite behavior differences and unnecessary database services now. SQLAlchemy/Alembic and container tooling deferred to Phase 4. |
+| ADR-005 | PostgreSQL/PostGIS authoritative storage; JSONL before persistence phase. | Phase 4 uses SQLAlchemy/Alembic, psycopg and pinned PostgreSQL Compose. PostGIS arrives in Phase 5; no SQLite substitute. |
 | ADR-006 | PostgreSQL search first; optional OpenSearch projection after benchmarks. | One data service for a small demonstration; durable history/outbox permits later index replacement. |
 | ADR-007 | Versioned observation envelope, immutable evidence and separate versioned derivations. | More provenance than a mutable host row, but supports historical search and reproducible classification. No unsupported inference that an IP equals one physical device. |
 | ADR-008 | Literal targets, disabled measurement defaults, constrained configuration, loopback fixture tests. | Phase 1 implements traffic policy before dialing. No browser-triggered network probing. |
@@ -35,6 +35,14 @@ infrastructure remains absent.
 | ADR-025 | Source/pack canonical hashes, engine/taxonomy versions and precise raw-byte references; deterministic output omits processing clock. | Store operational processing times separately later. Same-version pack edits remain distinguishable; digests do not authenticate authorship. |
 | ADR-026 | Independent product/category candidates with asserted/corroborated ordinal confidence, unknowns and retained multiple candidates. | Confidence is not calibrated probability or identity proof. Core supports nginx/OpenSSH/Postfix assertions only; fictional taxonomy pack is explicitly synthetic. |
 | ADR-027 | Bounded streaming offline apply/inspect/replay CLI, private staged no-clobber output under ignored data/. | Stable generic errors and no raw-content duplication. No ingestion, deduplication, crash recovery, durable storage or public evidence interface. |
+
+| ADR-028 | Package 0.5.0; storage migration head 0002; unchanged config/observation/derivation wire schemas. | Storage is an independent local CLI/library; collectors, API and UI do not gain ingestion or querying. |
+| ADR-029 | UUID plus canonical source hash, extracted SHA-256 raw blobs, private JSONB envelopes and immutable history triggers. | Equal content shares files, never measurement history; reconstruct/hash original v1/v2 evidence and retain independent packs/results. |
+| ADR-030 | Single PostgreSQL advisory transaction lock, fsynced files before synchronous commit, acknowledgements after commit. | Correctness baseline for local use; orphan GC and retention use the same lock. Distributed throughput requires a later design. |
+| ADR-031 | Separate latest attempt/open/evidence pointers ordered by finish/start/UUID. | Negative, stale and empty attempts preserve previous evidence; UUID tiebreak is deterministic, not physical chronology. |
+| ADR-032 | Transactional outbox with per-consumer receipts and an idempotent same-DB mirror. | Atomic DB effects only; replay reads live source truth. External consumers need deletion/idempotency contracts before adoption. |
+| ADR-033 | Synthetic-only ingestion; private local owner access; 30-day source expiry; whole-record redaction/removal and persistent CIDR suppression. | No public raw view or silent evidence edits. Explicit maintenance, 90-day replay tombstones, separately managed spools and 7-day backup policy; production roles/encryption remain deferred. |
+| ADR-034 | Pinned PostgreSQL 18.3 image/digest, two Alembic migrations, coordinated DB/blob backup and empty-database restore. | Real PostgreSQL integration required in CI. Local tests use generated credentials and isolated disposable databases; no real data or Internet probes. |
 
 ## Primary references consulted
 

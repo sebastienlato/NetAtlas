@@ -65,3 +65,32 @@ The first Phase 3 full run found an intermittent pre-existing TLS fixture shutdo
 warning. Ready accept callbacks and their transport-creation tasks now drain before
 listener close, so Python 3.14 does not attach accepted transports to an already
 closed server. No production networking change or warning filter was introduced.
+
+## Phase 4 verification — 2026-10-04
+
+Initial main tree was clean and origin was present. Existing Python 3.14.7,
+uv 0.12.19, Node 26.8.1 and npm 11.19.0 pins are unchanged. No container runtime or
+PostgreSQL client/server was initially installed. Homebrew installed Docker 29.8.2,
+Compose 5.6.0, Colima 0.10.3 and Lima 2.2.1. A dedicated `netatlas` Colima VZ profile
+uses 2 CPUs / 2 GiB RAM; its requested 12 GiB disk was rounded to 20 GiB. No login
+service was enabled. Standalone `docker-compose` was used without editing global
+Docker plugin settings. Colima selected its dedicated Docker context.
+
+Local Compose runs PostgreSQL 18.3 with the version and multi-platform digest pinned
+in compose.yaml. Generated random local credentials live in ignored private files;
+the database is published only on 127.0.0.1:55432. Dependencies are locked SQLAlchemy
+2.1.3, Alembic 1.20.0 and psycopg/binary 3.3.6. No collector dependency or traffic
+change occurred. The source package includes the migrations and core fingerprint pack.
+
+Real PostgreSQL tests create isolated disposable databases; the backup/restore drill
+uses matching clients inside the Compose container. A manual CLI drill additionally
+verified synthetic ingest/replay, derivation, outbox, expiry/GC and coordinated restore.
+Final check counts are in PROJECT_STATE. Local test data, blobs, secrets, dump files
+and generated outputs are ignored; no real observations were ingested or committed.
+
+A full run exposed a remaining intermittent Python 3.14 TLS fixture deallocator
+warning despite the Phase 3 two-tick cleanup workaround; a subsequent full
+warnings-as-errors run passed, confirming the timing-dependent nature. Phase 4
+replaces that fixture's implicit asyncio.Server accept callbacks with an explicitly
+owned accept task, accepted-socket transports and cancellation/draining. Production
+collectors and traffic budgets are unchanged; warnings are not suppressed.

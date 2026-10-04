@@ -7,20 +7,21 @@ commercial search database is used.
 
 ## Current delivery
 
-Phase 3 adds versioned offline fingerprint rules, traceable evidence/confidence,
-and a documented device-category taxonomy to bounded HTTP/TLS/SSH/SMTP discovery.
-The core pack recognizes three product assertions; other device classes remain
-unknown unless supported by explicit evidence. **Discovery defaults to an offline
-preview.** The API and web shell display no measured data and cannot start scans.
-The globe is decorative; storage, search and geography remain later phases.
-No Internet campaign has been run. See [fingerprints](docs/FINGERPRINTS.md).
+Phase 4 adds PostgreSQL migrations, durable synthetic ingestion, immutable history,
+content-addressed evidence, current-service projections and a replayable outbox.
+Bounded discovery and offline fingerprinting remain separate. **Discovery defaults
+to an offline preview; durable ingestion accepts synthetic fixtures only.** The API
+and web shell display no measured data and cannot start scans. Geography and search
+remain later phases. No Internet campaign has been run. See [storage](docs/STORAGE.md)
+and [fingerprints](docs/FINGERPRINTS.md).
 
 ## Start locally
 
 Prerequisites: Git, Make, [uv](https://docs.astral.sh/uv/), Node **26.8.1** and npm
 **11.19.0**. Python **3.14.7** is pinned in `.python-version`; uv can provision it.
-Use `nvm install && nvm use` if nvm is available. No database, Docker, paid service,
-account credential, or API key is needed for local development and loopback fixtures.
+Use `nvm install && nvm use` if nvm is available. Offline and loopback checks need no database. Phase 4 integration checks additionally
+require a Docker-compatible engine and Compose; no paid service or external account
+is needed. Local database credentials are generated privately.
 The OpenSSL CLI is required by TLS tests to generate ephemeral synthetic certificates
 and keys in temporary directories. Install dependencies once:
 
@@ -52,7 +53,9 @@ auto-reload; restart after Python changes. Vite reloads web edits automatically.
 | `make format` | Apply Python/web lint fixes and formatting |
 | `make build` | Build Python wheel/source archive and static web assets |
 | `make smoke` | Exercise offline CLI commands |
-| `make check` | Lint, tests, builds, and CLI smoke checks |
+| `make check` | Lint, tests, builds, and CLI smoke; DB tests opt in |
+| `make check-db` | Start local Compose; full check including PostgreSQL/restore acceptance |
+| `make db-migrate` | Apply packaged Alembic migrations to the local database |
 | `uv run --locked netatlas config-check` | Validate defaults and print configuration digest |
 | `uv run --locked netatlas example` | Print a synthetic observation; performs no measurement |
 | `uv run --locked netatlas schema` | Print observation JSON Schema |
@@ -83,7 +86,7 @@ scans. If changing its port, also update the development proxy in `web/vite.conf
 
 | Path | Responsibility |
 | --- | --- |
-| `src/netatlas/` | Domain/evidence models, config, discovery, collectors, derivations, spool, CLI/API |
+| `src/netatlas/` | Domain/evidence models, config, discovery, collectors, derivations, spool, storage pipeline, CLI/API |
 | `web/` | React/TypeScript application shell |
 | `tests/` | Offline Python tests; web tests live beside web code |
 | `config/default.toml` | Documented default configuration |
@@ -97,10 +100,9 @@ workflow; [SECURITY.md](SECURITY.md) defines measurement and data handling rules
 
 ## Planned stack and cost
 
-Python asyncio workers and FastAPI; Pydantic contracts; PostgreSQL/PostGIS as the
-eventual source of truth; PostgreSQL search first, then an optional OpenSearch
+Python asyncio workers and FastAPI; Pydantic contracts; PostgreSQL as the implemented local source of truth, PostGIS planned; PostgreSQL search first, then an optional OpenSearch
 projection; React/TypeScript/Vite and MapLibre for the eventual map. Start with
-bounded local fixtures and file output. Deploy extra services only when the phase
+bounded local fixtures, private file output and local durable ingestion. Deploy extra services only when the phase
 requires them. Dataset and infrastructure details are in the architecture.
 
 Local development and a thesis demonstration require no paid services. Continuous
