@@ -24,9 +24,14 @@ class MeasurementSettings(Model):
     node_id: Nonempty = "local-dev"
     operator_name: str = Field(default="", max_length=120)
     operator_contact: str = Field(default="", max_length=512)
-    user_agent: Nonempty = "NetAtlas/0.2 (research; measurement disabled)"
+    user_agent: Nonempty = "NetAtlas/0.3 (research; measurement disabled)"
     connect_timeout_seconds: float = Field(default=3, gt=0, le=30, allow_inf_nan=False)
     interaction_timeout_seconds: float = Field(default=5, gt=0, le=60, allow_inf_nan=False)
+    protocol_evidence: bool = Field(default=False, strict=True)
+    greeting_timeout_seconds: float = Field(default=0.5, gt=0, le=5, allow_inf_nan=False)
+    endpoint_timeout_seconds: float = Field(default=15, gt=0, le=120, allow_inf_nan=False)
+    max_connections_per_endpoint: int = Field(default=2, ge=1, le=2, strict=True)
+    max_sent_bytes: int = Field(default=8192, ge=1, le=16384, strict=True)
     max_concurrency: int = Field(default=32, ge=1, le=128, strict=True)
     global_connections_per_second: float = Field(default=10, gt=0, le=100, allow_inf_nan=False)
     per_prefix_connections_per_second: float = Field(default=1, gt=0, le=20, allow_inf_nan=False)
@@ -44,6 +49,13 @@ class MeasurementSettings(Model):
     def single_line(cls, value: str) -> str:
         if any(ord(char) < 32 or ord(char) == 127 for char in value):
             raise ValueError("identification fields must not contain control characters")
+        return value
+
+    @field_validator("user_agent")
+    @classmethod
+    def ascii_agent(cls, value: str) -> str:
+        if not value.isascii():
+            raise ValueError("user_agent must be ASCII for HTTP")
         return value
 
     @model_validator(mode="after")
@@ -81,7 +93,7 @@ class LoggingSettings(Model):
 
 
 class Settings(Model):
-    config_version: Literal[2] = 2
+    config_version: Literal[3] = 3
     api: ApiSettings = Field(default_factory=ApiSettings)
     measurement: MeasurementSettings = Field(default_factory=MeasurementSettings)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)

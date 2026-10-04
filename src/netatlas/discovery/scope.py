@@ -77,5 +77,34 @@ class Scope(Model):
             "addresses": sum(counts.values()),
             "address_decisions": dict(sorted(counts.items())),
             "eligible_endpoints": counts["eligible"] * len(set(self.ports)),
+            "interaction_plan": {
+                "strategy": "greeting-http-tls-v1"
+                if settings.protocol_evidence
+                else "connect-only-v1",
+                "max_connections_per_endpoint": settings.max_connections_per_endpoint
+                if settings.protocol_evidence
+                else 1,
+                "max_campaign_connections": counts["eligible"]
+                * len(set(self.ports))
+                * (settings.max_connections_per_endpoint if settings.protocol_evidence else 1),
+                "max_received_bytes_per_endpoint": settings.max_response_bytes
+                if settings.protocol_evidence
+                else 0,
+                "max_sent_bytes_per_endpoint": settings.max_sent_bytes
+                if settings.protocol_evidence
+                else 0,
+                "max_retained_bytes_per_endpoint": settings.max_response_bytes
+                if settings.protocol_evidence
+                else 0,
+                "steps": [
+                    "listen for SSH/SMTP/unknown greeting",
+                    "if silent, GET / with literal IP Host",
+                    "if HTTP attempt unidentified, fresh TLS then greeting/GET; no retry",
+                ][: 3 if settings.max_connections_per_endpoint == 2 else 2]
+                if settings.protocol_evidence
+                else ["TCP connect and close"],
+                "dns": False,
+                "retries": 0,
+            },
             "order": "seeded-network-port-shuffle-and-address-rotation-v1",
         }

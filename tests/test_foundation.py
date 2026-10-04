@@ -9,16 +9,17 @@ from pydantic import ValidationError
 
 from netatlas.api import create_app
 from netatlas.config import Settings, load_settings
-from netatlas.domain import CapturedResponse, Observation
+from netatlas.domain import CapturedResponse
 from netatlas.examples import example_observation
+from netatlas.observation import Observation
 
 
 def test_api_contract_and_synthetic_provenance() -> None:
     with TestClient(create_app(Settings())) as client:
         assert client.get("/healthz").json() == {
             "status": "ok",
-            "version": "0.2.0",
-            "phase": 1,
+            "version": "0.3.0",
+            "phase": 2,
             "measurement_enabled": False,
         }
         response = client.get("/api/v1/examples/observation")
@@ -71,7 +72,7 @@ def test_observation_roundtrip_and_invariants() -> None:
         {"endpoint": {"address": "192.0.2.11", "port": 80}},
         {"endpoint": {"address": "192.0.2.10", "port": 0}},
         {"outcome": "closed"},
-        {"schema_version": 2},
+        {"schema_version": 3},
     ]
     for patch in patches:
         with pytest.raises(ValidationError):

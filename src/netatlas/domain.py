@@ -157,8 +157,7 @@ class GeoLocation(Model):
         return self
 
 
-class Observation(Model):
-    schema_version: Literal[1] = 1
+class ObservationBase(Model):
     observation_id: UUID
     target: Target
     endpoint: Endpoint
@@ -184,3 +183,9 @@ class Observation(Model):
         if self.outcome != Outcome.OPEN and (self.response is not None or self.service is not None):
             raise ValueError("only open endpoints can carry a response or service")
         return self
+
+
+class ObservationV1(ObservationBase):
+    """Legacy contract retained for explicit offline compatibility reads."""
+
+    schema_version: Literal[1] = 1

@@ -7,10 +7,11 @@ commercial search database is used.
 
 ## Current delivery
 
-Phase 1 delivers bounded IPv4/IPv6 TCP connect discovery, conservative target policy,
-shared traffic budgets, cancellation, JSONL observations and campaign manifests.
+Phase 2 delivers bounded HTTP, TLS, SSH and SMTP protocol evidence on top of IPv4/IPv6
+TCP discovery, conservative policy, shared traffic budgets and private JSONL/manifest
+output. Protocols are recognized from handshakes, independent of conventional ports.
 **Discovery defaults to an offline preview.** The local API and web shell display
-no measured data and cannot start scans. The globe is decorative; protocol evidence,
+no measured data and cannot start scans. The globe is decorative; fingerprints,
 search and geography remain later phases. No Internet campaign has been run.
 
 ## Start locally
@@ -19,7 +20,8 @@ Prerequisites: Git, Make, [uv](https://docs.astral.sh/uv/), Node **26.8.1** and 
 **11.19.0**. Python **3.14.7** is pinned in `.python-version`; uv can provision it.
 Use `nvm install && nvm use` if nvm is available. No database, Docker, paid service,
 account credential, or API key is needed for local development and loopback fixtures.
-Install dependencies once:
+The OpenSSL CLI is required by TLS tests to generate ephemeral synthetic certificates
+and keys in temporary directories. Install dependencies once:
 
 ```sh
 make setup
@@ -67,17 +69,19 @@ Precedence is built-in defaults, then the explicit `--config` file (or
 `NETATLAS_CONFIG` when no CLI file is given). Files may override a subset of fields.
 There is no implicit working-directory config load or `.env` reader. Unknown keys
 and invalid values fail validation; explicit missing files are errors. Configuration
-version 2 permits enabled measurement only with validated operator identity; dialing
+version 3 permits enabled measurement only with validated operator identity; dialing
 also requires `discover --measure`. See [the discovery guide](docs/DISCOVERY.md) for
 exact bounds, exclusions/opt-outs, reproducibility, cancellation and explicit loopback
-fixture steps. The API binds to loopback only and cannot trigger scans. If changing
-its port, also update the development proxy in `web/vite.config.ts`.
+fixture steps. Protocol capture additionally requires `measurement.protocol_evidence = true`;
+see [protocol evidence](docs/PROTOCOL_EVIDENCE.md) for preview costs, limits, schema
+compatibility and coverage gaps. The API binds to loopback only and cannot trigger
+scans. If changing its port, also update the development proxy in `web/vite.config.ts`.
 
 ## Repository guide
 
 | Path | Responsibility |
 | --- | --- |
-| `src/netatlas/` | Domain models, configuration, discovery worker/spool, CLI, API, fixture |
+| `src/netatlas/` | Domain/evidence models, config, discovery, protocol collectors, spool, CLI/API |
 | `web/` | React/TypeScript application shell |
 | `tests/` | Offline Python tests; web tests live beside web code |
 | `config/default.toml` | Documented default configuration |

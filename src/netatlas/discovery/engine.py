@@ -9,13 +9,15 @@ from pathlib import Path
 from uuid import uuid4
 
 from netatlas import __version__
+from netatlas.collectors.runner import collect
 from netatlas.config import Settings
 from netatlas.discovery.budget import Budget
 from netatlas.discovery.policy import denial
 from netatlas.discovery.scope import Scope
 from netatlas.discovery.spool import Spool
 from netatlas.discovery.tcp import connect
-from netatlas.domain import Endpoint, Observation, Outcome, ScannerNode, Target
+from netatlas.domain import Endpoint, Outcome, ScannerNode, Target
+from netatlas.observation import Observation
 
 type Connector = Callable[[Endpoint, float], Awaitable[tuple[Outcome, str | None]]]
 logger = logging.getLogger("netatlas.discovery")
@@ -42,6 +44,7 @@ async def run_campaign(
     queue: asyncio.Queue[Endpoint | None] = asyncio.Queue(maxsize=config.queue_size)
     budget = Budget(config.global_connections_per_second, config.per_prefix_connections_per_second)
     attempted = 0
+    connection_attempted = 0
     clock = asyncio.get_running_loop().time
     deadline = clock() + config.campaign_timeout_seconds
 
@@ -61,20 +64,42 @@ async def run_campaign(
                 await queue.put(None)
 
         async def worker() -> None:
-            nonlocal attempted
+            nonlocal attempted, connection_attempted
             while not halted():
                 endpoint = await queue.get()
                 if endpoint is None or halted():
                     return
-                await budget.acquire(endpoint.address)
-                if halted():
-                    return
-                # Recheck after waiting, immediately before starting the socket.
-                if denial(endpoint.address, config, lab=scope.lab_loopback) is not None:
-                    continue
                 started = datetime.now(UTC)
-                attempted += 1
-                outcome, error = await connector(endpoint, config.connect_timeout_seconds)
+                admitted = False
+                selected: Endpoint = endpoint
+
+                async def admit(endpoint: Endpoint = selected) -> bool:
+                    nonlocal attempted, connection_attempted, admitted, started
+                    await budget.acquire(endpoint.address)
+                    if (
+                        halted()
+                        or denial(endpoint.address, config, lab=scope.lab_loopback) is not None
+                    ):
+                        return False
+                    if not admitted:
+                        started = datetime.now(UTC)
+                        attempted += 1
+                        admitted = True
+                    connection_attempted += 1
+                    return True
+
+                evidence = None
+                service = None
+                if config.protocol_evidence:
+                    result = await collect(endpoint, config, admit)
+                    if result is None:
+                        continue
+                    outcome, error = result.outcome, result.error
+                    evidence, service = result.evidence, result.service
+                else:
+                    if not await admit():
+                        continue
+                    outcome, error = await connector(endpoint, config.connect_timeout_seconds)
                 observation = Observation(
                     observation_id=uuid4(),
                     target=Target(
@@ -89,6 +114,8 @@ async def run_campaign(
                     finished_at=max(started, datetime.now(UTC)),
                     outcome=outcome,
                     error_code=error,
+                    protocol_evidence=evidence,
+                    service=service,
                 )
                 # No await between completion and flush: cancellation cannot drop it.
                 spool.append(observation)
@@ -141,6 +168,7 @@ async def run_campaign(
                     # Repeated stop requests must not interrupt resource cleanup.
                     interrupted = True
                     status = "cancelled"
+            spool.manifest["connection_attempted"] = connection_attempted
             spool.finish(status, attempted)
             logger.info(
                 json.dumps(

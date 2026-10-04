@@ -17,8 +17,8 @@ from netatlas.config import Settings, load_settings
 from netatlas.discovery.engine import run_campaign
 from netatlas.discovery.policy import POLICY_SHA256, POLICY_VERSION, REGISTRY_VERSION
 from netatlas.discovery.scope import Scope
-from netatlas.domain import Observation
 from netatlas.examples import example_observation
+from netatlas.observation import Observation
 
 
 async def measure(settings: Settings, scope: Scope) -> dict[str, object]:

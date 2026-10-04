@@ -6,14 +6,15 @@ from fastapi import FastAPI
 
 from netatlas import __version__
 from netatlas.config import Settings, load_settings
-from netatlas.domain import Model, Observation
+from netatlas.domain import Model
 from netatlas.examples import example_observation
+from netatlas.observation import Observation
 
 
 class Health(Model):
     status: Literal["ok"] = "ok"
     version: str = __version__
-    phase: Literal[1] = 1
+    phase: Literal[2] = 2
     measurement_enabled: Literal[False] = False
 
 

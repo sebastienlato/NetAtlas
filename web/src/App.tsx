@@ -64,7 +64,7 @@ export function App() {
             exploration, and research.
           </p>
           <div className="phase-label">
-            <span className="dot" /> Phase 1 · Bounded discovery
+            <span className="dot" /> Phase 2 · Protocol evidence
           </div>
         </section>
 
@@ -88,9 +88,9 @@ export function App() {
               with observations.
             </h2>
             <p>
-              Bounded TCP discovery is available through the local CLI. Service
-              analysis and geographic search will arrive in later development
-              phases.
+              Bounded discovery and HTTP, TLS, SSH, and SMTP evidence collection
+              are available through the local CLI. Product identification and
+              geographic search will arrive in later phases.
             </p>
             <p className="empty-note">
               This preview shows no measured data and cannot start scans.

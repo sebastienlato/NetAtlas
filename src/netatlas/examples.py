@@ -4,7 +4,7 @@ import base64
 
 from netatlas import __version__
 from netatlas.config import Settings
-from netatlas.domain import Observation
+from netatlas.observation import Observation
 
 
 def example_observation(settings: Settings) -> Observation:

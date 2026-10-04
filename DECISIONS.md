@@ -1,7 +1,7 @@
 # Architecture decision record
 
 Accepted 2026-10-04. Revisit with evidence; record consequences rather than silently
-changing the design. Phase 1 adds the bounded discovery modules; planned
+changing the design. Phase 2 adds protocol evidence to bounded discovery; planned
 infrastructure remains absent.
 
 | ID | Choice and reason | Consequences / reconsider when |
@@ -23,6 +23,12 @@ infrastructure remains absent.
 | ADR-015 | Hard scope caps, streaming seeded network/port ordering with address rotation, shared no-burst pacing and bounded asyncio queue/workers. | Reproducible admission order without a full target list; conservative head-of-line blocking accepted. No global-scale, fairness, packet-rate or distributed-budget claim. |
 | ADR-016 | Raw socket ownership for connect-only work, immutable observation v1 (`closed` plus `connection_refused`), private JSONL and manifest v1. | No application bytes or protocol inference; no unnecessary observation schema break. Cancellation records incomplete attempts in manifest, flushes completed rows and closes sockets. |
 | ADR-017 | Atomic manifest replacement, graceful final fsync/checksum, advisory per-spool campaign lock. | Small synchronous local file writes are sufficient for Phase 1; no crash recovery, host-wide lock or durable ingestion claim. macOS/Linux supported; Windows port is deferred. |
+
+| ADR-018 | Package 0.3.0, config v3, observation/manifest v2; explicit legacy v1 reader, no silent rewrite. Protocol mode defaults false. | Existing connect-only invocation behavior is retained; explicit config-v2 files require reviewed migration. |
+| ADR-019 | Port-independent greeting → one GET if silent → at most one fresh TLS attempt for unidentified HTTP/EOF. Every connection shares admission. | At most two connections, two GETs and one TLS handshake per endpoint. Unknown unsolicited greetings receive no commands. SSH/SMTP are greeting-only, bare 220 ambiguous. |
+| ADR-020 | Raw socket payload I/O and SSLObject/MemoryBIO, cumulative receive/send/retention caps; separate connect/interaction/endpoint/campaign deadlines. | TLS record traffic cannot bypass accounting. No hidden stream prefetch, retry, DNS, SNI or downgrade; kernel traffic/overhead is outside payload counters. Endpoint timer starts after first admission and includes later admission waits. |
+| ADR-021 | Preserve bounded peer DER chain with negotiated TLS metadata, verification explicitly not performed; no parsed identity trust claim. | Expired/self-signed captures work when OpenSSL completes the handshake; obsolete or structurally invalid handshakes may expose no certificate. No trust/OCSP/AIA request or client certificate. |
+| ADR-022 | Strict bounded syntax recognition, opaque base64 captures and typed metadata, independent TCP/interaction outcomes. | No product/device inference. Header values and greetings remain untrusted; no decoding active content. Connect-open persists through application errors. No durable ingestion or public evidence view. |
 
 ## Primary references consulted
 

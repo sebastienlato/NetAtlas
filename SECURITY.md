@@ -3,10 +3,12 @@
 NetAtlas measures ordinary unauthenticated network exposure. It does not guess
 credentials, bypass authentication, exploit vulnerabilities, gain persistence,
 modify devices, or carry out destructive actions. Service exposure is not itself
-evidence of a vulnerability. Phase 1 implements bounded TCP connect-only discovery.
+evidence of a vulnerability. Phase 2 adds opt-in bounded HTTP/TLS/SSH/SMTP evidence
+to TCP discovery.
 Configuration defaults disabled and CLI defaults dry-run; enabled identity plus
-`--measure` are required. No application data is sent or captured. All implementation
-validation uses synthetic/loopback fixtures.
+`--measure` are required. Only protocol opt-in sends bounded HTTP/TLS handshake
+traffic and captures evidence; connect-only mode sends no application bytes. All
+implementation validation uses synthetic/loopback fixtures.
 
 ## Required before measurement
 
@@ -14,15 +16,15 @@ validation uses synthetic/loopback fixtures.
   user-agent, pinned campaign configuration/policy, and a working exclusion/opt-out path.
 - Deny non-routable/special-use/multicast addresses and operator exclusions by default.
   A lab override must be restricted to explicit loopback fixture scope.
-- Check destination eligibility before every connection, including any future DNS
-  resolution or redirect hop. Default collectors do not follow redirects.
+- Check destination eligibility before every connection, including additional collector
+  connections. No DNS resolution, SNI names or redirect following is supported.
 - Enforce concurrency, global/per-prefix rate budgets, connect/interaction timeouts,
   byte caps, bounded retries, cancellation, and reliable socket closure.
 - Tests use synthetic or local fixtures; developing a scanner does not authorize an
   Internet sweep. Later real campaigns document network/institutional permissions
   and operating constraints separately from ordinary development.
 
-## Phase 1 enforcement
+## Enforcement through Phase 2
 
 The immutable campaign configuration pins exclusion and opt-out CIDRs. Denials
 precede any allowlist; lab mode only accepts explicit `127.0.0.1` and `::1` literals.
@@ -31,12 +33,26 @@ preview, then restart. No hot-reload or distributed propagation exists yet. Poli
 is rechecked immediately before each connection. Identity validation checks syntax;
 it does not establish contact ownership or permission to measure a target.
 
-`docs/DISCOVERY.md` specifies hard scope/rate/concurrency/time bounds and graceful
-stop semantics. Logs omit addresses, contacts and raw exception text. Preview output
+`docs/DISCOVERY.md` and `docs/PROTOCOL_EVIDENCE.md` specify hard scope, rate,
+concurrency and time bounds and graceful stop semantics. Logs omit addresses, contacts and raw exception text. Preview output
 shows requested scope intentionally. Private local manifests contain non-secret
 operator metadata and scope; observations contain endpoint addresses. Keep both
 under ignored `data/`; no credentials belong in any measurement setting. Graceful
 stop flushes results; force-kill/power-loss recovery is not promised in this phase.
+
+## Protocol enforcement
+
+One port-independent greeting/HTTP attempt and at most one fresh TLS attempt share
+all admission and cumulative payload budgets. Ordinary GET / only; SSH/SMTP greetings
+only; no authentication, client certificates, mail, STARTTLS, crawling, redirects,
+cookie reuse or compression decoding. Host is a literal target address with recorded
+provenance. TLS verification is not performed so self-signed/expired peer evidence can
+be retained; this is an unauthenticated observation, never an identity/trust assertion.
+Certificates and response bytes are opaque, bounded base64; metadata remains hostile.
+No credentials or session tokens are used as inputs. Received Set-Cookie or secret
+content is not reused, logged, rendered or committed. Raw bytes may still be sensitive
+inside the private ignored spool, which is why real ingestion/access/retention controls
+remain a Phase 4 prerequisite. Test keys are generated ephemerally, not committed.
 
 ## Evidence and privacy
 

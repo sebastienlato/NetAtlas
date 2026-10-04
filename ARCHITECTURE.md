@@ -1,6 +1,6 @@
 # Architecture
 
-Status: Phase 1 implemented discovery; later-phase direction retained. Only the
+Status: Phase 2 implemented protocol evidence and discovery; later-phase direction retained. Only the
 modules listed as implemented in `PROJECT_STATE.md` exist today. A monorepo and modular Python package keep early
 development small; process/network boundaries are introduced when justified.
 
@@ -64,14 +64,17 @@ configuration hashes and scanner versions. Cancellation flushes completed record
 and stops scheduling. Structured error codes separate refused, timed-out, and local
 failures; there is no invented service fingerprint for a failed connection.
 
-Discovery records reachability separately from identification. Port numbers are
-hints, never sufficient identification evidence. Initial collectors will cover
-HTTP, TLS certificates, SSH banners, and SMTP greetings using standard unauthenticated
-handshakes. HTTP uses bounded requests, no automatic credentials/cookies, no form
+Discovery records reachability separately from identification. The protocol selection
+plan does not consult port numbers. Implemented collectors cover
+HTTP, TLS certificates, SSH banners, and SMTP greetings using bounded unauthenticated
+interactions. See `docs/PROTOCOL_EVIDENCE.md` for the opt-in two-connection plan,
+shared admission callback, cumulative wire/retention accounting and coverage gaps.
+HTTP uses bounded requests, no automatic credentials/cookies, no form
 submission, no link crawling, no automatic redirect following, and no resource-heavy
 paths. TLS probes preserve certificate-chain evidence even for invalid certificates,
-without treating their identity assertions as trusted. SNI/Host names require
-separate provenance; an IP's default virtual host is incomplete coverage.
+without treating their identity assertions as trusted. No SNI or named Host is supported;
+literal Host provenance is recorded. An IP's
+default virtual host is incomplete coverage. TLS identities are explicitly unverified.
 
 Extend collectors for service/device categories only with documented read-only,
 bounded interactions. Database enumeration, camera streams/screenshots, printer
@@ -80,11 +83,19 @@ UDP is deferred until a protocol-specific safe request/response size budget and
 rate limits exist; no broadcast, reflection, amplification, or spoofed-source probes.
 Evaluate established discovery/handshake tools (e.g. ZMap/ZGrab2) behind adapters
 only when Python throughput is measured to be a bottleneck and the same policy
-controls can be preserved. No external scanner adapter is implemented in Phase 1.
+controls can be preserved. No external scanner adapter is implemented.
+
+`collectors/` depends on config and domain/evidence contracts, not discovery policy,
+storage, FastAPI or UI. The engine supplies admission for every connection; passive
+syntax parsers implement a small Collector interface and TLS uses an active handshake
+adapter. Raw sockets and SSLObject/MemoryBIO give explicit byte accounting and closure.
+Configuration v3 leaves protocol collection disabled until explicitly selected. API
+health and the UI describe Phase 2 but still expose no measurement controls/data.
 
 ## Evidence and derivations
 
-`docs/DATA_MODEL.md` specifies the current version-1 envelope. Append immutable
+`docs/DATA_MODEL.md` specifies the current version-2 envelope with an explicit v1
+compatibility reader. Append immutable
 observations; never overwrite evidence with a later guess. Use an observation UUID
 for ingestion idempotency and endpoint identity `(address, transport, port)` for
 grouping. TLS/virtual hosts add service dimensions later. Deduplicate bounded raw
@@ -99,7 +110,7 @@ processing time; reprocessing must not mutate original observations.
 
 ## Storage, ingestion, search, and statistics
 
-Phase 1: bounded private JSONL spool under ignored `data/`, atomic campaign manifest,
+Phases 1–2: bounded private JSONL spool under ignored `data/`, atomic campaign manifest,
 completed-result flush, final fsync and checksum; no database adapter. Graceful
 stops finalize metadata; hard kills may leave a running manifest or partial line.
 An advisory spool lock prevents concurrent local campaigns sharing that directory.
@@ -159,7 +170,7 @@ add bounded queries, cursor pagination, validation, caching, authorization, and
 query cost/rate limits. Liveness and readiness become distinct once dependencies
 exist. No permissive CORS is needed: the development proxy is same-origin.
 
-Phase 1 discovery emits redacted JSON logs with generated campaign/observation IDs,
+Discovery emits redacted JSON logs with generated campaign/observation IDs,
 outcomes and completion counts. Scope/contact/raw exceptions stay out of these logs.
 The API still omits request access logs. Later add job IDs and operational metrics;
 Prometheus-compatible metrics for rates, queue depth, failures, latency, coverage,

@@ -1,5 +1,5 @@
-# Phase 1: discover is a dry run unless --measure AND enabled identity are supplied.
-config_version = 2
+# Phase 2: discover is a dry run unless --measure AND enabled identity are supplied.
+config_version = 3
 [api]
 host = "127.0.0.1"
 port = 8000
@@ -9,9 +9,15 @@ enabled = false
 node_id = "local-dev"
 operator_name = ""
 operator_contact = ""
-user_agent = "NetAtlas/0.2 (research; measurement disabled)"
+user_agent = "NetAtlas/0.3 (research; measurement disabled)"
 connect_timeout_seconds = 3.0
 interaction_timeout_seconds = 5.0
+# Explicit opt-in for the bounded greeting / HTTP / TLS plan.
+protocol_evidence = false
+greeting_timeout_seconds = 0.5
+endpoint_timeout_seconds = 15.0
+max_connections_per_endpoint = 2
+max_sent_bytes = 8192
 max_concurrency = 32
 global_connections_per_second = 10.0
 per_prefix_connections_per_second = 1.0

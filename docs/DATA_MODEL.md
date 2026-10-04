@@ -1,72 +1,104 @@
-# Data contracts — schema version 1
+# Data contracts — schema version 2
 
-Executable authority: `src/netatlas/domain.py`. Generate JSON Schema with
-`uv run --locked netatlas schema`. There is no independently maintained generated
-schema file to drift. Models forbid unknown fields and field reassignment; tuple
-collections prevent in-place mutation of nested lists. Validation is required at
-every future ingest boundary. JSON is the interchange format; Python types are not
-a cross-process serialization mechanism.
+Executable authority: `domain.py` (shared/legacy types), `evidence.py` (protocol
+contracts), and `observation.py` (current envelope and version dispatch), under
+`src/netatlas/`. Generate the current schema with `uv run --locked netatlas schema`.
+No generated schema is committed. Models forbid extra fields, are frozen, and use
+tuples for collections; future ingestion must validate untrusted envelopes and
+impose a total request-size limit as well as the field bounds.
 
-| Concept | Fields and meaning |
+## Envelope and compatibility
+
+Observation v2 preserves UUID, target/endpoint, scanner, effective config SHA-256,
+aware start/finish timestamps, reachability outcome, optional service, network,
+geography and stable error code. It adds optional `protocol_evidence`. Schema v2
+is emitted by both protocol and connect-only discovery and the synthetic API/CLI
+example. The API remains the existing `/api/v1/examples/observation` route; its
+example body's explicit schema version is 2. This is not a new query API.
+
+`domain.ObservationV1` preserves the previous wire contract. Use
+`observation.observation_reader.validate_json(...)` for explicit discriminated v1/v2
+reads. Readers reject missing/unknown schema versions, extra fields, v2 evidence
+on v1, and silent coercion of v1 to v2. No historical spool is rewritten or upgraded.
+The current `observation.Observation` requires version 2 when an explicit version
+is supplied. Local Python imports must use this new module for the current model.
+
+Targets retain canonical IP, campaign ID and source. Endpoint key is address,
+transport and port; it is not device or ownership identity. Only `open` observations
+may carry service/response evidence. Dates are aware and ordered; target and endpoint
+must agree, and optional network prefixes must contain the endpoint. No network or
+geographic enrichment is emitted by this phase. Existing fingerprint/classification
+shapes remain foundation placeholders; no rules or categories are implemented.
+
+The original optional top-level `response` is retained for legacy-shaped synthetic
+examples, but cannot coexist with `protocol_evidence`. New collectors put captures
+inside exchanges only. `CapturedResponse` is canonical base64 with a 65,536-decoded-byte
+ceiling, media type and conservative truncation flag. Raw bytes are never executable
+content. Synthetic example `192.0.2.10` has fixed IDs/times and explicit documentation
+provenance; it is neither a target nor a measured Internet service.
+
+## ProtocolEvidence
+
+| Field | Meaning |
 | --- | --- |
-| Target | Canonical IP, source, campaign ID; selection/provenance rather than proof of eligibility |
-| Endpoint | IP, port 1–65535, TCP/UDP transport; normalized key groups measurements |
-| ScannerNode | Stable node ID, software version, optional vantage; not a machine secret/hostname |
-| Observation | Schema version, UUID, target/endpoint, scanner, effective config digest, aware start/end timestamps, outcome, optional response/service/network/geo/error code |
-| Protocol / Service | Identified application protocol, optional extension name, TLS layering, fingerprints, classifications; transport is separate |
-| CapturedResponse | Canonical base64 bytes, media type, truncation flag; at most 65,536 decoded bytes per response |
-| Fingerprint | Versioned rule, vendor/product/version, confidence 0–1, evidence references |
-| Classification | Category, confidence, rule ID, evidence references; multiple candidates can coexist |
-| Network | CIDR, optional ASN/organization, dataset source/version |
-| GeoLocation | Optional country/region/city/coordinate pair/accuracy radius, dataset source/version |
+| `strategy` | `greeting-http-tls-v1`, the versioned selection/interaction plan |
+| `exchanges` | 1–2 ordered connection attempts, indexes starting at 1 |
+| `received_bytes` | Cumulative socket payload read, including TLS records; at most 65,536 |
+| `sent_bytes` | Cumulative reserved socket payload writes, including TLS; at most 16,384 |
+| `retained_bytes` | Exact sum of decoded raw application captures and DER certificates; at most 65,536 and no more than received bytes |
+| `termination` | finished, endpoint timeout, byte limit, connection limit, or stopped admission |
 
-The synthetic fixture uses reserved documentation address `192.0.2.10`, a fixed
-UUID/time, and `synthetic-documentation-fixture` provenance. It is never a discovery
-target or an assertion about an actual service. No precise location is invented.
+Each `Exchange` includes connection index, probe (`greeting-http`/`tls`), TCP outcome,
+collection status, stable error code, `http_request_sent`, optional raw response,
+HTTP/TLS/SSH/SMTP metadata, and optional ambiguous candidates. Typed application
+metadata requires raw evidence. TLS metadata only belongs to the TLS attempt.
+Failed connects cannot carry protocol evidence. At most one application protocol
+is claimed per exchange; TLS may layer beneath it. A TCP-open observation remains
+open even if its protocol handshake fails or the later connection is refused.
 
-Dates must be timezone-aware and ordered. Producers should emit UTC; offsets are
-accepted and compared as instants. Source observation time is distinct from future
-ingestion/derivation time, which storage will add. Endpoint and target addresses
-must match; network prefixes must contain their endpoint. Only open observations
-may carry response/service evidence. Timeout and error records describe attempts,
-not definitive disappearance. Fields may remain unknown rather than inferred from
-port numbers or IP address alone.
+| Metadata | Bounded fields |
+| --- | --- |
+| HTTP | 1.0/1.1 version, 100–599 status, up to 32 ordered duplicate-preserving headers (name ≤256, value ≤2048), headers-complete flag, raw body offset, optional `target-ip` Host provenance |
+| TLS | Negotiated version, cipher, secret bits, ALPN, up to 8 whole DER certificates in peer order, chain-truncated flag, `verification=not_performed`, null SNI |
+| SSH | Identification protocol 2.0/1.99, software token and comments; full line ≤255 bytes |
+| SMTP | Code 220, up to 32 printable greeting lines, `explicit-smtp-greeting` identification basis |
 
-Version 1 is an early extensible foundation, not a permanent all-protocol schema.
-Later protocol collectors will introduce typed metadata (headers, certificate chains,
-greetings), multiple bounded exchanges, and evidence selectors through explicit
-schema evolution and tests. Future derived records need their own version/time
-and source observation IDs. Introducing incompatible fields requires a schema
-version increment with documented ingestion compatibility/migration behavior;
-`extra=forbid` deliberately rejects silent unknown additions.
+Metadata is still untrusted peer assertion. HTTP bodies and DER bytes are opaque;
+no scripts, URLs, cookies or certificate identities are acted upon. There are no
+product fingerprints, device classifications, vulnerability claims, or derived
+confidence scores in collector output. A bare 220 remains `service.protocol=unknown`
+with SMTP/FTP candidates. Port numbers alone never supply protocol evidence.
+For limits, selection, statuses and exact accounting, see
+[PROTOCOL_EVIDENCE.md](PROTOCOL_EVIDENCE.md).
 
-Persistence will define ingestion IDs, content hashes, last-seen/current-service
-projections, and partitioning. The observation UUID is ingestion identity; a raw
-content hash alone must never collapse distinct timestamps/campaign observations.
-IP+port is a service endpoint, not a reliable physical-device or ownership identity.
-The model's 64 KiB raw cap does not alone bound the entire future API request;
-ingestion must also enforce total envelope and collection-size limits.
+## Configuration and manifests
 
-## Phase 1 discovery output
+Configuration is **version 3**, package **0.3.0**. Old explicit version-2 files fail
+closed. To migrate a local file, change its version to 3, compare against
+`config/default.toml`, and explicitly choose `measurement.protocol_evidence`. It
+remains false by default; old partial files that omit a version retain connect-only
+behavior. Config hashes change with schema/defaults and are never backfilled.
 
-Observation schema remains **1**. TCP discovery supplies no response or service.
-`open` means a completed TCP connect; `closed` with `connection_refused` means an
-explicit refusal. `timeout`/`connect_timeout` is ambiguous. Other failures use
-`error` and stable `network_unreachable`, `local_permission_denied`, or `socket_error`
-codes; raw exception strings are never persisted. Interrupted attempts emit no
-observation and are counted as incomplete in their campaign manifest.
+New spools use **manifest version 2** and observation schema version 2. Manifest v1
+is historical data and is not modified. The v2 manifest preserves campaign UUID,
+full non-secret effective settings and hash, pinned policy/registry versions/hash,
+scope/ports/seed/order, lab marker, scanner/software/Python identity, timestamps,
+status, completed outcome counts and exact JSONL SHA-256 (including line endings).
+The preview includes the conditional interaction plan and traffic caps.
 
-Each JSONL row links via target campaign UUID and effective-config SHA-256 to a
-**manifest version 1** in the same directory. The manifest records observation schema
-version, **config version 2**, full effective non-secret configuration, config hash,
-policy and registry versions/hash, scope/ports/seed/order, lab marker, scanner ID,
-software/Python versions, start/end times, final state and attempt/outcome counts.
-Its final SHA-256 covers the exact UTF-8 JSONL bytes including line endings. Random
-UUIDs identify campaigns and observations; rerunning a scope produces new identities.
+Endpoint `attempted = completed + incomplete`; completed equals row count and sum
+of outcome counts. **`connection_attempted`** is the number of actual admitted socket
+attempts across all endpoints, including incomplete work. It lies between attempted
+and attempted times the active connection cap. The old `connect_completed` log event
+name is retained for compatibility; it now means one completed endpoint observation,
+not an individual protocol connection. Logs include no addresses, contacts, exception
+text, headers, certificate identities or captured content.
 
-Manifest `status`: `running`, `completed`, `cancelled`, `deadline_exceeded`, `failed`.
-Final `attempted = completed + incomplete`; `completed` equals the JSONL row count
-and sum of outcome counts. Denied targets are preview decisions, not attempts.
-Reproduction means the same scope, eligibility and admission order under the pinned
-runtime/policy/config; it does not imply identical network outcomes, completion
-order, timestamps or IDs. See `docs/DISCOVERY.md` for file/cancellation limitations.
+Manifest status remains `running`, `completed`, `cancelled`, `deadline_exceeded`,
+or `failed`. Graceful stops flush/fsync completed rows, retain the checksum and count
+interrupted endpoints as incomplete; partial exchanges from cancelled endpoints are
+not emitted as complete observations. Hard kill/disk failure/power loss can still
+leave a running manifest or partial last row. No durable ingestion, recovery,
+content-addressed storage or database exists yet. Future Phase 4 defines these
+boundaries and preserves observation/campaign identities rather than deduplicating
+measurements solely by raw content hash.

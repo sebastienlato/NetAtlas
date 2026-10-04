@@ -25,7 +25,8 @@ from netatlas.discovery.policy import SPECIAL_NETWORKS, denial
 from netatlas.discovery.scope import Scope
 from netatlas.discovery.spool import Spool
 from netatlas.discovery.tcp import connect
-from netatlas.domain import Endpoint, Observation, Outcome
+from netatlas.domain import Endpoint, Outcome
+from netatlas.observation import Observation
 
 
 def enabled(**overrides: object) -> Settings:
@@ -308,7 +309,7 @@ def test_campaign_concurrency_jsonl_manifest_and_redacted_logs(
         assert saved["config_sha256"] == settings.sha256
         assert saved["effective_config"] == settings.model_dump(mode="json")
         assert saved["seed"] == scope.seed
-        assert saved["config_version"] == 2 and saved["manifest_version"] == 1
+        assert saved["config_version"] == 3 and saved["manifest_version"] == 2
         assert saved["policy_version"] and saved["policy_sha256"] and saved["registry_version"]
         assert len(observations) == len({item.observation_id for item in observations}) == 6
         assert {item.endpoint.port for item in observations} == set(scope.ports)

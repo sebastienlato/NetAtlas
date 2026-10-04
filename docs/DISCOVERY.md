@@ -1,4 +1,4 @@
-# Phase 1 bounded discovery
+# Bounded discovery — through Phase 2
 
 `netatlas discover` is an offline preview unless **both** `--measure` and a valid
 `measurement.enabled = true` configuration are supplied. Targets and ports are
@@ -29,7 +29,7 @@ only, set these fields in its existing `[measurement]` section:
 enabled = true
 operator_name = "Fixture Researcher"
 operator_contact = "research@example.org"
-user_agent = "NetAtlas/0.2 (research; loopback fixture)"
+user_agent = "NetAtlas/0.3 (research; loopback fixture)"
 ```
 
 ```sh
@@ -91,16 +91,17 @@ One shared no-burst pacer applies both global and per-prefix start spacing acros
 all workers. Late wakeups cannot accumulate a burst. It conservatively serializes
 rate admission; one busy prefix can delay other prefixes. Socket concurrency counts
 active workers (some may be waiting for admission). Rates bound connect attempts,
-not kernel TCP retransmission packets. No retries occur. An advisory lock prevents
+not kernel TCP retransmission packets. Every additional protocol connection uses this
+same pacer and policy check. No retries occur. An advisory lock prevents
 two campaigns in the same spool; separate checkouts/hosts do not share budgets.
 
 ## Outcomes, cancellation and files
 
 | Observation outcome | Error code | Meaning |
 | --- | --- | --- |
-| `open` | null | TCP connection established; no protocol identified |
+| `open` | null | At least one TCP connection established; protocol results are separate |
 | `closed` | `connection_refused` | Explicit ECONNREFUSED; wire-v1 spelling retained |
-| `timeout` | `connect_timeout` | Deadline or ETIMEDOUT; state remains uncertain |
+| `timeout` | `connect_timeout`, `endpoint_timeout` | Deadline or ETIMEDOUT before TCP established; state remains uncertain |
 | `error` | `network_unreachable`, `local_permission_denied`, `socket_error` | Attempt failed; no claim that service is closed |
 
 Sockets are owned by a context manager and closed on every return, error and
@@ -113,11 +114,11 @@ cleanup. Failed workers cancel siblings and finalize a failed campaign.
 
 Each fresh UUID directory under ignored `data/` contains:
 
-- `observations.jsonl`: schema-v1 observations, one JSON object per completed attempt.
-- `manifest.json`: version 1; running/final status, full non-secret effective settings,
+- `observations.jsonl`: schema-v2 observations, one JSON object per completed attempt.
+- `manifest.json`: version 2; running/final status, full non-secret effective settings,
   config version/hash, input/preview, policy/registry versions and policy hash,
   seed/order, scanner/software/Python identities, UTC timestamps, attempted/completed/
-  incomplete counts, outcome counts and final JSONL SHA-256.
+  incomplete counts, actual connection attempts, outcome counts and final JSONL SHA-256.
 
 Manifest replacement is atomic; output files are mode 0600, campaign directories
 0700. Records are flushed synchronously on completion; the JSONL is fsynced at final
@@ -131,8 +132,11 @@ deadline; 2 for invalid input, disabled measurement, locked/unwritable spool or
 worker failure. A disk failure can prevent final manifest writing; a hard kill or
 power loss may leave `running` status and a partial final JSONL line. There is no
 resume/replay, transactional storage, filesystem durability guarantee after power
-loss, or performance claim. Phase 4 will add durable ingestion. Interaction timeout
-and response byte settings are reserved for Phase 2 and unused by connect-only work.
+loss, or performance claim. Phase 4 will add durable ingestion. Protocol collection
+is an explicit config opt-in; interaction/response settings remain
+unused by connect-only work. See [PROTOCOL_EVIDENCE.md](PROTOCOL_EVIDENCE.md) for the
+two-connection plan, cumulative caps and deadlines. Set `protocol_evidence = true` in
+the existing measurement section to preview/collect protocols; config version is 3.
 
 Tests use synthetic policy arithmetic, fake clocks/connect errors, and explicit
 loopback fixture sockets. `make check` includes an offline denied-scope preview.

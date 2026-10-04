@@ -16,7 +16,7 @@ from netatlas import __version__
 from netatlas.config import Settings
 from netatlas.discovery.policy import POLICY_SHA256, POLICY_VERSION, REGISTRY_VERSION
 from netatlas.discovery.scope import Scope
-from netatlas.domain import Observation
+from netatlas.observation import Observation
 
 
 class Spool:
@@ -29,8 +29,8 @@ class Spool:
         self.file: IO[bytes] | None = None
         self.lock: IO[bytes] | None = None
         self.manifest: dict[str, object] = {
-            "manifest_version": 1,
-            "observation_schema_version": 1,
+            "manifest_version": 2,
+            "observation_schema_version": 2,
             "campaign_id": str(campaign_id),
             "scanner": {"node_id": settings.measurement.node_id, "software_version": __version__},
             "python_version": platform.python_version(),
