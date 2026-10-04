@@ -197,8 +197,7 @@ query time and actual source expiry in every mode. It selects one explicit datas
 hash and latest evaluation at/before as_of; unknown/stale mappings do not supply
 coordinates/ASN filters. Radius/box/boundary areas test representative points and
 retain provider radius metadata without claiming exact location. Migration 0004
-adds spatial and structured indexes. See [SEARCH.md](SEARCH.md); Phase 7 adds HTTP metadata routes; geographic UI and
-worldwide enrichment coverage remain unimplemented.
+adds spatial and structured indexes. See [SEARCH.md](SEARCH.md); Phase 7 adds HTTP metadata routes; Phase 8 now adds a geographic UI; worldwide enrichment coverage remains unimplemented.
 
 ## Phase 7 HTTP consumer
 
@@ -207,3 +206,12 @@ dataset-specific place list with stable-ID continuation and attribution. It rech
 implicit-current dataset expiry on each page; stale/future place queries return
 metadata/state and no places. No downloader, global coverage, geometry export or
 map UI is added. See [API.md](API.md).
+
+## Phase 8 offline consumer
+
+The UI now displays attribution, exact hashes, validity, prefix/radius metadata and
+unknowns over the unchanged API. Two tiny reviewed Suva/Fiji assets are deliberately
+committed for offline demonstration, an explicit exception to the earlier generated-
+subset rule; global downloads remain ignored. See [MAP_ASSETS.md](MAP_ASSETS.md).
+The operator seed adds authored same-name places/region and fictional mappings,
+never real coverage or geography assertions. No automatic enrichment/download occurs.

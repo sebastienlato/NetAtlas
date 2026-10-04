@@ -7,15 +7,14 @@ commercial search database is used.
 
 ## Current delivery
 
-Phase 7 adds a bounded local read API for search, facets, places and endpoint
-history/detail, with typed OpenAPI/TypeScript contracts and signed continuation
-cursors. It preserves Phase 6 indexed search, exact counts, unknowns and retention.
-**Discovery defaults to an offline preview; durable ingestion accepts synthetic
-fixtures only.** Read requests cannot initiate scans. The web shell remains an
-empty preview; geographic exploration and evidence inspection are future phases.
-No Internet campaign has run. See [API and local access policy](docs/API.md),
-[search](docs/SEARCH.md), [synthetic workload](docs/SEARCH_BENCHMARK.md),
-[enrichment](docs/ENRICHMENT.md) and [storage](docs/STORAGE.md).
+Phase 8 delivers a local geographic explorer with exact country/region/city place
+search, MapLibre page clusters, categorized results, provenance and uncertainty.
+The offline Fiji map and explicit synthetic seed use no paid services or external
+browser resources. **Discovery defaults to preview; durable ingestion accepts
+synthetic fixtures only.** Read requests cannot initiate scans. Evidence inspection
+remains Phase 9. No Internet campaign has run. See [the explorer/demo guide](docs/GEOGRAPHIC_UI.md),
+[asset licenses](docs/MAP_ASSETS.md), [API policy](docs/API.md), [search](docs/SEARCH.md),
+[benchmark](docs/SEARCH_BENCHMARK.md), [enrichment](docs/ENRICHMENT.md) and [storage](docs/STORAGE.md).
 
 ## Start locally
 
@@ -30,6 +29,9 @@ and keys in temporary directories. Install dependencies once:
 ```sh
 make setup
 make check
+# For full browser/database acceptance after local DB setup:
+npm --prefix web exec -- playwright install chromium
+make check-db COMPOSE=docker-compose
 ```
 
 Start the two components in separate terminals from the repository root:
@@ -44,7 +46,8 @@ make dev-web
 
 Open <http://127.0.0.1:5173>. The web development server proxies `/healthz` and
 `/api` to the API on port 8000. API documentation is at
-<http://127.0.0.1:8000/docs>. Stop either process with Ctrl-C. Stored-data routes require the local database and `X-NetAtlas-Read: 1` header;
+<http://127.0.0.1:8000/docs>. Run `make demo` after database setup and paste its printed dataset hash for the offline
+exploration example. See [the guide](docs/GEOGRAPHIC_UI.md). Stop either process with Ctrl-C. Stored-data routes require the local database and `X-NetAtlas-Read: 1` header;
 see [API.md](docs/API.md) for the bounded JSON request contract. Health and the static
 example do not need the database. The API does not auto-reload; restart after Python changes. Vite reloads web edits automatically.
 
@@ -60,6 +63,7 @@ example do not need the database. The API does not auto-reload; restart after Py
 | `make check-db` | Start local Compose; full check including PostgreSQL/restore acceptance |
 | `uv run --locked netatlas-search --help` | Private local search with bounded JSON query/output |
 | `uv run --locked netatlas-enrich --help` | Offline dataset inspection, exact place lookup and enrichment |
+| `make demo` | Append authored demo fixtures; print the exact dataset hash to paste into the UI |
 | `make db-migrate` | Apply packaged Alembic migrations to the local database |
 | `uv run --locked netatlas config-check` | Validate defaults and print configuration digest |
 | `uv run --locked netatlas example` | Print a synthetic observation; performs no measurement |
@@ -92,7 +96,7 @@ scans. If changing its port, also update the development proxy in `web/vite.conf
 | Path | Responsibility |
 | --- | --- |
 | `src/netatlas/` | Domain/evidence models, config, discovery, collectors, derivations, spool, enrichment, storage pipeline, search, CLI/API |
-| `web/` | React/TypeScript shell and OpenAPI-derived read client |
+| `web/` | React/TypeScript geographic explorer, offline MapLibre assets and typed read client |
 | `tests/` | Offline Python tests; web tests live beside web code |
 | `config/default.toml` | Documented default configuration |
 | `docs/` | Data contracts, environment record, and next-phase kickoff |
@@ -107,8 +111,7 @@ workflow; [SECURITY.md](SECURITY.md) defines measurement and data handling rules
 
 Python asyncio workers and FastAPI; Pydantic contracts; PostgreSQL as the local
 source of truth with PostGIS points/boundaries and indexed search. OpenSearch is
-deferred by the local benchmark. React/TypeScript/Vite and MapLibre serve the eventual
-map. Start with
+deferred by the local benchmark. React/TypeScript/Vite and MapLibre serve the local geographic explorer. Start with
 bounded local fixtures, private file output and local durable ingestion. Deploy extra services only when the phase
 requires them. Dataset and infrastructure details are in the architecture.
 

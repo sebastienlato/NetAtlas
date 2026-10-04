@@ -23,6 +23,7 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: make setup
+      - run: npm --prefix web exec -- playwright install --with-deps chromium
       - run: make check-db
       - if: always()
         run: docker compose down --volumes

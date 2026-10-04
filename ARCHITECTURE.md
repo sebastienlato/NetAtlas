@@ -1,7 +1,7 @@
 # Architecture
 
-Status: Phase 7 adds a bounded local read API and typed client over indexed PostgreSQL
-search, immutable observations and independent derivations; later-phase direction retained. Only the
+Status: Phase 8 adds the geographic explorer and offline MapLibre demonstration over
+the bounded local API, indexed PostgreSQL and independent derivations. Only the
 modules listed as implemented in `PROJECT_STATE.md` exist today. A monorepo and modular Python package keep early
 development small; process/network boundaries are introduced when justified.
 
@@ -91,7 +91,8 @@ storage, FastAPI or UI. The engine supplies admission for every connection; pass
 syntax parsers implement a small Collector interface and TLS uses an active handshake
 adapter. Raw sockets and SSLObject/MemoryBIO give explicit byte accounting and closure.
 Configuration v3 leaves protocol collection disabled until explicitly selected. API
-health and the UI describe Phase 6 but still expose no measurement controls/data.
+health identifies Phase 8; the geographic UI exposes only retained synthetic metadata,
+with no measurement controls.
 
 ## Evidence and derivations
 
@@ -188,16 +189,20 @@ All downloads/outputs remain ignored. Details, provenance and commands are in
 Enrichment UPDATE triggers, cascade removal, orphan snapshot cleanup and replay
 verification extend existing retention/restore. Spatial backup restore and populated
 Phase 4 archive upgrade are tested. Phase 6 now supplies local search indexes/filters/facets;
-Phase 7 exposes bounded metadata read routes; geographic UI remains Phase 8.
+Phase 7 exposes bounded metadata read routes; Phase 8 now implements the geographic UI.
 
-React/TypeScript uses MapLibre for maps in Phase 8. Local/self-hosted tiles or a
-small offline regional basemap keep the demonstration independent of paid maps.
-OpenStreetMap attribution and tile-provider terms must be respected; public OSM
-tile servers are not an unrestricted production CDN or bulk-download endpoint.
-The UI will show categorized markers/clusters, facets, time/freshness controls,
-and accessible list alternatives. Uncertainty and absent data stay visible.
+React/TypeScript now uses MapLibre with a reviewed tiny offline Fiji GeoJSON outline,
+local module worker, no tiles/glyphs/external fonts and a complete accessible list.
+The map clusters only the displayed observation page; exact API totals are separate.
+Source/dataset/pack identities, multiple candidates/ASNs and unknown radii remain
+explicit. Place lookup uses stable-ID disambiguation and country/association/boundary
+predicates without remote geocoding. The single read lane aborts obsolete work and
+rejects stale responses. Each page replaces the prior view; hidden or 60-second-old
+views are cleared. No persistent result cache or instant push-removal guarantee.
+`netatlas.demo` is a separate explicit operator fixture seed, unreachable from reads.
+See [GEOGRAPHIC_UI.md](docs/GEOGRAPHIC_UI.md) and [MAP_ASSETS.md](docs/MAP_ASSETS.md).
 
-Service inspection shows sanitized metadata, escaped text/hex, certificates, and
+Planned Phase 9 service inspection will show reviewed metadata, escaped text/hex, certificates, and
 bounded response previews. Never execute returned HTML/scripts, automatically
 embed remote images, or open captured URLs. Sensitive content requires redaction,
 access control, retention rules, and an operator removal workflow before real ingestion.
@@ -237,7 +242,7 @@ configuration digest payload or logs. Save policy/dataset versions and seed alon
 with configuration. Tests use synthetic data, deterministic clocks, loopback
 fixtures, controlled load, and documented benchmark workloads.
 
-The API/web shell runs as two local processes. Phase 5 extends Compose with a native arm64/amd64 PostGIS build on the pinned
+The API/geographic UI runs as two local processes. Phase 5 extends Compose with a native arm64/amd64 PostGIS build on the pinned
 PostgreSQL 18.3 base and pinned PostGIS packages. The deployment path is containers, a same-origin TLS reverse
 proxy, internal data services, and separated worker/control-plane networks. Worker
 authentication, lease heartbeats, retry semantics, and backpressure precede multi-node

@@ -75,7 +75,7 @@ For limits, selection, statuses and exact accounting, see
 
 ## Configuration and manifests
 
-Configuration is **version 3**, package **0.8.0**. Old explicit version-2 files fail
+Configuration is **version 3**, package **0.9.0**. Old explicit version-2 files fail
 closed. To migrate a local file, change its version to 3, compare against
 `config/default.toml`, and explicitly choose `measurement.protocol_evidence`. It
 remains false by default; old partial files that omit a version retain connect-only
@@ -167,4 +167,5 @@ Package 0.8.0 adds HTTP schema 1 without changing stored/domain contracts or mig
 0004. `read_api/models.py` explicitly selects metadata fields; private search
 dictionaries and source envelopes are not wire models. Query-bound signed keysets,
 exact counts/uncertainty, generic errors and OpenAPI-derived TypeScript types are
-documented in [API.md](API.md). No raw evidence or geographic UI is exposed.
+documented in [API.md](API.md). No raw evidence is exposed. Phase 8 adds the geographic UI without changing
+these schemas; package 0.9.0 updates only health/metadata and its generated digest.

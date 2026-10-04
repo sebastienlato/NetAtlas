@@ -4,7 +4,7 @@ Package 0.5.0 adds a local PostgreSQL 18.3 / SQLAlchemy / Alembic adapter, priva
 content-addressed evidence, immutable history, current-service projections and a
 transactional outbox. Package 0.6.0 adds PostGIS 3.6.4, independent enrichment and
 gazetteer snapshots (migration 0003). **Only synthetic ingestion is enabled.** Phase 7 adds local metadata read routes; no
-upload route, worker daemon or stored-data UI is implemented.
+upload route or worker daemon is implemented. Phase 8 adds the local geographic UI.
 Phase 6 adds a bounded local search adapter; see [SEARCH.md](SEARCH.md).
 The collector and offline derivation engine do not import storage.
 
@@ -326,3 +326,10 @@ gazetteer, using the existing database/lock and migrations through 0004. No sche
 volume, secret, raw blob, retention or ingestion-policy change is needed. Requests
 never reconstruct sources, mutate data or execute collection. DB-owner access is
 still local and trusted, not a production read-only role. See [API.md](API.md).
+
+## Phase 8 demo compatibility
+
+The explicit `make demo` operator command appends authored fixtures through the
+unchanged pipeline after ordinary expiry maintenance. It never resets owner data,
+credentials or volumes, and is unreachable from HTTP/UI actions. No migration is
+added; see [GEOGRAPHIC_UI.md](GEOGRAPHIC_UI.md) for provenance and expiry semantics.

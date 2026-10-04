@@ -1,7 +1,7 @@
 # Project state
 
-Updated: 2026-10-04. **Phase 7 — Read API is complete.**
-Phase 8 has not started. Package **0.8.0**; HTTP schema **1**; local query schema **1**; config **3**;
+Updated: 2026-10-04. **Phase 8 — Geographic exploration UI is complete.**
+Phase 9 has not started. Package **0.9.0**; HTTP schema **1**; local query schema **1**; config **3**;
 observation/manifest **2** with explicit v1 reads; fingerprint pack/result schemas
 **1**, engine **fingerprints-1**, taxonomy **netatlas-categories-1**; enrichment
 bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0004**.
@@ -73,9 +73,27 @@ bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0004**.
   uncertainty; no remote geocoder. Places require a live unsuppressed associated
   source; stale/future bundles return provenance/state with no places.
 - OpenAPI-derived TypeScript contract and same-origin cancellable client with drift
-  checking in make check. API/web status describes Phase 7; no geographic UI, evidence
-  viewer, ingestion route or measurement controls. **OpenSearch is deferred**
+  checking in make check. No evidence viewer, ingestion route or measurement controls. **OpenSearch is deferred**
   based on the measured local synthetic workload, not assumed global-scale suitability.
+
+- **Phase 8:** responsive React geographic explorer over the actual generated client.
+  Exact country/region/city lookup with stable ID/admin/source disambiguation; category,
+  product-token, network/ASN, current/history, freshness and geography-state filters.
+- MapLibre 6.12.0 clusters only the displayed observation page; full-match endpoint,
+  source and candidate counts remain separate. Unknown points/radii, multi-value
+  categories/ASNs, facet truncation, live-page clocks and provenance stay explicit.
+- Locally bundled worker and reviewed tiny Natural Earth Suva/Fiji assets; offline
+  basemap, no external tile/glyph/font/geocoder requests. Explicit `make demo` seed
+  creates authored documentation-address fixtures through the real storage pipeline,
+  with a time-bound dataset hash printed for explicit UI selection. No auto-seeding.
+- Shared cancellable search/place request lane, generation guard, original-query
+  continuation, generic error/retry/empty/loading states and traversal-cap notice.
+  One displayed page; no persistent/back-page cache. Hidden/pagehide or 60-second-old
+  views clear results, places, selected-place metadata and map points. No instant
+  server-push removal claim; read-time views revalidate through a fresh request.
+- Accessible native controls/list, visible focus, skip navigation, result focus and
+  WebGL fallback. Metadata stays inert text with visible control-code tokens; arbitrary
+  metadata URLs never become links/resources. No Phase 9 raw/protocol/certificate UI.
 
 ## Architecture and operations
 
@@ -84,7 +102,10 @@ collectors acquire bounded bytes. Fingerprint/enrichment engines are pure and se
 Storage adapts them under the existing transaction/removal protocol. `search/` depends
 on query contracts and the storage connection/lock, never collector execution.
 The read API adapts search through explicit allowlisted models; its HTTP response
-contract is separate from private dictionaries. The web shell has no data exploration UI.
+contract is separate from private dictionaries. The explorer owns only view state;
+`netatlas.demo` is a separate explicit operator adapter, never imported by the API.
+Read [GEOGRAPHIC_UI.md](docs/GEOGRAPHIC_UI.md) for demo/setup/scope and
+[MAP_ASSETS.md](docs/MAP_ASSETS.md) for the deliberately reviewed asset exceptions.
 
 Read [API.md](docs/API.md) for routes, clocks, cursors, cost/access policy and client.
 Read [SEARCH.md](docs/SEARCH.md) for exact clocks/counts/filters/limits and
@@ -98,6 +119,29 @@ omit the override. The image context contains only docker/; transitive APT packa
 are not fully pinned. No runtime/dependency upgrades were needed.
 
 ## Verified validation
+
+- Full **make check-db COMPOSE=docker-compose** passed with **284 Python tests,
+  22 web unit/component tests and 4 Chromium production-browser tests**. Ruff/format,
+  strict mypy, Biome/TypeScript, OpenAPI drift, Python/Vite builds and CLI smoke pass.
+  Existing migrations/retention/backup/restore acceptance remains included. The main
+  database was migrated/verified at 0004; its existing volume and secret were preserved.
+- Browser tests use the real API, actual generated client and isolated PostgreSQL seed.
+  Representative country/region/city, same-name places, category/source selection,
+  unknowns/radii, pagination, actual clusters, keyboard/mobile layout, hostile content,
+  generic error recovery and WebGL fallback pass. Zero external browser requests in
+  the end-to-end search flow; desktop/mobile Axe reported no violations. Screenshots
+  were inspected; this is not a comprehensive assistive-technology certification.
+- Unit tests cover original-query continuation for search and places, stale/late results,
+  cross-route serialization/cancellation, field invalidation, control characters,
+  provenance URLs, display/selection expiry, error codes and limits. New DB seed tests
+  verify fixture truth, geometry equality and suppression/removal through real storage.
+- MapLibre worker bundling was verified in Vite development and production preview.
+  The large bundle warning remains: about 1.29 MB main JS (359 kB gzip), 511 kB worker,
+  91 kB CSS; no low-bandwidth performance qualification. Test output remains ignored.
+- Runtime pins remain Python 3.14.7, uv 0.12.19, Node 26.8.1 and npm 11.19.0;
+  PostgreSQL 18.3/PostGIS 3.6.4 on the existing dedicated Colima runtime.
+
+### Phase 7 baseline (retained historical record)
 
 - Full **make check-db COMPOSE=docker-compose** passed with **282 Python and 6 web
   tests**: 42 new API acceptance cases, all prior search/storage migration/restore
@@ -151,7 +195,7 @@ file cannot contain its own final hash. Verify local HEAD against
 
 ## Limitations and blockers
 
-No Phase 7 implementation blocker. No geographic UI, raw evidence
+No Phase 8 implementation blocker. No raw evidence
 viewer, real-data ingestion, sensitive-content field sanitizer, public authentication, production
 role isolation, encrypted backup, distributed workers, release or tag exists. Local
 query dictionaries/offsets remain private; HTTP uses separate Phase 7 models. Labels remain
@@ -162,6 +206,9 @@ benchmarks are small, local, warm-cache and single-client, not production/concur
 capacity or global prevalence. All statistics describe selected retained observations,
 with category ambiguity, protocol/vantage/IPv6/retention/geographic coverage bias.
 No real-world precision/recall, geography accuracy or worldwide completeness is claimed.
+The offline basemap covers Fiji only. The UI shows at most one 200-item page, not
+whole-database geographic clusters, and offers no arbitrary as_of/radius/box editor.
+The complete accessible list works if WebGL is unavailable.
 
 Bundles remain bounded to 2 MiB / 4096 rows per collection, using linear prefix lookup.
 Only a normalized local format and tiny pinned Natural Earth converter exist; no global
@@ -183,5 +230,5 @@ failover, distributed throughput and production durability remain unqualified.
 
 ## Next
 
-**Phase 8 — Geographic exploration UI**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
-Do not begin Phase 8 in this Phase 7 chat.
+**Phase 9 — Service and evidence inspection**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
+Do not begin Phase 9 in this Phase 8 chat.

@@ -37,3 +37,7 @@ coverage/
 .vscode/
 tmp/
 .cache/
+
+# Browser acceptance outputs
+web/test-results/
+web/playwright-report/

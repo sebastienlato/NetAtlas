@@ -37,7 +37,7 @@ from netatlas.storage.database import local_engine
 class Health(Model):
     status: Literal["ok"] = "ok"
     version: str = __version__
-    phase: Literal[7] = 7
+    phase: Literal[8] = 8
     measurement_enabled: Literal[False] = False
 
 

@@ -1,10 +1,10 @@
-# Phase 7 — local read API
+# Local read API — through Phase 8
 
-Package 0.8.0 provides HTTP schema 1 over the Phase 6 search engine and synthetic
+Package 0.9.0 retains HTTP schema 1 over the Phase 6 search engine and synthetic
 PostgreSQL storage. No migration is required: Alembic head remains 0004. No request
 can initiate measurement, resolve targets, download datasets, derive new records,
-read raw blobs or change stored data. The geographic UI is Phase 8; evidence
-inspection is Phase 9. This is a local operator demonstration, not a public service.
+read raw blobs or change stored data. The Phase 8 geographic explorer is documented in GEOGRAPHIC_UI.md; evidence
+inspection remains Phase 9. This is a local operator demonstration, not a public service.
 
 ## Start and access
 
@@ -12,7 +12,7 @@ Run `make db-up COMPOSE=docker-compose`, `make db-migrate`, then `make dev-api`.
 Compose-plugin hosts omit the override. Reuse the existing private volume and secret.
 The API lazily opens `data/storage` connection settings; unavailable/unmigrated
 storage returns generic 503 errors. `/healthz` reports process liveness, version
-and Phase 7, not database readiness. `/api/v1/examples/observation` remains an
+and Phase 8, not database readiness. `/api/v1/examples/observation` remains an
 explicit authored static example, independent of database retention.
 
 Only literal socket peers 127.0.0.1/::1 and Host names 127.0.0.1, [::1], localhost
@@ -192,3 +192,8 @@ web-client tests and builds. `make check-db` also covers real PostgreSQL route t
 keyset ties/late inserts, cursor tampering/restart/expiry, unknown/ambiguous/stale data,
 removal/read-time suppression/expiry, hostile metadata, cost bounds and SQL timeout.
 All fixtures are synthetic; no Internet measurement or new datasets are used.
+
+Phase 8 does not change these read contracts. Only package/health metadata changed;
+the generated OpenAPI digest was updated. The UI shares one cancellable read lane,
+uses original queries for continuation, and displays only one page with explicit
+map scope. See [GEOGRAPHIC_UI.md](GEOGRAPHIC_UI.md).

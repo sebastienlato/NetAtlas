@@ -1,8 +1,8 @@
 # Architecture decision record
 
 Accepted 2026-10-04. Revisit with evidence; record consequences rather than silently
-changing the design. Phase 7 adds local synthetic read routes over PostgreSQL search; geographic UI and
-distributed infrastructure remain planned.
+changing the design. Phase 8 adds local geographic exploration; evidence inspection and distributed
+infrastructure remain planned.
 
 | ID | Choice and reason | Consequences / reconsider when |
 | --- | --- | --- |
@@ -61,6 +61,12 @@ distributed infrastructure remain planned.
 | ADR-047 | Trusted-local synthetic access: loopback peer/Host/Origin, required non-secret read header, no CORS/forwarded trust, one in-flight request, body/SQL/output bounds. | No public authentication, distributed rate limit or production DB isolation claim. Requests cannot execute measurement, downloads or derivations. |
 | ADR-048 | Exact dataset gazetteer with stable-ID continuation and explicit uncertainty; metadata-only endpoint detail/history. | Same-name places remain distinct; source eligibility gates place availability. Stale/future bundles yield provenance/state without places; full polygons and evidence inspection deferred. |
 | ADR-049 | Generate the TypeScript read contract from actual OpenAPI with a fail-closed small schema converter and digest drift check. | No added generator dependency. Client supports cancellation, fixed same-origin paths, no credentials/redirects and known errors. Compile-time types do not validate runtime JSON. |
+
+| ADR-050 | Package 0.9.0; schema-1 geographic client, no query/schema/migration changes; health reports Phase 8. | UI reuses actual typed search/places calls; evidence inspection remains Phase 9. |
+| ADR-051 | MapLibre 6.12.0 with a locally bundled module worker and two reviewed tiny Natural Earth demo assets. | Explicit exception for licensed offline assets; no global file, external tiles/fonts/geocoder, paid account or network-on-search. Fictional mappings stay labelled; Fiji outline is not global coverage. |
+| ADR-052 | One displayed page with page-only observation clusters; separate full-match counts/facets. | No whole-database spatial aggregation claim or accumulated stale markers. Dateline fitting, unknown points/radii and multiple categories stay explicit. |
+| ADR-053 | Shared cancellable read lane, generation guard and original-query continuation; no persistent cache. | Filter edits, hidden views and 60-second expiry clear data. Server-side work may outlive abort; 429 uses explicit retry. Read-time snapshots, not immediate deletion notification. |
+| ADR-054 | Native accessible forms/list and inert metadata with visible control characters. | No arbitrary metadata links/resources; WebGL fallback retains list. Browser tests exercise actual API/PostgreSQL and production build, mobile/desktop Axe, hostile content and zero external requests. |
 
 ## Primary references consulted
 

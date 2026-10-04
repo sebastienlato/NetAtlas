@@ -2,7 +2,8 @@
 
 Package 0.7.0 adds `netatlas.search`, query schema 1 and migration 0004. This is a
 private local Python/CLI interface over synthetic PostgreSQL data. Phase 7 now adds a separate local HTTP adapter (see the final section); no
-public service, geographic UI, external index or real inputs exist.
+public service, external index or real inputs exist. Phase 8 now adds a local
+geographic UI over that adapter.
 Collectors and domain/derivation engines do not import search. No query opens target
 connections, resolves names, reads raw blobs or initiates measurement.
 
@@ -197,3 +198,7 @@ clock rechecks implicit-current dataset validity on every page. Ordinary Phase 6
 CLI behavior and private offset contract remain unchanged. Separate allowlisted
 HTTP models, signed cursors, typed errors, local policy and generated client are
 documented in [API.md](API.md). No raw reads, measurement or geographic UI are added.
+
+Phase 8 geographic exploration reuses these semantics without SQL/index changes.
+MapLibre clusters include only the displayed page, while API totals/facets cover all
+matches. The UI keeps both scopes explicit; see [GEOGRAPHIC_UI.md](GEOGRAPHIC_UI.md).

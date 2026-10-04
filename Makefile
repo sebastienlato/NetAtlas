@@ -13,6 +13,7 @@ dev-web:
 test:
 	uv run --locked pytest
 	npm --prefix web test
+	@if [ "$$NETATLAS_TEST_DB" = "1" ]; then npm --prefix web run test:e2e; fi
 
 lint:
 	uv run --locked python -m netatlas.read_api.contract --check
@@ -60,3 +61,8 @@ db-migrate:
 
 check-db: db-up
 	NETATLAS_TEST_DB=1 $(MAKE) check
+
+.PHONY: demo
+# Explicit operator action; creates authored fixtures, never starts measurement.
+demo: db-migrate
+	uv run --locked python -m netatlas.demo

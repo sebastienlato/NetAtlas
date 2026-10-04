@@ -24,7 +24,7 @@ implementation validation uses synthetic/loopback fixtures.
   Internet sweep. Later real campaigns document network/institutional permissions
   and operating constraints separately from ordinary development.
 
-## Measurement enforcement through Phase 7
+## Measurement enforcement through Phase 8
 
 The immutable campaign configuration pins exclusion and opt-out CIDRs. Denials
 precede any allowlist; lab mode only accepts explicit `127.0.0.1` and `::1` literals.
@@ -182,6 +182,24 @@ raw reads or writes. One in-flight read, streamed body/time bounds, 5-second DB
 statements, 10-second lock waits and 4 MiB output bounds limit local cost. Errors
 omit inputs/SQL/credentials and access logs stay disabled. Production service roles,
 authentication, TLS and broader resource controls remain Phase 12. See [API.md](docs/API.md).
+
+## Geographic display boundary (Phase 8)
+
+The local geographic explorer renders metadata as inert React text and converts
+invisible controls/directional overrides to visible code-point tokens. Provenance
+URLs are never active links/resources. MapLibre receives only geometry, source IDs
+and controlled categories; clusters use textContent and a local worker/basemap.
+No external tiles, glyphs, fonts, geocoder, telemetry or targets are requested.
+The explicit operator demo seed is separate from the read API and unreachable from
+UI actions. Tiny reviewed offline asset exceptions/licenses are in MAP_ASSETS.
+
+Views hold only one result page; edits, hidden/pagehide and 60-second expiry clear
+metadata, selected-place labels and map points. There is no persistent or previous-page cache. A visible
+page remains read-time truth until refresh/clear, not a push-synchronized deletion
+view. Every subsequent API read rechecks actual retention/suppression. Synthetic
+input remains mandatory; escaping/allowlists do not sanitize embedded sensitive
+content. Phase 9 must explicitly review bounded evidence access/redaction before
+adding protocol/certificate/raw previews. No real input is authorized.
 
 ## Reporting and response
 
