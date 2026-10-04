@@ -92,5 +92,12 @@ A full run exposed a remaining intermittent Python 3.14 TLS fixture deallocator
 warning despite the Phase 3 two-tick cleanup workaround; a subsequent full
 warnings-as-errors run passed, confirming the timing-dependent nature. Phase 4
 replaces that fixture's implicit asyncio.Server accept callbacks with an explicitly
-owned accept task, accepted-socket transports and cancellation/draining. Production
+owned synchronous accept callback, retained sockets/transports and cancellation/draining. Production
 collectors and traffic budgets are unchanged; warnings are not suppressed.
+
+The first Phase 4 Linux CI passed all 41 storage tests but found the TLS/SMTP
+fixture's 20 ms greeting window too short for Linux record delivery/shared-runner
+scheduling: the documented fallback GET occurred before the SMTP banner. That
+fixture now allows a 200 ms greeting window and a 1-second interaction ceiling,
+retaining its no-GET assertion. Production defaults, protocol logic and budgets
+are unchanged. Final delivery/CI status is identified by Git history and Actions.

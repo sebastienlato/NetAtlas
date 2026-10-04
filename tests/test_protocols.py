@@ -86,41 +86,49 @@ async def fixture(
         tasks.add(task)
         task.add_done_callback(tasks.discard)
 
-    # Own the accept task and its transports explicitly. Server.close() races
-    # asyncio's untracked transport-creation callbacks during very short TLS peers.
-    # A fixed number of sleep(0) calls cannot guarantee those callbacks have drained.
+    # Synchronous acceptance retains every socket before scheduling transport work.
+    # Neither Server's implicit attach callbacks nor sock_accept's cancellable result
+    # can strand an accepted socket during immediate client/fixture shutdown.
     loop = asyncio.get_running_loop()
     transports: set[asyncio.Transport] = set()
+    accepted_sockets: set[socket.socket] = set()
+    attach_tasks: set[asyncio.Task[None]] = set()
     listener = socket.socket(socket.AF_INET6 if ":" in host else socket.AF_INET)
     listener.setblocking(False)
     listener.bind((host, 0))
     listener.listen()
 
-    async def accept() -> None:
-        while True:
-            accepted, _ = await loop.sock_accept(listener)
-            try:
-                transport, _ = await loop.connect_accepted_socket(
-                    lambda: asyncio.StreamReaderProtocol(asyncio.StreamReader(), connected),
-                    accepted,
-                )
-            except BaseException:
-                accepted.close()
-                raise
-            transports.add(transport)
+    async def attach(accepted: socket.socket) -> None:
+        transport, _ = await loop.connect_accepted_socket(
+            lambda: asyncio.StreamReaderProtocol(asyncio.StreamReader(), connected), accepted
+        )
+        transports.add(transport)
 
-    accept_task = asyncio.create_task(accept())
+    def accept_ready() -> None:
+        try:
+            accepted, _ = listener.accept()
+        except BlockingIOError:
+            return
+        accepted.setblocking(False)
+        accepted_sockets.add(accepted)
+        attach_tasks.add(asyncio.create_task(attach(accepted)))
+
+    loop.add_reader(listener.fileno(), accept_ready)
     try:
         yield Endpoint(address=ip_address(host), port=listener.getsockname()[1])
     finally:
-        accept_task.cancel()
-        await asyncio.gather(accept_task, return_exceptions=True)
+        loop.remove_reader(listener.fileno())
         listener.close()
+        for task in attach_tasks:
+            task.cancel()
+        await asyncio.gather(*attach_tasks, return_exceptions=True)
         for transport in transports:
             transport.abort()
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
+        for accepted in accepted_sockets:
+            accepted.close()
     assert not errors
 
 
@@ -634,6 +642,11 @@ def test_tls_limits_partial_handshake_and_non_http_protocol(
             overrides["max_response_bytes"] = 128
         if mode == "send":
             overrides["max_sent_bytes"] = 200
+        if mode == "smtp":
+            # Linux TLS record delivery / shared CI scheduling can exceed 20 ms.
+            # This case asserts greeting-only behavior, not a short timer boundary.
+            overrides["greeting_timeout_seconds"] = 0.2
+            overrides["interaction_timeout_seconds"] = 1
         async with fixture(peer, tls=context) as endpoint:
             result = await admitted_collect(endpoint, **overrides)
         assert result.outcome == Outcome.OPEN

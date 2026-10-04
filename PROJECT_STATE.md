@@ -84,8 +84,10 @@ Homebrew standalone Compose: `make check-db COMPOSE=docker-compose`.
   Only synthetic data/loopback fixtures were used; generated data/credentials remain
   ignored. No actual power-cut, failover or real-world precision/recall test claimed.
 - A remaining intermittent pre-existing TLS fixture cleanup warning prompted an
-  explicit owned accept-task/transport teardown; no production networking change or
-  warning suppression. The full suite also passes with warnings treated as errors.
+  explicit owned accept-callback/socket/transport teardown; no production networking change or
+  warning suppression. Linux CI also exposed a 20 ms TLS/SMTP fixture window; that
+  fixture now allows 200 ms while retaining the no-GET assertion. The full suite
+  also passes locally with warnings treated as errors.
 - Runtime pins unchanged: Python 3.14.7, uv 0.12.19, Node 26.8.1, npm 11.19.0.
   New dependencies are locked SQLAlchemy 2.1.3, Alembic 1.20.0 and psycopg 3.3.6
   (plus their transitive packages). Docker/Compose/Colima setup is in ENVIRONMENT.
