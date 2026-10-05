@@ -15,14 +15,15 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: "uv run --locked python tests/web_server.py",
+      command:
+        "npm --prefix web run build && uv run --locked python tests/web_server.py",
       cwd: "..",
       url: "http://127.0.0.1:8000/healthz",
       timeout: 60000,
       reuseExistingServer: false,
     },
     {
-      command: "npm run build && npm run preview -- --port 5173 --strictPort",
+      command: "npm run preview -- --port 5173 --strictPort",
       url: "http://127.0.0.1:5173",
       timeout: 30000,
       reuseExistingServer: false,

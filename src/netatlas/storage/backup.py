@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from sqlalchemy import Connection, Engine, text
@@ -76,6 +77,7 @@ def backup(engine: Engine, blobs: BlobStore, destination: Path) -> None:
                         "pg_dump",
                         "--format=custom",
                         "--no-owner",
+                        "--no-acl",
                         "--username=postgres",
                         "--dbname",
                         str(engine.url.database),
@@ -90,9 +92,12 @@ def backup(engine: Engine, blobs: BlobStore, destination: Path) -> None:
             manifest = stage / "manifest.json"
             fd = os.open(manifest, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             with os.fdopen(fd, "w") as stream:
+                created = datetime.now(UTC)
                 json.dump(
                     {
-                        "version": 1,
+                        "version": 2,
+                        "created_at": created.isoformat(),
+                        "expires_at": (created + timedelta(days=7)).isoformat(),
                         "database_sha256": file_digest(archive),
                         "blobs": sorted(referenced),
                     },
@@ -111,8 +116,19 @@ def backup(engine: Engine, blobs: BlobStore, destination: Path) -> None:
 def restore(engine: Engine, blobs: BlobStore, source: Path) -> dict[str, int]:
     """Trusted operator backups only; SQL archives are executable, never upload inputs."""
     manifest = json.loads((source / "manifest.json").read_text())
+    if manifest["version"] == 2:
+        created = datetime.fromisoformat(manifest["created_at"])
+        expires = datetime.fromisoformat(manifest["expires_at"])
+        now = datetime.now(UTC)
+        if (
+            created.tzinfo is None
+            or expires.tzinfo is None
+            or not created <= now < expires
+            or expires - created > timedelta(days=7)
+        ):
+            raise ValueError("backup outside retention window")
     if (
-        manifest["version"] != 1
+        manifest["version"] not in (1, 2)
         or file_digest(source / "database.dump") != manifest["database_sha256"]
     ):
         raise ValueError("backup integrity failure")
@@ -135,6 +151,7 @@ def restore(engine: Engine, blobs: BlobStore, source: Path) -> dict[str, int]:
                     "--single-transaction",
                     "--exit-on-error",
                     "--no-owner",
+                    "--no-acl",
                     "--username=postgres",
                     "--dbname",
                     str(engine.url.database),

@@ -380,3 +380,17 @@ then explicitly allow-new-work. Do not reset owner volumes, credentials or worke
 boot files. Independent schedule files/spools/backups need deletion/quarantine.
 No automatic retention daemon, external outbox effect or raw-source rewrite is added.
 Detailed semantics and actual coverage/report clocks are in SCHEDULING.md.
+
+## Phase 12 operational compatibility
+
+Package **0.13.0**, migration **0006**; measurement/source/control/schedule/read
+schemas remain unchanged. See [OPERATIONS.md](OPERATIONS.md) for separate readiness,
+fixed-cardinality telemetry, local dashboard, resource bounds, restricted DB service
+roles, staged token replacement and complete retention/restore procedures. The optional
+same-origin production-build launch uses the restricted read account; coordinator DML
+uses a separate account while owner commands retain admission/stop/suppression authority.
+Owner credentials/volume and worker UUIDs/boot counters are never reset or auto-rotated.
+Backup manifest 2 adds a seven-day window; v1 remains readable with manual age review.
+Dumps/restores omit ACLs/ownership; recovery still cancels historical jobs and sets global
+stop before verification/current suppression review. There is no public TLS deployment,
+production OS isolation, encrypted backup or real-input authorization.

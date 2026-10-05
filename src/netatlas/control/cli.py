@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import json
+import logging
 import signal
 from pathlib import Path
 from uuid import UUID
@@ -41,10 +42,16 @@ async def run_worker(worker: Worker) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Private local synthetic worker control plane")
+    parser.add_argument("--blobs", type=Path, help="existing shared blob root for service roles")
     parser.add_argument("--storage", type=Path, default=Path("data/storage"))
     commands = parser.add_subparsers(dest="command", required=True)
     init = commands.add_parser(
         "provision", help="Generate two private worker credentials in a NEW directory"
+    )
+    init.add_argument(
+        "--rotate-from",
+        type=Path,
+        help="existing coordinator file; preserves worker UUIDs in a NEW directory",
     )
     init.add_argument("--directory", type=Path, default=Path("data/control/credentials"))
     server = commands.add_parser(
@@ -78,10 +85,16 @@ def main(argv: list[str] | None = None) -> int:
         "prune", help="Remove control history older than 90 days; preserves pacing/generations"
     )
     args = parser.parse_args(argv)
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     engine = None
     try:
         if args.command == "provision":
-            provision(args.directory)
+            previous = (
+                Credentials.model_validate(json_object(read_private(args.rotate_from, 16384)))
+                if args.rotate_from
+                else None
+            )
+            provision(args.directory, previous=previous)
         elif args.command == "worker":
             credential = Credential.model_validate(json_object(read_private(args.credential, 4096)))
             spool = Spool(args.spool)
@@ -109,7 +122,9 @@ def main(argv: list[str] | None = None) -> int:
                     )
                     return 0
             engine = local_engine(args.storage)
-            coordinator = Coordinator(Pipeline(engine, BlobStore(args.storage / "blobs")))
+            coordinator = Coordinator(
+                Pipeline(engine, BlobStore(args.blobs or args.storage / "blobs"))
+            )
             if args.command == "serve":
                 credentials = Credentials.model_validate(
                     json_object(read_private(args.credentials, 16384))
@@ -123,6 +138,10 @@ def main(argv: list[str] | None = None) -> int:
                     access_log=False,
                     proxy_headers=False,
                     log_level="critical",
+                    limit_concurrency=32,
+                    backlog=32,
+                    timeout_keep_alive=2,
+                    h11_max_incomplete_event_size=16384,
                 )
             elif args.command == "enqueue":
                 identity = coordinator.enqueue(

@@ -6,12 +6,14 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 from sqlalchemy.exc import SQLAlchemyError
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 
 from netatlas.control.coordinator import Coordinator
 from netatlas.control.files import Credentials
 from netatlas.control.models import BODY_BYTES, ControlError, request_reader
 from netatlas.derivations.offline import json_object
+from netatlas.operations.status import readiness
+from netatlas.operations.telemetry import ObserveHTTP, Telemetry
 
 
 def create_control_app(
@@ -22,6 +24,10 @@ def create_control_app(
     tokens = {str(item.worker_id): item.token for item in credentials.workers}
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     active = 0
+    probing = False
+    telemetry = Telemetry("control")
+    app.add_middleware(ObserveHTTP, telemetry=telemetry)
+    app.state.telemetry = telemetry
 
     def response(status: int, value: Any) -> JSONResponse:
         return JSONResponse(
@@ -30,27 +36,65 @@ def create_control_app(
             headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"},
         )
 
+    def authenticate(request: Request) -> None:
+        if (
+            request.client is None
+            or request.client.host not in ("127.0.0.1", "::1")
+            or request.headers.get("host") not in (f"127.0.0.1:{port}", f"[::1]:{port}")
+            or "origin" in request.headers
+            or "cookie" in request.headers
+        ):
+            raise ControlError(403, "forbidden")
+        token = tokens.get(request.headers.get("x-netatlas-worker", ""))
+        if token is None or not hmac.compare_digest(
+            request.headers.get("authorization", "").encode(), ("Bearer " + token).encode()
+        ):
+            raise ControlError(401, "unauthorized")
+
+    @app.get("/healthz")
+    @app.get("/readyz")
+    @app.get("/metrics")
+    async def operational(request: Request) -> Response:
+        nonlocal probing
+        admitted = False
+        try:
+            authenticate(request)
+            if request.url.path == "/healthz":
+                return response(200, {"status": "ok"})
+            if request.url.path == "/metrics":
+                return Response(
+                    telemetry.metrics(),
+                    media_type="text/plain; version=0.0.4",
+                    headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"},
+                )
+            if probing:
+                raise ControlError(429, "busy")
+            probing = admitted = True
+            result = await asyncio.to_thread(
+                readiness,
+                lambda: coordinator.pipeline.engine,
+                coordinator.pipeline.blobs.root,
+                writable=True,
+            )
+            return response(200 if result.status == "ready" else 503, result.model_dump())
+        except ControlError as exc:
+            return response(exc.status, {"error": {"code": exc.code}})
+        finally:
+            if admitted:
+                probing = False
+
     @app.post("/control/v1/exchange")
     async def exchange(request: Request) -> JSONResponse:
         nonlocal active
         admitted = False
         try:
+            authenticate(request)
             if (
-                request.client is None
-                or request.client.host not in ("127.0.0.1", "::1")
-                or request.headers.get("host") not in (f"127.0.0.1:{port}", f"[::1]:{port}")
-                or "origin" in request.headers
-                or "cookie" in request.headers
-                or request.headers.get("content-type") != "application/json"
+                request.headers.get("content-type") != "application/json"
                 or "content-encoding" in request.headers
             ):
                 raise ControlError(403, "forbidden")
             worker = request.headers.get("x-netatlas-worker", "")
-            token = tokens.get(worker)
-            if token is None or not hmac.compare_digest(
-                request.headers.get("authorization", ""), "Bearer " + token
-            ):
-                raise ControlError(401, "unauthorized")
             if active >= 8:
                 raise ControlError(429, "busy")
             active += 1

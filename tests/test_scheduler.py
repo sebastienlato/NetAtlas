@@ -361,7 +361,10 @@ def test_suppression_atomic_revoke_snapshot_and_changed_exclusions(pipeline: Pip
 
 def test_expired_plan_and_queued_expiration_no_authority(pipeline: Pipeline) -> None:
     c = Coordinator(pipeline)
-    r = lab_request(lifetime_seconds=1)
+    # Derive expired fixture time from the authoritative DB clock, not host/VM skew.
+    with pipeline.engine.connect() as connection:
+        at: datetime = connection.execute(text("SELECT clock_timestamp()")).scalar_one()
+    r = request(lab=True, at=at - timedelta(seconds=2), lifetime_seconds=1)
     with pytest.raises(ControlError, match="schedule_expired"):
         submit(c, r)
     r = lab_request()

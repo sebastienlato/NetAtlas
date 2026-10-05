@@ -199,7 +199,7 @@ correctness bottleneck, not a scalable concurrent control/read design.
 literal loopback peer/Host, JSON, worker identity and its bearer secret; Origin,
 Cookie, content encoding and wrong authority fail. No CORS, browser controls, forwarded
 trust, access logs, public listener or credential echo. Errors are generic. TLS and
-production access roles remain Phase 12; loopback bearer transport is not for forwarding.
+production OS isolation remain unimplemented; loopback bearer transport is not for forwarding.
 The UI's non-secret X-NetAtlas-Read guard remains unchanged and does not authenticate
 control requests. All read/inspection/retention semantics remain unchanged.
 
@@ -250,3 +250,17 @@ A scheduled refresh gets a new job/attempt/source and shares every existing perm
 rate and socket bound. Deterministic queue positions replace random job UUID order
 for newly enqueued campaigns; migrated jobs retain their previous UUID ordering.
 Worker transport, credential, lease, delivery, read and collector contracts are unchanged.
+
+## Phase 12 operational compatibility
+
+Package **0.13.0**, migration **0006**; measurement/source/control/schedule/read
+schemas remain unchanged. See [OPERATIONS.md](OPERATIONS.md) for separate readiness,
+fixed-cardinality telemetry, local dashboard, resource bounds, restricted DB service
+roles, staged token replacement and complete retention/restore procedures. The optional
+same-origin production-build launch uses the restricted read account; coordinator DML
+uses a separate account while owner commands retain admission/stop/suppression authority.
+Owner credentials/volume and worker UUIDs/boot counters are never reset or auto-rotated.
+Backup manifest 2 adds a seven-day window; v1 remains readable with manual age review.
+Dumps/restores omit ACLs/ownership; recovery still cancels historical jobs and sets global
+stop before verification/current suppression review. There is no public TLS deployment,
+production OS isolation, encrypted backup or real-input authorization.

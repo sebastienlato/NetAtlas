@@ -7,11 +7,19 @@ commercial search database is used.
 
 ## Current delivery
 
+**Phase 12 — Operational hardening** adds privacy-safe fixed-cardinality telemetry,
+separate readiness, a local operations dashboard, optional restricted read/control DB
+accounts, resource/backpressure limits and a same-origin production-build local path.
+See [operations and retention/restore runbook](docs/OPERATIONS.md) and
+[dependency review](docs/DEPENDENCIES.md). Package **0.13.0**, migration **0006**;
+cryptography is now **50.0.2**. No public deployment or real ingestion is enabled.
+
+
 Phase 11 adds reproducible offline sampling/sharding over authored routing fixtures,
 seed-only IPv6, prefix fairness and explicit source-bound refresh scheduling. A narrow
 loopback adapter preserves shared worker budgets, durable stop/suppression and original
 measurement identities. See [scheduling and coverage semantics](docs/SCHEDULING.md).
-UDP and live routing remain deferred. Package **0.12.0**, migration **0006**.
+UDP and live routing remain deferred.
 
 Phase 10 added two authenticated local worker processes, durable leases/heartbeats,
 centrally budgeted connections and atomic replayable delivery. Workers measure only
@@ -64,10 +72,12 @@ Open <http://127.0.0.1:5173>. The web development server proxies `/healthz` and
 <http://127.0.0.1:8000/docs>. Run `make demo` after database setup and paste its printed dataset hash for the offline
 exploration example. See [the guide](docs/GEOGRAPHIC_UI.md). Stop either process with Ctrl-C. Stored-data routes require the local database and `X-NetAtlas-Read: 1` header;
 see [API.md](docs/API.md) for the bounded JSON request contract. Health and the static
-example do not need the database. The API does not auto-reload; restart after Python changes. Vite reloads web edits automatically.
+example do not need the database; `/readyz` checks dependencies separately. The API does not auto-reload; restart after Python changes. Vite reloads web edits automatically.
 
 | Command | Purpose |
 | --- | --- |
+| `make local-build` / `make local-serve` | Build and serve same-origin local production assets with the provisioned read account; see OPERATIONS |
+| `uv run --locked netatlas-store provision-access` | Explicitly create new service roles/private credentials without replacing the owner |
 | `make setup` | Install locked Python and web dependencies |
 | `make test` | Python discovery/contract/config/API tests and web component tests |
 | `make lint` | Contract drift check, Ruff, formatting, strict mypy, Biome/TypeScript |

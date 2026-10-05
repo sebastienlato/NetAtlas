@@ -69,3 +69,10 @@ check-db: db-up
 # Explicit operator action; creates authored fixtures, never starts measurement.
 demo: db-migrate
 	uv run --locked python -m netatlas.demo
+
+.PHONY: local-build local-serve
+# Foreground, same-origin production assets; provision-access is explicit/no-clobber.
+local-build: setup build
+
+local-serve:
+	uv run --locked netatlas serve --storage data/storage/services/read --blobs data/storage/blobs --web-root web/dist

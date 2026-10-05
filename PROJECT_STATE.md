@@ -1,7 +1,7 @@
 # Project state
 
-Updated: 2026-10-04. **Phase 11 — Coverage and refresh scheduling is complete.**
-Phase 12 has not started. Package **0.12.0**; schedule input/plan **1**,
+Updated: 2026-10-05. **Phase 12 — Operational hardening is complete.**
+Phase 13 has not started. Package **0.13.0**; schedule input/plan **1**,
 algorithm **coverage-refresh-1**, IPv6 **explicit-authored-seeds-only-1**;
 control envelope **1**; HTTP schema **1**; local query schema **1**; config **3**;
 observation/manifest **2** with explicit v1 reads; fingerprint pack/result schemas
@@ -9,6 +9,37 @@ observation/manifest **2** with explicit v1 reads; fingerprint pack/result schem
 bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0006**.
 
 ## Delivered
+
+- **Phase 12:** independent `operations/` module provides dependency readiness,
+  read-only aggregate snapshots and fixed-cardinality HTTP telemetry. Liveness remains
+  separate; global stop is an intentional operating state, not dependency failure.
+- Both services expose guarded metrics/readiness. Structured cumulative HTTP summaries
+  emit at most once per 30 seconds on request completion; no endpoint/query/peer/contact/
+  secret/exception fields. No exporter or external monitoring service is installed.
+- A separate `/operations` dashboard uses the generated schema-1 client with manual
+  refresh, one cancellable read, late-result guards and hidden/60-second clearing.
+  Stored states, overdue leases, permits, receipts and retained sources remain distinct;
+  reads never reconcile authority. No measurement controls or global coverage claim.
+- Optional generated local read/control DB roles use explicit SELECT/necessary DML,
+  no owner/DDL/admin grants, bounded connection pools and private credentials. Control
+  cannot enqueue, suppress, reopen or remove observations. Worker token replacement
+  stages new secrets while preserving worker UUIDs/spool boot counters. No owner reset.
+- Built assets and API can run on one loopback origin with the restricted read account.
+  Launchers bound transport concurrency/backlog/keepalive; Compose bounds DB memory,
+  CPUs, PIDs and logs. A 64-MiB blob/spool reserve adds failure backpressure. Same OS
+  owner and DB PUBLIC privileges remain trusted, not production process isolation.
+- Backup manifest **2** adds creation/seven-day expiry; legacy v1 reads remain with
+  manual age review. ACL-free dumps/restores do not restore service grants. Historical
+  campaigns/jobs remain cancelled and globally stopped through source verification and
+  current suppression review. No encrypted backup or automatic deletion daemon.
+- Dependency audit remediated three cryptography advisories by upgrading **48.0.1 →
+  50.0.2**; vulnerable PKCS#7/chain-verifier features were not invoked. Final Python/npm
+  audits report no known vulnerabilities within their documented scope. No new runtime
+  dependency. See [DEPENDENCIES.md](docs/DEPENDENCIES.md).
+- [OPERATIONS.md](docs/OPERATIONS.md) gives the reproducible launch, readiness/count
+  definitions, privilege and credential recovery, retention/opt-out and stopped-restore
+  runbook. Alembic stays **0006**; worker/source/schedule/query/preview policies persist.
+
 
 - **Phase 11:** separate I/O-free scheduling over bounded authored routed/unrouted/unknown
   regions, SHA-ranked sampling/sharding, explicit sourced IPv6 seeds, /24-/48 prefix
@@ -191,6 +222,40 @@ and its locked dependencies for local certificate parsing.
 
 ## Verified validation
 
+- Full **make check-db COMPOSE=docker-compose** passes with **385 Python tests,
+  28 web unit/component tests and six production Chromium tests**, including lint,
+  format, strict typing, generated contract drift, both builds and CLI smoke.
+- **11 operational acceptance cases** cover readiness/schema/blob/capacity failure
+  and recovery, fixed-cardinality private telemetry, exact receipt/retention/opt-out
+  counts, non-mutating lease reporting, 32 competing reads (one admitted lane), eight
+  held control requests plus 24 bounded rejections, lock timeout/recovery, disk reserve
+  rollback/pending preservation, token cutover and preserved boot generations, service
+  role read/inspection/delivery permissions/denials, age rejection and ACL-free stopped
+  restore with current suppression reapplication. All existing worker/scheduler,
+  HTTP/TLS/lost-ACK/kill/restart/retention/upgrade/restore checks remain included.
+- Production Chromium uses a disposable DB and generated restricted read role. Actual
+  built assets and API served on the same origin pass dashboard/readiness/search,
+  zero external requests and Axe; dashboard screenshot inspected. New component
+  tests cover no automatic fetch, guarded requests, expiry and late pagehide replies.
+- Existing expiry acceptance had a host-versus-VM exact-boundary assumption; its
+  expired fixture now uses the authoritative DB clock. Production scheduling clocks,
+  refresh semantics and future-plan rejection remain unchanged.
+- Owner database backed up privately before Compose hardening, then verified with
+  **two sources, one fingerprint derivation and one enrichment** unchanged. Existing
+  Colima profile, native PostGIS image, volume/password and migration **0006** preserved.
+  New service accounts are provisioned under ignored data/storage/services; both report
+  ready. The documented `make local-serve` smoke returned 200 for liveness, readiness,
+  built explorer/dashboard and aggregate snapshot (two retained sources), then stopped.
+  No persistent coordinator or worker credentials were provisioned for the owner.
+- PostgreSQL container limits verified: 1 GiB, two CPUs, 256 PIDs, three 10-MiB logs.
+  Runtime pins unchanged. Final dependency audit: 38 installed Python dependencies
+  without known vulnerabilities (unpublished NetAtlas skipped), npm zero known findings.
+- Existing bundle warning remains: approximately **1.304-MB main JS / 511-kB worker**.
+  No public deployment, real ingestion, Internet campaign, thesis evaluation or release.
+  Delivery commit, remote equality, clean tree and CI are reported from Git/Actions.
+
+### Phase 11 baseline (retained historical record)
+
 - Full **make check-db COMPOSE=docker-compose** passed with **374 Python tests,
   26 web unit/component tests and five production Chromium tests**. Ruff/format,
   strict mypy, Biome/TypeScript, generated OpenAPI drift, Python/Vite builds and all
@@ -351,7 +416,7 @@ file cannot contain its own final hash. Verify local HEAD against
 
 ## Limitations and blockers
 
-No Phase 11 implementation blocker. No raw download, real-data ingestion,
+No Phase 12 implementation blocker. No raw download, real-data ingestion,
 comprehensive sensitive-content sanitizer, public authentication, production
 role isolation, encrypted backup, worldwide workers, release or tag exists.
 The new authenticated control plane is trusted-local and uses only literal-loopback
@@ -388,5 +453,5 @@ failover, distributed throughput and production durability remain unqualified.
 
 ## Next
 
-**Phase 12 — Operational hardening**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
-Do not begin Phase 12 in this Phase 11 chat.
+**Phase 13 — Thesis evaluation**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
+Do not begin Phase 13 in this Phase 12 chat.

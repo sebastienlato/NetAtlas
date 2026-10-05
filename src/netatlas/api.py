@@ -12,6 +12,8 @@ from pydantic import ValidationError
 from sqlalchemy import Engine
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
+from starlette.responses import FileResponse, Response
+from starlette.staticfiles import StaticFiles
 
 from netatlas import __version__
 from netatlas.config import Settings, load_settings
@@ -19,6 +21,8 @@ from netatlas.domain import Endpoint, Model
 from netatlas.examples import example_observation
 from netatlas.inspection.models import InspectionRequest, InspectionResponse
 from netatlas.observation import Observation
+from netatlas.operations.status import OperationsRequest, Ready, Snapshot, readiness, snapshot
+from netatlas.operations.telemetry import ObserveHTTP, Telemetry
 from netatlas.read_api.boundary import ReadBoundary, SafeJSONResponse, error
 from netatlas.read_api.cursors import Cursors, ReadError
 from netatlas.read_api.inspection import inspect_source
@@ -41,7 +45,7 @@ from netatlas.storage.pipeline import Pipeline
 class Health(Model):
     status: Literal["ok"] = "ok"
     version: str = __version__
-    phase: Literal[11] = 11
+    phase: Literal[12] = 12
     measurement_enabled: Literal[False] = False
 
 
@@ -53,10 +57,15 @@ def create_app(
     *,
     engine: Engine | None = None,
     blobs: BlobStore | None = None,
+    storage: Path = Path("data/storage"),
+    blob_root: Path = Path("data/storage/blobs"),
+    web_root: Path | None = None,
 ) -> FastAPI:
     resolved = settings or load_settings()
     owned: Engine | None = None
     cursors = Cursors()
+    telemetry = Telemetry("read")
+    root = blobs.root if blobs is not None else blob_root
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -78,6 +87,8 @@ def create_app(
         },
     )
     app.add_middleware(ReadBoundary, api_port=resolved.api.port)
+    app.add_middleware(ObserveHTTP, telemetry=telemetry)
+    app.state.telemetry = telemetry
 
     def reader() -> Reader:
         nonlocal owned
@@ -85,7 +96,7 @@ def create_app(
             return Reader(engine, cursors)
         if owned is None:
             try:
-                owned = local_engine(Path("data/storage"))
+                owned = local_engine(storage)
             except OSError, ValueError, KeyError:
                 raise ReadError(503, "unavailable") from None
         return Reader(owned, cursors)
@@ -111,6 +122,23 @@ def create_app(
     @app.get("/healthz", response_model=Health, operation_id="health")
     async def health() -> Health:
         return Health()
+
+    @app.get("/readyz", response_model=Ready, operation_id="readiness")
+    def ready(response: Response) -> Ready:
+        result = readiness(lambda: reader().engine, root)
+        response.status_code = 200 if result.status == "ready" else 503
+        return result
+
+    @app.get("/metrics", include_in_schema=False)
+    def metrics() -> Response:
+        return Response(telemetry.metrics(), media_type="text/plain; version=0.0.4")
+
+    @app.post("/api/v1/operations", response_model=Snapshot, operation_id="operations")
+    def operations(body: OperationsRequest, x_read: ReadHeader) -> Snapshot:
+        try:
+            return snapshot(reader().engine, root)
+        except OSError, ValueError:
+            raise ReadError(503, "unavailable") from None
 
     @app.get("/api/v1/examples/observation", response_model=Observation, operation_id="example")
     async def example() -> Observation:
@@ -222,11 +250,21 @@ def create_app(
         except ValueError:
             raise ReadError(422, "invalid_request") from None
         try:
-            pipeline = Pipeline(
-                reader().engine, blobs or BlobStore(Path("data/storage/blobs"), create=False)
-            )
+            pipeline = Pipeline(reader().engine, blobs or BlobStore(root, create=False))
             return inspect_source(pipeline, key, body)
         except OSError, ValueError:
             raise ReadError(503, "unavailable") from None
+
+    if web_root is not None:
+        web_root = web_root.resolve(strict=True)
+        if not (web_root / "index.html").is_file():
+            raise ValueError("built web assets required")
+        index = web_root / "index.html"
+
+        @app.get("/operations", include_in_schema=False)
+        def dashboard() -> FileResponse:
+            return FileResponse(index)
+
+        app.mount("/", StaticFiles(directory=web_root, html=True), name="web")
 
     return app

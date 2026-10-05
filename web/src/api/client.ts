@@ -54,7 +54,9 @@ async function request<K extends keyof Operations>(
   return response.json() as Promise<Operations[K]["response"]>;
 }
 
-export function readQuery<K extends "search" | "facets" | "places">(
+export function readQuery<
+  K extends "search" | "facets" | "places" | "operations",
+>(
   operation: K,
   body: Operations[K]["request"],
   options?: Options,

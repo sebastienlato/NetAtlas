@@ -648,3 +648,27 @@ footer {
 .inspection details {
   margin: 0.75rem 0;
 }
+
+.operations {
+  max-width: 64rem;
+  margin: 2rem auto;
+  padding: 1.5rem;
+}
+.operations table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+.operations th,
+.operations td {
+  text-align: left;
+  padding: 0.6rem;
+  border-bottom: 1px solid currentColor;
+}
+.operations dt {
+  font-weight: 600;
+  margin-top: 1rem;
+}
+.operations dd {
+  margin: 0.25rem 0;
+}

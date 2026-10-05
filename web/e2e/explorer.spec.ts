@@ -272,3 +272,38 @@ test("retained timeline and bounded evidence are inert, accessible and cleared",
   await expect(inspection).toHaveCount(0);
   expect(external).toEqual([]);
 });
+
+test("same-origin production deployment and operations dashboard use the restricted read role", async ({
+  page,
+}) => {
+  const external: string[] = [];
+  page.on("request", (req) => {
+    if (
+      !req.url().startsWith("http://127.0.0.1:8000") &&
+      !req.url().startsWith("blob:")
+    )
+      external.push(req.url());
+  });
+  const ready = await page.request.get("http://127.0.0.1:8000/readyz");
+  expect(ready.status()).toBe(200);
+  await page.goto("http://127.0.0.1:8000/operations");
+  await page.getByRole("button", { name: "Refresh operations" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Dependencies: ready" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Unexpired, unsuppressed retained sources"),
+  ).toBeVisible();
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await page.screenshot({
+    path: "test-results/operations.png",
+    fullPage: true,
+  });
+  await page.getByRole("link", { name: "Back to explorer" }).click();
+  await page
+    .getByLabel("Dataset SHA-256", { exact: true })
+    .fill(seed().dataset_sha256);
+  await search(page);
+  await expect(page.locator(".counts")).toContainText("12");
+  expect(external).toEqual([]);
+});

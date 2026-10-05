@@ -56,6 +56,9 @@ def main() -> None:
     parser.add_argument("--output", type=Path, help="new derived JSONL under ignored data/")
     parser.add_argument("--validate", type=Path, help="replay and validate existing derived JSONL")
     parser.add_argument("--inspect", action="store_true", help="inspect rule pack as escaped JSON")
+    parser.add_argument("--storage", type=Path, default=Path("data/storage"))
+    parser.add_argument("--blobs", type=Path, default=Path("data/storage/blobs"))
+    parser.add_argument("--web-root", type=Path, help="optional built local web directory")
     args = parser.parse_args()
     if args.command == "fingerprint":
         try:
@@ -154,11 +157,22 @@ def main() -> None:
                     2, "Discovery failed; check scope, enabled identity, budgets, and spool.\n"
                 )
         case "serve":
-            uvicorn.run(
-                create_app(settings),
-                host=settings.api.host,
-                port=settings.api.port,
-                log_level=settings.logging.level.lower(),
-                access_log=False,
-                proxy_headers=False,
-            )
+            try:
+                uvicorn.run(
+                    create_app(
+                        settings, storage=args.storage, blob_root=args.blobs, web_root=args.web_root
+                    ),
+                    host=settings.api.host,
+                    port=settings.api.port,
+                    log_level="critical",
+                    limit_concurrency=32,
+                    backlog=32,
+                    timeout_keep_alive=2,
+                    h11_max_incomplete_event_size=16384,
+                    access_log=False,
+                    proxy_headers=False,
+                )
+            except OSError, ValueError:
+                parser.exit(
+                    2, "Local service startup failed; check paths and listener availability.\n"
+                )

@@ -42,7 +42,11 @@ class ReadBoundary:
             return
         request = Request(scope, receive)
         path = scope["path"]
-        data_route = path.startswith("/api/v1/") and not path.startswith("/api/v1/examples/")
+        data_route = (
+            path in ("/readyz", "/metrics")
+            or path.startswith("/api/v1/")
+            and not path.startswith("/api/v1/examples/")
+        )
 
         async def safe_send(message: Message) -> None:
             if message["type"] == "http.response.start":
@@ -65,6 +69,7 @@ class ReadBoundary:
                 or host.password is not None
                 or host.path
                 or host.query
+                or "cookie" in request.headers
                 or host.fragment
                 or host.port not in (None, self.api_port, 5173)
             ):
@@ -78,7 +83,7 @@ class ReadBoundary:
             if origin is not None and origin not in allowed:
                 raise ReadError(403, "forbidden")
             if data_route:
-                if request.headers.get("x-netatlas-read") != "1":
+                if path != "/readyz" and request.headers.get("x-netatlas-read") != "1":
                     raise ReadError(403, "forbidden")
                 if self.active:
                     raise ReadError(429, "busy")
@@ -89,7 +94,7 @@ class ReadBoundary:
                     ].strip() != "application/json" or request.headers.get("content-encoding"):
                         raise ReadError(415, "unsupported_media_type")
                     size = request.headers.get("content-length")
-                    if size and (not size.isdecimal() or int(size) > MAX_BODY):
+                    if size and (not size.isdecimal() or len(size) > 10 or int(size) > MAX_BODY):
                         raise ReadError(413, "too_large")
                     body = bytearray()
                     async with asyncio.timeout(5):

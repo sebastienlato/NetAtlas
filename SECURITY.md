@@ -103,7 +103,8 @@ Raw responses/certificates are private mode-0600 blobs under mode-0700 directori
 Private JSONB envelopes can also contain sensitive peer metadata. Database access
 uses a generated local SCRAM password and loopback-only published port. Credentials
 stay under ignored data/, outside configuration hashes and logs. The local DB owner
-is trusted; separate application roles, encryption and remote access are not provided.
+is trusted; Phase 12 provides optional restricted local service roles; encryption, production OS
+isolation and remote access are not provided.
 CLI output is limited to counts, UUID/digests and generic errors, never captured bytes.
 No field-level sanitizer is claimed: sensitive content is removed as an entire
 observation with its derivations/references/projections; retained history stays exact.
@@ -184,8 +185,8 @@ continuation. Requests cannot initiate target traffic, DNS, downloads, enrichmen
 arbitrary raw reads or writes. Inspection alone reconstructs a bound retained source
 under the shared lock and exports its reviewed projection. One in-flight read, streamed body/time bounds, 5-second DB
 statements, 10-second lock waits and 4 MiB output bounds limit local cost. Errors
-omit inputs/SQL/credentials and access logs stay disabled. Production service roles,
-authentication, TLS and broader resource controls remain Phase 12. See [API.md](docs/API.md).
+omit inputs/SQL/credentials and access logs stay disabled. Phase 12 adds local restricted DB roles and resource controls; public authentication,
+TLS and production process isolation remain unimplemented. See [API.md](docs/API.md).
 
 ## Geographic display boundary (Phase 8)
 
@@ -289,3 +290,30 @@ can prevent committing stop: terminate workers locally; normal heartbeat/control
 already cancels active cooperative sockets. Existing 250-ms grants/in-flight traffic
 prevent instantaneous fencing. Keep worker credentials/boot generations and separately
 quarantine or delete pending copies. Exact commands/limits are in docs/SCHEDULING.md.
+
+## Operational boundary (Phase 12)
+
+[OPERATIONS.md](docs/OPERATIONS.md) is the deployment, credential, incident and
+retention/restore runbook. Fixed-cardinality HTTP metrics and structured summaries
+exclude endpoint/query/peer/operator/secret/exception values. Readiness exposes only
+fixed dependency states, never connection details. Dashboard snapshots expose counts
+only and never initiate measurement, reconcile authority or imply successful coverage.
+The read browser guard remains non-secret and all listeners remain literal loopback.
+
+Optional read/control DB accounts have explicit SELECT/limited DML grants and no
+ownership/DDL/admin grants. They do not replace the owner or give workers DB secrets.
+Same-OS-user access, DB PUBLIC privileges and cooperative workers remain trusted;
+this is not production or hostile-user isolation. Credential staging/recovery preserves
+owner state and worker boot generations. No automatic rotation/restart daemon exists.
+Resource limits fail closed/backpressure; readiness is neither full source verification
+nor proof that independent spools/backups were erased. Container logs omit statements,
+parameters and ordinary errors; application access logs remain disabled.
+
+Backup manifest 2 rejects expired/future/overlong age windows; operators must still
+remove/quarantine files within seven days, sooner on removal. Legacy v1 requires
+independent age review. Dumps/restores omit service ACLs and credentials; restores
+cancel all historical work and set global stop before source verification, remain
+offline through current suppression review, and require explicit new service grants.
+Unencrypted local backups and independent offline copies remain limitations.
+Cryptography is now 50.0.2 following the [dependency review](docs/DEPENDENCIES.md).
+No real-input/public deployment authorization or comprehensive sanitizer is added.

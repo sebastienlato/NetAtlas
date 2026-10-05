@@ -14,7 +14,7 @@ from pydantic import Field
 from netatlas.control.models import BODY_BYTES, Deliver, Lease
 from netatlas.derivations.offline import json_object, regular_file
 from netatlas.domain import Model
-from netatlas.storage.database import private_directory, sync_directory
+from netatlas.storage.database import private_directory, require_capacity, sync_directory
 
 
 class Credential(Model):
@@ -66,13 +66,17 @@ def publish(path: Path, data: bytes) -> None:
     sync_directory(path.parent)
 
 
-def provision(root: Path) -> None:
+def provision(root: Path, *, previous: Credentials | None = None) -> None:
     private_directory(root)
     if any(root.iterdir()):
         raise ValueError("new empty credential directory required; never replace credentials")
     credentials = Credentials(
         workers=tuple(
-            Credential(worker_id=uuid4(), token=secrets.token_urlsafe(32)) for _ in range(2)
+            Credential(
+                worker_id=previous.workers[index].worker_id if previous else uuid4(),
+                token=secrets.token_urlsafe(32),
+            )
+            for index in range(2)
         )
     )
     publish(root / "coordinator.json", credentials.model_dump_json().encode())
@@ -119,7 +123,9 @@ class Spool:
         return Pending.model_validate(json_object(read_private(path))) if path.exists() else None
 
     def save(self, pending: Pending) -> None:
-        publish(self.root / "pending.json", pending.model_dump_json().encode())
+        raw = pending.model_dump_json().encode()
+        require_capacity(self.root, len(raw))
+        publish(self.root / "pending.json", raw)
 
     def clear(self) -> None:
         (self.root / "pending.json").unlink(missing_ok=True)

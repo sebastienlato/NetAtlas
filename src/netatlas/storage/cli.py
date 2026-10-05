@@ -13,6 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from netatlas.derivations.offline import load_pack, read_observation, rows
 from netatlas.enrichment.offline import load_dataset
+from netatlas.operations.access import provision_access
 from netatlas.storage.backup import backup, restore
 from netatlas.storage.blobs import BlobStore
 from netatlas.storage.database import initialize_local, local_engine, migrate
@@ -26,6 +27,8 @@ def main() -> None:
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("init-local")
     sub.add_parser("migrate")
+    access = sub.add_parser("provision-access")
+    access.add_argument("--output", type=Path, default=Path("data/storage/services"))
     ingest = sub.add_parser("ingest")
     ingest.add_argument("--input", type=Path, required=True)
     ingest.add_argument("--synthetic", action="store_true", required=True)
@@ -64,6 +67,12 @@ def main() -> None:
             return
         engine = local_engine(args.root)
         try:
+            if args.command == "provision-access":
+                if not args.output.resolve().is_relative_to((Path.cwd() / "data").resolve()):
+                    raise ValueError("private output under data required")
+                provision_access(engine, args.output)
+                print('{"provisioned":true}')
+                return
             if args.command == "restore":
                 if not re.fullmatch(r"netatlas_restore_[a-z0-9_]{1,40}", args.database):
                     raise ValueError("separate restore database required")

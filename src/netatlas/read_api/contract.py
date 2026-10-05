@@ -13,6 +13,7 @@ from typing import Any
 from netatlas.api import create_app
 
 OPERATIONS = {
+    "operations",
     "search",
     "facets",
     "places",

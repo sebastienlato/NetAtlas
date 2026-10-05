@@ -1,6 +1,9 @@
 # Architecture
 
-Status: Phase 11 adds independent offline coverage/refresh planning, deterministic queue
+Status: Phase 12 adds an independent operations projection, fixed-cardinality HTTP telemetry,
+readiness/dashboard, restricted local service DB roles and same-origin production assets.
+See docs/OPERATIONS.md for access, resource, deployment and recovery limits.
+Phase 11 adds independent offline coverage/refresh planning, deterministic queue
 order, source-bound new measurements and durable global stop (migration 0006).
 Phase 10 added a separate authenticated local worker control plane over durable
 leases, one-use central connection permits and atomic delivery. Phase 9 added
@@ -101,7 +104,7 @@ storage, FastAPI or UI. The engine supplies admission for every connection; pass
 syntax parsers implement a small Collector interface and TLS uses an active handshake
 adapter. Raw sockets and SSLObject/MemoryBIO give explicit byte accounting and closure.
 Configuration v3 leaves protocol collection disabled until explicitly selected. API
-health identifies Phase 11; the UI exposes retained synthetic metadata and reviewed previews,
+health identifies Phase 12; the UI exposes retained synthetic metadata and reviewed previews,
 with no measurement controls.
 
 ## Distributed worker boundary (Phase 10)
@@ -280,25 +283,33 @@ limit cost/exposure. These are not public authentication, field-level sensitive-
 sanitization or production roles. OpenAPI generates the TypeScript client contract;
 make check rejects drift. See [API.md](docs/API.md).
 
-Discovery emits redacted JSON logs with generated campaign/observation IDs,
-outcomes and completion counts. Scope/contact/raw exceptions stay out of these logs.
-The API still omits request access logs. Later add job IDs and operational metrics;
-Prometheus-compatible metrics for rates, queue depth, failures, latency, coverage,
-ingestion/index lag, and resource use; optional OpenTelemetry traces. No raw IP or
-endpoint labels in metrics: cardinality and privacy would be unacceptable at scale.
+Discovery retains redacted campaign logs. The independent `operations/` module adds
+fixed route/status HTTP counters and duration histograms, bounded aggregate JSON log
+summaries, separate dependency readiness and read-only DB aggregate snapshots. It
+never imports collectors, reaps leases or changes authority. Operational labels/logs
+contain no request values, addresses, queries, source identities, contacts or exceptions.
+The generated schema-1 client drives a separate `/operations` dashboard with manual
+refresh, cancellation and hidden/60-second clearing. `/healthz` stays liveness.
 
-Validated TOML supplies reproducible non-secret configuration; hash effective
-settings per run. Later secrets use environment/secret stores and never enter the
-configuration digest payload or logs. Save policy/dataset versions and seed along
-with configuration. Tests use synthetic data, deterministic clocks, loopback
-fixtures, controlled load, and documented benchmark workloads.
+Optional generated local read/control roles replace owner credentials in the service
+launch path without rotating owner secrets. Explicit SELECT and narrowly scoped DML
+grants preserve transaction/inspection semantics; owner commands retain migration,
+admission, suppression and stop/reopen authority. Same-OS-user execution and inherited
+PUBLIC DB privileges remain trusted-local limitations, not hostile process isolation.
 
-The API/geographic UI runs as two local processes. Phase 5 extends Compose with a native arm64/amd64 PostGIS build on the pinned
-PostgreSQL 18.3 base and pinned PostGIS packages. The deployment path is containers, a same-origin TLS reverse
-proxy, internal data services, and separated worker/control-plane networks. Phase 10 implements worker authentication, lease heartbeats, bounded delivery retry
-and backpressure for two local processes; wider deployment remains unimplemented. Reproducibility includes runtime pins, dependency locks, CI, migrations,
-and fixture datasets. A local synthetic database/blob restore drill is tested; production deployment,
-failover and multi-host recovery remain future acceptance criteria.
+Local engines bound pool growth; launchers bound connections/backlog/keepalive.
+PostgreSQL Compose applies CPU/memory/PID/log limits while preserving the named volume
+and existing secret. A 64-MiB filesystem reserve rejects new blob/spool allocations;
+rollback/pending-slot backpressure never fabricates acknowledgement or retries traffic.
+The DB volume has no application disk quota. Readiness is not full integrity checking.
+
+The API can serve built React assets directly on the same loopback origin. No Vite
+server is needed for the production-build local launch. Workers/coordinator remain
+separate local processes; no public TLS gateway, service supervisor or remote network
+is deployed. Backup manifest 2 adds a seven-day age window (legacy 1 reads retained);
+DB archives omit ownership/ACLs and restores remain stopped/offline pending current
+suppression review. No encrypted backup, external exactly-once delivery, failover or
+production RPO/RTO is claimed. Exact commands and bounds are in OPERATIONS and STORAGE.
 
 ## Capacity and thesis validity
 

@@ -3,6 +3,8 @@
 import json
 import os
 import secrets
+import shutil
+import stat
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -13,6 +15,12 @@ from sqlalchemy import URL, Connection, Engine, create_engine, text
 
 # One local pipeline lock, including filesystem publication and maintenance.
 LOCK_ID = 0x4E455441544C4153
+MIN_FREE_BYTES = 64 * 1024 * 1024
+
+
+def require_capacity(path: Path, size: int) -> None:
+    if shutil.disk_usage(path).free < MIN_FREE_BYTES + size:
+        raise OSError("storage reserve reached")
 
 
 def sync_directory(path: Path) -> None:
@@ -58,8 +66,9 @@ def initialize_local(root: Path) -> None:
 
 def validate_settings_files(root: Path) -> None:
     for path in (root / "connection.json", root / "postgres-password"):
-        if path.is_symlink() or not path.is_file() or path.stat().st_mode & 0o077:
-            raise ValueError("private regular settings required")
+        info = path.lstat()
+        if not stat.S_ISREG(info.st_mode) or info.st_mode & 0o077 or info.st_size > 16384:
+            raise ValueError("bounded private regular settings required")
 
 
 def local_engine(root: Path) -> Engine:
@@ -69,13 +78,21 @@ def local_engine(root: Path) -> Engine:
         raise ValueError("local storage only")
     url = URL.create(
         "postgresql+psycopg",
-        username="postgres",
+        username=settings.get("username", "postgres"),
         password=(root / "postgres-password").read_text(),
         host=settings["host"],
         port=settings["port"],
         database=settings["database"],
     )
-    return create_engine(url, hide_parameters=True, connect_args={"connect_timeout": 5})
+    return create_engine(
+        url,
+        hide_parameters=True,
+        pool_size=2,
+        max_overflow=0,
+        pool_timeout=2,
+        pool_pre_ping=True,
+        connect_args={"connect_timeout": 2},
+    )
 
 
 @contextmanager

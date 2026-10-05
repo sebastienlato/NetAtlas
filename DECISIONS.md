@@ -1,6 +1,6 @@
 # Architecture decision record
 
-Accepted 2026-10-04. Revisit with evidence; record consequences rather than silently
+Accepted through 2026-10-05. Revisit with evidence; record consequences rather than silently
 changing the design. Phase 10 adds bounded local distributed workers; worldwide infrastructure remains planned.
 
 | ID | Choice and reason | Consequences / reconsider when |
@@ -84,6 +84,13 @@ changing the design. Phase 10 adds bounded local distributed workers; worldwide 
 | ADR-067 | Latest retained attempt determines outcome cooldown; refresh binds exact prior UUID/digest and creates independent new measurement identities. | No older-open fallback, uncertain remeasurement, retry-to-refresh conversion or source rewrite. Source changes/expiry/suppression fail stale admission; explicit snapshots and new plans are required. |
 | ADR-068 | Atomic schedule/job/reference admission, unique replay identity, actual DB-clock expiry and existing one-use global permits. | Lost ACK replay cannot duplicate jobs; unavailable storage/full queues reject all work. 128 pending/1024 retained jobs, 32 lab endpoints, two workers and the original spool/wire bounds persist. |
 | ADR-069 | Persistent global stop with explicit reopening, atomic suppression/job revocation and globally stopped restores. | Reopening never revives cancelled authority, pacing or boot identities. Already-issued/in-flight traffic prevents instantaneous fencing; independent/offline copies need deletion/quarantine. Schedule/source summaries retain the explicit 90-day control metadata policy. |
+
+| ADR-070 | Package 0.13.0, independent read-only operations snapshot schema 1 and separate dependency readiness; no migration beyond 0006. | Liveness remains dependency-free. Stored job state, overdue leases, receipts and retained sources stay separate; an operational read never reconciles authority. |
+| ADR-071 | Fixed route/status telemetry, cumulative bounded-cardinality histograms and at-most-once-per-30-second structured summaries on HTTP completion. | No request/source/worker/peer values, contacts or exception text in metrics/logs. Process restart resets counters; no external collector or target-latency claim. |
+| ADR-072 | Additive generated read/control service roles, explicit current-table grants and staged worker-token replacement preserving UUID/boot identity. | Owner account/volume/password untouched. Restricted coordinator cannot enqueue, suppress or reopen; OS owner remains trusted. No production process isolation, public TLS or hostile-query sandbox. |
+| ADR-073 | Same-origin built web assets on the loopback API; bounded local DB pools, HTTP launch limits, DB container resources/logs and 64-MiB blob/spool reserve. | Preserve normal development path. Resource pressure fails/backpressures without hidden queues or new probes; no Python OS memory quota or DB disk quota. |
+| ADR-074 | Backup manifest 2 adds exact seven-day timestamps; omit DB ownership and ACLs from dump/restore. | Restored historical queues are cancelled/globally stopped and new service grants need explicit provisioning. Legacy manifest 1 reads remain; age requires independent operator evidence. No automatic archive deletion or encrypted backup. |
+| ADR-075 | Upgrade cryptography 48.0.1 to locked 50.0.2 after three upstream audit findings. | Affected PKCS#7/verifier features were not called; parsing-only inspection semantics remain. Final npm/Python audits report no known vulnerabilities, not proof of security; detailed scope/licenses in DEPENDENCIES. |
 
 ## Primary references consulted
 

@@ -1,6 +1,6 @@
-# Local read API — through Phase 11
+# Local read API — through Phase 12
 
-Package 0.12.0 retains HTTP schema 1 over the Phase 6 search engine and synthetic
+Package 0.13.0 retains HTTP schema 1 over the Phase 6 search engine and synthetic
 PostgreSQL storage. The separate worker control plane uses migrations through 0006; read semantics are unchanged. No request
 can initiate measurement, resolve targets, download datasets, derive new records,
 change stored data or read arbitrary blobs. Reviewed source-bound inspection is
@@ -13,7 +13,7 @@ Run `make db-up COMPOSE=docker-compose`, `make db-migrate`, then `make dev-api`.
 Compose-plugin hosts omit the override. Reuse the existing private volume and secret.
 The API lazily opens `data/storage` connection settings; unavailable/unmigrated
 storage returns generic 503 errors. `/healthz` reports process liveness, version
-and Phase 11, not database readiness. `/api/v1/examples/observation` remains an
+and Phase 12, not database readiness. `/readyz` checks dependencies separately. `/api/v1/examples/observation` remains an
 explicit authored static example, independent of database retention.
 
 Only literal socket peers 127.0.0.1/::1 and Host names 127.0.0.1, [::1], localhost
@@ -28,7 +28,7 @@ The header is a browser request guard, **not a secret or user authentication**.
 Any trusted local program can read the synthetic data. Local users, OS/container
 administrators and DB owners remain trusted. Do not forward/proxy this service to
 remote clients or enable proxy-header rewriting; production accounts, least-privilege
-DB roles, TLS, distributed rate limits and public access remain Phase 12 work.
+DB roles are now available locally; TLS, distributed rate limits and public access remain unimplemented.
 There is no real-data authorization or field-level sensitive-content sanitizer.
 
 ## Routes and schemas
@@ -43,6 +43,7 @@ its body example is in [INSPECTION.md](INSPECTION.md).
 
 | Route | Request / response | Behavior |
 | --- | --- | --- |
+| `/api/v1/operations` | OperationsRequest / Snapshot | Schema 1 body only; fixed aggregate counts/dependency status, no queries or authority changes. |
 | `/api/v1/search` | SearchRequest / SearchResponse | Full Phase 6 query, exact counts/facets and bounded metadata hits. |
 | `/api/v1/facets` | SearchRequest / SearchMetadata | Same post-filter counts/facets and provenance, no hits; cursor must be null. |
 | `/api/v1/places` | PlacesRequest / PlacesResponse | Required exact dataset hash; optional exact casefolded name, country, kind; stable-ID ordering and continuation. |
@@ -218,3 +219,17 @@ See [DISTRIBUTED.md](DISTRIBUTED.md).
 Phase 11 keeps HTTP schema 1 and all read/inspection contracts unchanged. Only package/
 health metadata and its generated digest change. Scheduling is a private operator
 adapter, not imported by this API or exposed through the browser. See SCHEDULING.md.
+
+## Phase 12 operational compatibility
+
+Package **0.13.0**, migration **0006**; measurement/source/control/schedule/read
+schemas remain unchanged. See [OPERATIONS.md](OPERATIONS.md) for separate readiness,
+fixed-cardinality telemetry, local dashboard, resource bounds, restricted DB service
+roles, staged token replacement and complete retention/restore procedures. The optional
+same-origin production-build launch uses the restricted read account; coordinator DML
+uses a separate account while owner commands retain admission/stop/suppression authority.
+Owner credentials/volume and worker UUIDs/boot counters are never reset or auto-rotated.
+Backup manifest 2 adds a seven-day window; v1 remains readable with manual age review.
+Dumps/restores omit ACLs/ownership; recovery still cancels historical jobs and sets global
+stop before verification/current suppression review. There is no public TLS deployment,
+production OS isolation, encrypted backup or real-input authorization.

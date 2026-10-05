@@ -7,7 +7,7 @@ import stat
 import tempfile
 from pathlib import Path
 
-from netatlas.storage.database import private_directory, sync_directory
+from netatlas.storage.database import private_directory, require_capacity, sync_directory
 
 DIGEST = re.compile(r"[0-9a-f]{64}")
 
@@ -49,6 +49,7 @@ class BlobStore:
             # A prior writer may have crashed after link but before directory fsync.
             sync_directory(self.root)
             return sha256
+        require_capacity(self.root, len(data))
         fd, temporary = tempfile.mkstemp(prefix=".stage-", dir=self.root)
         try:
             with os.fdopen(fd, "wb") as stream:
