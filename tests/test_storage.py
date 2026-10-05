@@ -104,6 +104,7 @@ def test_blob_permissions_integrity_and_gc(tmp_path: Path) -> None:
 def test_blob_symlink_and_public_directory_rejected(tmp_path: Path) -> None:
     public = tmp_path / "public"
     public.mkdir(mode=0o755)
+    public.chmod(0o755)  # Explicit public fixture, independent of the operator umask.
     with pytest.raises(ValueError):
         BlobStore(public)
     store = BlobStore(tmp_path / "private")

@@ -168,3 +168,13 @@ and replace the previous view, with the same hidden/pagehide/60-second clearing.
 Keyboard focus and the skip link target the active view. See [INSPECTION.md](INSPECTION.md)
 for protocol/certificate/trace contracts and preview limitations. Package is now
 0.10.0 and health reports Phase 9; the original operator seed remains unchanged.
+
+## Phase 14 thesis profile
+
+`make thesis-demo` (or `python -m netatlas.demo --thesis`) explicitly adds three
+extra authored stale/ambiguous/closed fixtures. The original `make demo` profile
+remains unchanged. Both print exact seed clock/hash/dataset validity, run ordinary
+expiry first and append history without resetting owner data. Use separate storage
+for the 16-source/15-endpoint walkthrough in [DEMONSTRATION.md](DEMONSTRATION.md).
+[INSTALLATION.md](INSTALLATION.md) documents fresh installation and offline reuse.
+No source/read schema, map semantics or measurement controls change.

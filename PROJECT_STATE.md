@@ -1,7 +1,8 @@
 # Project state
 
-Updated: 2026-10-05. **Phase 13 — Thesis evaluation is complete.**
-Phase 14 has not started. Package **0.14.0**; schedule input/plan **1**,
+Updated: 2026-10-05. **Phase 14 — Thesis-ready demonstration/release candidate
+engineering is complete.** Publication/license and tag/release decisions
+remain with the owner/university. No tag or release exists. Package **0.15.0**; schedule input/plan **1**,
 algorithm **coverage-refresh-1**, IPv6 **explicit-authored-seeds-only-1**;
 control envelope **1**; HTTP schema **1**; local query schema **1**; config **3**;
 observation/manifest **2** with explicit v1 reads; fingerprint pack/result schemas
@@ -9,6 +10,21 @@ observation/manifest **2** with explicit v1 reads; fingerprint pack/result schem
 bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0006**.
 
 ## Delivered
+
+- **Phase 14:** optional `thesis-demo-1` profile through `make thesis-demo` adds
+  authored stale, ambiguous and closed sources without changing the original seed,
+  collection, read/inspection, derivation or retention semantics. Fresh storage has
+  16 sources / 15 endpoints; current view has 13 candidate records and 11 mapped points.
+  Seed prints exact dataset hash/clock/validity. No read action starts measurement.
+- [INSTALLATION.md](docs/INSTALLATION.md) records initial downloads, fresh isolated
+  install, offline cache reuse, restricted-role local deployment and safe teardown.
+  [DEMONSTRATION.md](docs/DEMONSTRATION.md) supplies an examiner walkthrough and qualified
+  evidence/cost discussion. [RELEASE_CANDIDATE.md](docs/RELEASE_CANDIDATE.md) holds actual
+  rehearsal evidence, acceptance/publication checklist and unresolved owner decisions.
+- Reproducible presentation/browser sources under docs/presentation/; editable 12-slide
+  PPTX with notes and reviewed screenshot/source-identity ledger outputs remain private
+  under ignored artifacts/. No generated presentation or measured dataset enters Git.
+  No next implementation phase, public hosting, license grant or tag/release is invented.
 
 - **Phase 13:** independent `evaluation/` operator harness/report schema 1,
   `thesis-evaluation-1`, and a 30-case separately labelled authored corpus. Fixed core
@@ -241,6 +257,41 @@ are not fully pinned. Runtime pins are unchanged; Phase 9 adds cryptography 48.0
 and its locked dependencies for local certificate parsing.
 
 ## Verified validation
+
+- Full **make check-db COMPOSE=docker-compose** passed **396 Python tests, 28 web
+  tests and six production Chromium tests**, static/format/type/contract checks,
+  both builds and CLI smoke. New integration checks preserve thesis fixture counts,
+  stale/unknown/negative history, exact ambiguity traces and canonical replay.
+- A private umask exposed two old public-directory test fixtures; explicit fixture
+  chmod now tests the intended rejection independent of umask. Production access
+  checks did not change. Full acceptance then passed with umask 077.
+- Fresh isolated clone/empty dependency caches installed and built locked inputs;
+  after removing only its dependency directories, offline cache reinstall/build/smoke
+  passed. A new Compose project/volume/secret/roles on port 55433 migrated and seeded
+  16/16/16 sources/fingerprints/enrichments. Existing host tools/image/Chromium were
+  reused, so no virgin-machine or uncached image-rebuild claim. Colima needs a shared
+  checkout path for its secret mount; the guide records that discovered constraint.
+- Live restricted-role thesis UI rehearsal passed counts, map, negative timeline,
+  source-bound inspection, stale/unknown/ambiguous cases and operations/readiness,
+  with zero external browser requests. Exact identities/screenshots remain private.
+- Evaluation recheck at **2026-10-05T18:01:39.226760Z**, one repetition/two samples,
+  passed all oracles and four-service standalone collection (4 completed, 4 connections,
+  3 candidates, 1 unknown, 0 incomplete). The Phase 13 timing report remains historical;
+  this is a reproducibility check, not a replacement performance study.
+- Fresh advisory audits: zero known Python/npm findings within installed-package scope.
+  The 12-slide deck passed structural/layout/import checks and visual inspection;
+  native PowerPoint execution is untested. Existing large JS/worker warning persists.
+- Final preservation audit caught forced browser-fixture termination bypassing cleanup.
+  Playwright now requests a bounded graceful SIGTERM; a returning outer handler also
+  handles Uvicorn's signal re-raise so owned DB/role/temp cleanup runs. Only identified
+  leftover fixtures were removed; final shutdown preserves the owner inventory.
+- Runtime pins, migration 0006 and all wire schemas are unchanged. Package/health is
+  **0.15.0 / 14** with regenerated OpenAPI digest; no runtime dependency added.
+  Owner storage, secrets, service roles and container/volume are preserved; verify
+  2 sources / 1 fingerprint / 1 enrichment. Disposable demo processes/storage are
+  removed after rehearsal. Publication/license and release authorization remain manual.
+
+### Phase 13 baseline (retained historical record)
 
 - Full **make check-db COMPOSE=docker-compose** passes: **395 Python tests, 28 web
   tests and six production Chromium tests**, including strict static checks, generated
@@ -477,7 +528,8 @@ file cannot contain its own final hash. Verify local HEAD against
 
 ## Limitations and blockers
 
-No Phase 13 implementation blocker. No raw download, real-data ingestion,
+No Phase 14 engineering blocker. Publication/license and tag/release remain
+owner/university decisions; the private candidate does not authorize them. No raw download, real-data ingestion,
 comprehensive sensitive-content sanitizer, public authentication, production
 role isolation, encrypted backup, worldwide workers, release or tag exists.
 The new authenticated control plane is trusted-local and uses only literal-loopback
@@ -512,7 +564,9 @@ backups at most 7 days. Trusted OS/container/DB owners retain access. Removal re
 horizon is 90 days; external consumers need coordinated deletion contracts. Power-loss,
 failover, distributed throughput and production durability remain unqualified.
 
-## Next
+## Maintenance handoff
 
-**Phase 14 — Thesis-ready demonstration/release**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
-Do not begin Phase 14 or create a release/tag in this Phase 13 chat.
+All roadmap engineering phases are complete through the Phase 14 private candidate.
+[docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) is the self-contained maintenance/publication
+handoff, not a new implementation phase. Await explicit owner decisions before public
+publication or tagging. No new campaign or automatic follow-up is authorized.

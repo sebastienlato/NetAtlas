@@ -8,7 +8,7 @@ actual blockers requiring credentials, permission, or a manual action. Do not us
 conversation history as a substitute for repository documentation.
 
 Run commands in the repository root. `make setup` installs locked dependencies;
-`make check` runs the complete proportional validation through Phase 13.
+`make check` runs the complete proportional validation through Phase 14.
 Use `make check-db` for the complete database acceptance suite; plain `make check`
 reports those tests skipped without `NETATLAS_TEST_DB=1`. See `docs/STORAGE.md` for
 Compose setup, standalone Compose override and isolated database/restore testing. Individual commands
@@ -94,3 +94,12 @@ PROJECT_STATE cannot contain its own final commit hash without a circular update
 Record phase identity and reproducible verification commands there; Git history and
 the completion report identify the exact commit. If publication is blocked, preserve
 the completed local commit and ask only for the minimum missing owner action.
+
+## After the final roadmap phase
+
+Phase 14 hands off a private candidate, not a new implementation phase. Follow
+`docs/NEXT_PHASE.md` and `docs/RELEASE_CANDIDATE.md`. Publication/license and explicit
+tag/release authorization are separate owner/university decisions. Commit authored
+demo/presentation sources, not generated decks, screenshots, measured JSON or local
+identity ledgers. `docs/INSTALLATION.md` qualifies fresh-checkout rehearsal and first
+downloads versus offline reuse. Keep the original evaluation report historical.

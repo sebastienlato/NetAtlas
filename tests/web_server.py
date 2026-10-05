@@ -1,6 +1,7 @@
 """Real loopback API for browser acceptance, using a disposable synthetic database."""
 
 import json
+import signal
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
@@ -19,6 +20,9 @@ from netatlas.storage.pipeline import Pipeline
 
 
 def main() -> None:
+    # Uvicorn re-raises its captured SIGTERM after graceful shutdown. Preserve a
+    # returning outer handler so Playwright's stop reaches our owned-resource finally.
+    signal.signal(signal.SIGTERM, lambda *_: None)
     admin = local_engine(Path("data/storage"))
     name = "netatlas_test_web_" + uuid4().hex
     with admin.connect().execution_options(isolation_level="AUTOCOMMIT") as connection:

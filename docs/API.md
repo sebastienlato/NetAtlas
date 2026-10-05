@@ -1,6 +1,6 @@
-# Local read API — through Phase 13
+# Local read API — through Phase 14
 
-Package 0.14.0 retains HTTP schema 1 over the Phase 6 search engine and synthetic
+Package 0.15.0 retains HTTP schema 1 over the Phase 6 search engine and synthetic
 PostgreSQL storage. The separate worker control plane uses migrations through 0006; read semantics are unchanged. No request
 can initiate measurement, resolve targets, download datasets, derive new records,
 change stored data or read arbitrary blobs. Reviewed source-bound inspection is
@@ -13,7 +13,7 @@ Run `make db-up COMPOSE=docker-compose`, `make db-migrate`, then `make dev-api`.
 Compose-plugin hosts omit the override. Reuse the existing private volume and secret.
 The API lazily opens `data/storage` connection settings; unavailable/unmigrated
 storage returns generic 503 errors. `/healthz` reports process liveness, version
-and Phase 13, not database readiness. `/readyz` checks dependencies separately. `/api/v1/examples/observation` remains an
+and Phase 14, not database readiness. `/readyz` checks dependencies separately. `/api/v1/examples/observation` remains an
 explicit authored static example, independent of database retention.
 
 Only literal socket peers 127.0.0.1/::1 and Host names 127.0.0.1, [::1], localhost

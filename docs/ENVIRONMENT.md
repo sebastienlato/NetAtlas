@@ -140,3 +140,15 @@ used 2,048 synthetic endpoints/6,144 sources on Apple M4 Max / macOS arm64, with
 2-CPU/2-GiB Colima VM. Final methodology/results and index size are in
 SEARCH_BENCHMARK.md; complete generated plans remain ignored. No Internet target
 measurement, real ingestion, OpenSearch, paid service or new runtime was used.
+
+## Phase 14 rehearsal — 2026-10-05
+
+Pinned host tools and the existing Colima profile were inspected and retained. A
+fresh isolated clone/uv/npm caches installed locked dependencies, then recreated its
+removed dependency directories using offline modes successfully. A distinct Compose
+project, new secret/volume/service roles and port 55433 reused the already-acquired
+native PostgreSQL/PostGIS image. The first secret mount from macOS private temporary
+storage failed; placing only the disposable clone under the VM-shared workspace fixed
+it. The rehearsal seeded/verified 16/16/16 sources/fingerprints/enrichments and served
+built assets with its restricted read role. See RELEASE_CANDIDATE for actual checks,
+source provenance and limitations. No virgin-machine or uncached-image qualification.

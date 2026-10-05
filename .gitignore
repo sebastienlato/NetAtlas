@@ -26,7 +26,7 @@ __pycache__/
 .coverage*
 htmlcov/
 # Web and builds
-node_modules/
+node_modules
 dist/
 build/
 coverage/

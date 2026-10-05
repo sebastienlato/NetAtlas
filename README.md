@@ -7,7 +7,17 @@ commercial search database is used.
 
 ## Current delivery
 
-**Phase 13 — Thesis evaluation** adds a reproducible synthetic evaluation harness,
+**Phase 14 — Thesis-ready demonstration/release candidate** is complete as a
+private engineering package: **0.15.0**, health **14**, migration **0006**. Start with
+[installation and offline rehearsal](docs/INSTALLATION.md), the
+[12-minute walkthrough](docs/DEMONSTRATION.md), and the
+[release candidate/checklist](docs/RELEASE_CANDIDATE.md). `make thesis-demo` adds
+stale, ambiguous and closed examples to the original seed. Presentation sources are
+in [docs/presentation](docs/presentation/README.md); generated outputs stay private.
+Publication/license and tag/release decisions remain with the owner/university.
+No public release, real campaign or worldwide capacity claim is made.
+
+**Phase 13 — Thesis evaluation** added a reproducible synthetic evaluation harness,
 a separately labelled 30-case authored corpus, per-class precision/recall and explicit
 unknowns/spoofing, repeated bounded performance/storage trials, freshness and
 geography/coverage bias analysis. Read the [evaluation protocol](docs/EVALUATION.md)
@@ -98,6 +108,7 @@ example do not need the database; `/readyz` checks dependencies separately. The 
 | `uv run --locked netatlas-schedule --help` | Offline plans, explicit DB snapshots, lab enqueue and coverage reports |
 | `uv run --locked netatlas-control --help` | Separate authenticated local worker/control commands |
 | `uv run --locked python -m netatlas.evaluation --help` | Bounded synthetic thesis evaluation; explicit clock, private output and optional loopback measurement |
+| `make thesis-demo` | Append the optional 16-source/15-endpoint authored thesis profile; no measurement |
 | `make demo` | Append authored demo fixtures; print the exact dataset hash to paste into the UI |
 | `make db-migrate` | Apply packaged Alembic migrations to the local database |
 | `uv run --locked netatlas config-check` | Validate defaults and print configuration digest |

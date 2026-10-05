@@ -77,3 +77,8 @@ local-build: setup build
 
 local-serve:
 	uv run --locked netatlas serve --storage data/storage/services/read --blobs data/storage/blobs --web-root web/dist
+
+.PHONY: thesis-demo
+# Explicit additive authored presentation profile; no measurement.
+thesis-demo: db-migrate
+	uv run --locked python -m netatlas.demo --thesis

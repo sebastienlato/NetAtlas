@@ -96,6 +96,10 @@ changing the design. Phase 10 adds bounded local distributed workers; worldwide 
 | ADR-077 | Three bounded disposable DB repetitions at 32/128 endpoints, complete durable source operations and serialized exact queries; separate four-service standalone loopback pipeline. | Warm-up/setup exclusions, exact source/count oracles, clock/tree/lock/config/dataset provenance, resource bounds, storage exclusions and observed variation accompany every result. Historical Phase 6 remains historical; no distributed/worldwide throughput extrapolation. |
 | ADR-078 | Keep measured outputs private; commit small authored fixtures, harness and aggregate thesis report. External validation remains a separately scoped proposal. | No owner reset, real inputs, new vantage points, paid service, public listener, unapproved campaign or Phase 14 release work. Same-author labels are not independent-rater validation. |
 
+| ADR-079 | Package 0.15.0 / health 14; optional authored thesis-demo-1 extends the original additive seed with stale/ambiguous/closed examples. | No dependency, migration, production rule or wire semantic changes. Read UI stays separate from collection; exact source identities and demo clocks remain explicit. |
+| ADR-080 | Rehearse isolated checkout, fresh dependency directories/caches and disposable Compose storage; prime once then reinstall/build with offline package modes. | Existing pinned host tools/image/Chromium may be reused and are disclosed. No virgin-machine, uncached image reproducibility or host-wide air-gap claim; preserve owner state. |
+| ADR-081 | Deliver private presentation sources, generated local deck/screenshots, qualified evidence and publication checklist. | All engineering phases complete; no invented next phase. No project redistribution license selected. Public sharing/tag/release requires separate applicable owner/university decisions. |
+
 ## Primary references consulted
 
 - [Cryptography X.509 parsing/accessors](https://cryptography.io/en/latest/x509/reference/)

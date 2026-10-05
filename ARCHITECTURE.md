@@ -1,7 +1,10 @@
 # Architecture
 
-Status: Phase 13 adds a separate explicit `evaluation/` operator harness, authored
-truth and qualified synthetic reports (docs/EVALUATION.md). It is never imported by
+Status: Phase 14 packages a private thesis candidate, optional authored demo profile,
+installation/rehearsal and presentation material (docs/RELEASE_CANDIDATE.md). No new
+runtime boundary, dependency, schema or migration is introduced. Publication remains
+pending owner/university decisions. Phase 13 adds a separate explicit `evaluation/`
+operator harness, authored truth and qualified synthetic reports (docs/EVALUATION.md). It is never imported by
 the API, workers, domain or derivation engines. Runtime schemas and migration 0006
 are unchanged. Phase 12 adds an independent operations projection, fixed-cardinality HTTP telemetry,
 readiness/dashboard, restricted local service DB roles and same-origin production assets.
@@ -107,7 +110,7 @@ storage, FastAPI or UI. The engine supplies admission for every connection; pass
 syntax parsers implement a small Collector interface and TLS uses an active handshake
 adapter. Raw sockets and SSLObject/MemoryBIO give explicit byte accounting and closure.
 Configuration v3 leaves protocol collection disabled until explicitly selected. API
-health identifies Phase 13; the UI exposes retained synthetic metadata and reviewed previews,
+health identifies Phase 14; the UI exposes retained synthetic metadata and reviewed previews,
 with no measurement controls.
 
 ## Distributed worker boundary (Phase 10)

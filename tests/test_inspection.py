@@ -370,6 +370,7 @@ def test_inspection_blob_open_does_not_create_or_accept_public_directories(tmp_p
     assert not missing.exists()
     public = tmp_path / "public"
     public.mkdir(mode=0o755)
+    public.chmod(0o755)  # Explicit public fixture, independent of the operator umask.
     with pytest.raises(ValueError):
         BlobStore(public, create=False)
     private = BlobStore(tmp_path / "private")

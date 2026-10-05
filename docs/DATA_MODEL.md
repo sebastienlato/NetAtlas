@@ -75,7 +75,7 @@ For limits, selection, statuses and exact accounting, see
 
 ## Configuration and manifests
 
-Configuration is **version 3**, package **0.14.0**. Old explicit version-2 files fail
+Configuration is **version 3**, package **0.15.0**. Old explicit version-2 files fail
 closed. To migrate a local file, change its version to 3, compare against
 `config/default.toml`, and explicitly choose `measurement.protocol_evidence`. It
 remains false by default; old partial files that omit a version retain connect-only

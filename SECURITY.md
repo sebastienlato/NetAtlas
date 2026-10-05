@@ -330,3 +330,15 @@ faults are injected in isolated fixtures, never by filling or disrupting owner s
 Committed raw text is authored inert corpus content, not network evidence. Published
 analysis remains fixture-qualified; external studies require separate owner/institutional
 authorization described in EVALUATION.md. No real ingestion, public deployment or release.
+
+## Phase 14 candidate boundary
+
+The optional thesis seed appends only authored documentation-address fixtures; it
+never measures or grants worker authority. The independent loopback evaluation and
+worker acceptance retain their explicit flags, budgets and disposable storage.
+Read UI remains free of measurement controls. Offline browser rehearsal rejects all
+external resource requests. It does not prove a host-wide air gap or comprehensive
+sanitization. Generated presentations, screenshots, source ledgers and evaluation
+outputs remain ignored/private. A private candidate grants no redistribution license,
+publication permission, tagging authority or real-input permission. See
+[RELEASE_CANDIDATE.md](docs/RELEASE_CANDIDATE.md) for the remaining owner decisions.

@@ -49,3 +49,15 @@ existing MAP_ASSETS licenses/hashes and the owner/university publication decisio
 References: [pip-audit scope/limitations](https://github.com/pypa/pip-audit),
 [npm audit behavior](https://docs.npmjs.com/cli/v11/commands/npm-audit/),
 [PostgreSQL grants and inherited PUBLIC privileges](https://www.postgresql.org/docs/18/sql-grant.html).
+
+## Phase 14 release-candidate recheck — 2026-10-05
+
+Repeated the same npm audit and isolated pip-audit 2.9.0 commands against the locked
+candidate installation. npm reported zero vulnerabilities in all severity groups.
+Python reported no known vulnerabilities across 38 audited dependencies; the local
+unpublished NetAtlas 0.15.0 entry is skipped. Full JSON stays ignored/private under
+data/phase14/. No dependency version changed; uv.lock only advances NetAtlas.
+This checks available advisories for installed application/dev dependencies, not
+container/OS packages or supply-chain completeness. Third-party notices and the
+unselected project redistribution license remain as above. No new live geographic
+source or external map resource was added.

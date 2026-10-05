@@ -21,6 +21,7 @@ export default defineConfig({
       url: "http://127.0.0.1:8000/healthz",
       timeout: 60000,
       reuseExistingServer: false,
+      gracefulShutdown: { signal: "SIGTERM", timeout: 10000 },
     },
     {
       command: "npm run preview -- --port 5173 --strictPort",
