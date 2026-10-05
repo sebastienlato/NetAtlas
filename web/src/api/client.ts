@@ -19,7 +19,10 @@ export type Endpoint = {
   transport: "tcp" | "udp";
   port: number;
 };
-type EndpointOperation = "endpointDetail" | "endpointHistory";
+type EndpointOperation =
+  | "endpointDetail"
+  | "endpointHistory"
+  | "endpointInspection";
 type Options = { signal?: AbortSignal };
 
 // Same-origin only; callers render all returned labels/URLs as inert text.

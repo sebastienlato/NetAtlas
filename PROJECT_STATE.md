@@ -1,7 +1,7 @@
 # Project state
 
-Updated: 2026-10-04. **Phase 8 — Geographic exploration UI is complete.**
-Phase 9 has not started. Package **0.9.0**; HTTP schema **1**; local query schema **1**; config **3**;
+Updated: 2026-10-04. **Phase 9 — Service and evidence inspection is complete.**
+Phase 10 has not started. Package **0.10.0**; HTTP schema **1**; local query schema **1**; config **3**;
 observation/manifest **2** with explicit v1 reads; fingerprint pack/result schemas
 **1**, engine **fingerprints-1**, taxonomy **netatlas-categories-1**; enrichment
 bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0004**.
@@ -73,7 +73,7 @@ bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0004**.
   uncertainty; no remote geocoder. Places require a live unsuppressed associated
   source; stale/future bundles return provenance/state with no places.
 - OpenAPI-derived TypeScript contract and same-origin cancellable client with drift
-  checking in make check. No evidence viewer, ingestion route or measurement controls. **OpenSearch is deferred**
+  checking in make check. No ingestion route or measurement controls. **OpenSearch is deferred**
   based on the measured local synthetic workload, not assumed global-scale suitability.
 
 - **Phase 8:** responsive React geographic explorer over the actual generated client.
@@ -93,7 +93,26 @@ bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0004**.
   server-push removal claim; read-time views revalidate through a fresh request.
 - Accessible native controls/list, visible focus, skip navigation, result focus and
   WebGL fallback. Metadata stays inert text with visible control-code tokens; arbitrary
-  metadata URLs never become links/resources. No Phase 9 raw/protocol/certificate UI.
+  metadata URLs never become links/resources. Phase 9 inspection is described below.
+
+- **Phase 9:** exact endpoint/source UUID/digest/derivation-bound inspection route,
+  with immutable source reconstruction, actual expiry and suppression checks before
+  and after projection under the shared storage lock. No arbitrary blob/file reads.
+- Separate pure `inspection/` projections expose reparsed protocol fields, bounded
+  inert UTF-8 previews, parsed certificate assertions and exact candidate traces.
+  Preview policy `synthetic-preview-1` withholds unreviewed headers, SSH comments,
+  unsupported/encoded formats and recognized sensitive fields/bodies before truncation.
+  2,048-byte body/greeting and 256-byte field limits; controls/bidi made visible.
+- Local DER parsing via cryptography 48.0.1 preserves `verification=not_performed`.
+  Parsed assertions, failures, unsupported/truncated captures and display/chain
+  truncation remain separate. No trust/identity/validity/revocation validation or fetches.
+- Selected immutable derivations preserve all ambiguous candidates, ordinal confidence,
+  source/rule/pack/engine/taxonomy identity and exact checked byte ranges/hashes.
+  Trace excerpts stay withheld; no request runs derivations or combines sources.
+- Accessible endpoint timeline and exact observation inspection share the existing
+  browser read lane, generation guards, view clearing and 60-second expiry. Timeline
+  includes failed/empty attempts, uses original-query continuation and holds one page.
+  No captured links/resources/HTML execution, raw download or persistent view cache.
 
 ## Architecture and operations
 
@@ -101,9 +120,10 @@ Domain/evidence/observation contracts are I/O-free. Discovery orchestrates polic
 collectors acquire bounded bytes. Fingerprint/enrichment engines are pure and separate.
 Storage adapts them under the existing transaction/removal protocol. `search/` depends
 on query contracts and the storage connection/lock, never collector execution.
-The read API adapts search through explicit allowlisted models; its HTTP response
+The read API adapts search and source-bound inspection through explicit models; its HTTP response
 contract is separate from private dictionaries. The explorer owns only view state;
 `netatlas.demo` is a separate explicit operator adapter, never imported by the API.
+Read [INSPECTION.md](docs/INSPECTION.md) for the reviewed preview and trace contract.
 Read [GEOGRAPHIC_UI.md](docs/GEOGRAPHIC_UI.md) for demo/setup/scope and
 [MAP_ASSETS.md](docs/MAP_ASSETS.md) for the deliberately reviewed asset exceptions.
 
@@ -116,9 +136,35 @@ for inherited contracts. `make db-up COMPOSE=docker-compose` preserves the exist
 volume/secret and builds native arm64/amd64 PostGIS from the pinned PostgreSQL base
 and direct extension packages; `make db-migrate` applies 0004. Compose-plugin hosts
 omit the override. The image context contains only docker/; transitive APT packages
-are not fully pinned. No runtime/dependency upgrades were needed.
+are not fully pinned. Runtime pins are unchanged; Phase 9 adds cryptography 48.0.1
+and its locked dependencies for local certificate parsing.
 
 ## Verified validation
+
+- Full **make check-db COMPOSE=docker-compose** passed with **312 Python tests,
+  26 web unit/component tests and 5 production Chromium tests**. Ruff/format, strict
+  mypy, Biome/TypeScript, generated OpenAPI drift, Python/Vite builds and CLI smoke
+  all pass; migrations/retention/backup/restore checks remain included.
+- 28 new Python inspection cases cover large/malformed/encoded/hostile inputs,
+  redaction before truncation, unverified expired/self-signed certificate assertions,
+  exact trace integrity and ambiguity, cross-source rejection, v1/IPv6/negative attempts,
+  actual expiry/suppression before cleanup/removal and during projection, generic blob
+  failures, immutable replay and noncreating private blob-directory admission.
+- Actual stored hostile HTML/certificate fixtures render inertly in production Chromium:
+  zero external requests, no injected resource elements or script execution, correct
+  trace/protocol/certificate states, keyboard focus and desktop/mobile Axe with no
+  violations. Screenshots were inspected. No full assistive-technology audit claimed.
+- Unit/component checks cover exact inspection requests, original timeline queries,
+  late-response rejection, removed-source errors and hidden/60-second evidence clearing.
+  Browser outputs are explicitly excluded from source formatting as well as Git.
+- Existing Colima profile, PostGIS image, database volume and secret were preserved;
+  main migration remains 0004. Build warning remains: 1,300.00 kB main JS (362.11 kB
+  gzip), 510.70 kB worker and 91.09 kB CSS. No new capacity benchmark or real inputs.
+- No implementation blockers. Preview marker redaction is deliberately incomplete
+  for arbitrary sensitive content; synthetic-only use remains mandatory. Delivery
+  commit, remote HEAD equality, clean-tree and CI status are reported after publication.
+
+### Phase 8 baseline (retained historical record)
 
 - Full **make check-db COMPOSE=docker-compose** passed with **284 Python tests,
   22 web unit/component tests and 4 Chromium production-browser tests**. Ruff/format,
@@ -195,8 +241,8 @@ file cannot contain its own final hash. Verify local HEAD against
 
 ## Limitations and blockers
 
-No Phase 8 implementation blocker. No raw evidence
-viewer, real-data ingestion, sensitive-content field sanitizer, public authentication, production
+No Phase 9 implementation blocker. No raw download, real-data ingestion,
+comprehensive sensitive-content sanitizer, public authentication, production
 role isolation, encrypted backup, distributed workers, release or tag exists. Local
 query dictionaries/offsets remain private; HTTP uses separate Phase 7 models. Labels remain
 untrusted; hashes do not authenticate peers or dataset publishers.
@@ -230,5 +276,5 @@ failover, distributed throughput and production durability remain unqualified.
 
 ## Next
 
-**Phase 9 — Service and evidence inspection**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
-Do not begin Phase 9 in this Phase 8 chat.
+**Phase 10 — Distributed measurement**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
+Do not begin Phase 10 in this Phase 9 chat.

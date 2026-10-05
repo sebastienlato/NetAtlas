@@ -199,3 +199,76 @@ test("unavailable WebGL preserves the accessible result list", async ({
   await expect(page.getByText(/Map rendering is unavailable/)).toBeVisible();
   await expect(page.getByRole("article")).toHaveCount(12);
 });
+
+test("retained timeline and bounded evidence are inert, accessible and cleared", async ({
+  page,
+}) => {
+  const external: string[] = [];
+  page.on("request", (req) => {
+    if (
+      !req.url().startsWith("http://127.0.0.1:5173") &&
+      !req.url().startsWith("blob:")
+    )
+      external.push(req.url());
+  });
+  await start(page);
+  await search(page);
+  const negative = page.getByRole("article", {
+    name: "192.0.2.1 port 80",
+    exact: true,
+  });
+  await negative
+    .getByRole("button", { name: "View endpoint timeline" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Endpoint timeline" }),
+  ).toBeFocused();
+  await expect(page.getByRole("article")).toHaveCount(2);
+  await expect(page.getByRole("article").first()).toContainText("timeout");
+  await page
+    .getByRole("article")
+    .last()
+    .getByRole("button", { name: "Inspect this observation" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Service & evidence inspection" }),
+  ).toBeFocused();
+  await expect(page.locator(".inspection")).toContainText("nginx");
+  await page.getByRole("button", { name: "Close inspection" }).click();
+  await search(page);
+  await page
+    .getByRole("article", { name: "192.0.2.3 port 80", exact: true })
+    .getByRole("button", { name: "Inspect this observation" })
+    .click();
+  const inspection = page.locator(".inspection");
+  await expect(inspection).toContainText("Certificate · parsed");
+  await expect(inspection).toContainText("not_performed");
+  await expect(inspection).toContainText("[U+202E]");
+  await expect(inspection).toContainText("<script>window.pwned=1</script>");
+  await expect(inspection).not.toContainText("never-expose");
+  await expect(inspection).not.toContainText("/redirect");
+  await inspection
+    .getByText("nginx · Web server · asserted", { exact: true })
+    .click();
+  await expect(inspection).toContainText("http.server");
+  await expect(inspection).toContainText("decoded bytes [");
+  await expect(inspection).toContainText("trace integrity: checked");
+  expect(
+    await page.locator("img, iframe, video, audio, object, embed").count(),
+  ).toBe(0);
+  expect(await page.evaluate(() => "pwned" in window)).toBe(false);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await inspection.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: "test-results/inspection-desktop.png" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await page.screenshot({ path: "test-results/inspection-mobile.png" });
+  await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
+  await expect(inspection).toHaveCount(0);
+  expect(external).toEqual([]);
+});

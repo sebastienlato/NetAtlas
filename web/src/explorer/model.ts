@@ -92,7 +92,7 @@ export function message(error: unknown): string {
     case "response_too_large":
       return "The response or request is too large. Choose a smaller page or narrow the search.";
     case "not_found":
-      return "That dataset is unavailable or has no retained, unsuppressed source.";
+      return "That source or dataset is unavailable, expired, removed or suppressed. Run a fresh search.";
     case "forbidden":
       return "Local access was refused. Use the approved loopback address and same-origin proxy.";
     case "invalid_request":

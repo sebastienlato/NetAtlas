@@ -1,10 +1,11 @@
-# Local read API — through Phase 8
+# Local read API — through Phase 9
 
-Package 0.9.0 retains HTTP schema 1 over the Phase 6 search engine and synthetic
+Package 0.10.0 retains HTTP schema 1 over the Phase 6 search engine and synthetic
 PostgreSQL storage. No migration is required: Alembic head remains 0004. No request
 can initiate measurement, resolve targets, download datasets, derive new records,
-read raw blobs or change stored data. The Phase 8 geographic explorer is documented in GEOGRAPHIC_UI.md; evidence
-inspection remains Phase 9. This is a local operator demonstration, not a public service.
+change stored data or read arbitrary blobs. Reviewed source-bound inspection is
+specified in [INSPECTION.md](INSPECTION.md); the geographic explorer is documented
+in GEOGRAPHIC_UI.md. This is a local operator demonstration, not a public service.
 
 ## Start and access
 
@@ -12,7 +13,7 @@ Run `make db-up COMPOSE=docker-compose`, `make db-migrate`, then `make dev-api`.
 Compose-plugin hosts omit the override. Reuse the existing private volume and secret.
 The API lazily opens `data/storage` connection settings; unavailable/unmigrated
 storage returns generic 503 errors. `/healthz` reports process liveness, version
-and Phase 8, not database readiness. `/api/v1/examples/observation` remains an
+and Phase 9, not database readiness. `/api/v1/examples/observation` remains an
 explicit authored static example, independent of database retention.
 
 Only literal socket peers 127.0.0.1/::1 and Host names 127.0.0.1, [::1], localhost
@@ -36,7 +37,9 @@ All stored-data routes use **POST with JSON** to keep filters and cursors out of
 URLs/access logs and support bounded geographic objects. POST is read-only here.
 Require `Content-Type: application/json`, no Content-Encoding, and an explicit
 integer `schema_version: 1`. Unknown fields and duplicate keys fail. The same
-`{"schema_version":1,"query":{...},"cursor":null}` envelope applies to all routes.
+`{"schema_version":1,"query":{...},"cursor":null}` envelope applies to search, facets,
+detail, history and places. Inspection uses an exact-source query with no cursor;
+its body example is in [INSPECTION.md](INSPECTION.md).
 
 | Route | Request / response | Behavior |
 | --- | --- | --- |
@@ -45,12 +48,13 @@ integer `schema_version: 1`. Unknown fields and duplicate keys fail. The same
 | `/api/v1/places` | PlacesRequest / PlacesResponse | Required exact dataset hash; optional exact casefolded name, country, kind; stable-ID ordering and continuation. |
 | `/api/v1/endpoints/{address}/{transport}/{port}/detail` | EndpointRequest / SearchResponse | One current source for literal IPv4/IPv6, tcp/udp and port; unknown/deleted/expired/suppressed endpoint returns 404. |
 | `/api/v1/endpoints/{address}/{transport}/{port}/history` | EndpointRequest / SearchResponse | Retained endpoint history, newest first; absent endpoint returns an empty page. |
+| `/api/v1/endpoints/{address}/{transport}/{port}/inspection` | InspectionRequest / InspectionResponse | Exact source UUID/digest and optional source-bound derivation ID; reviewed previews and traces, no raw download. |
 
 EndpointQuery accepts selection (attempt/open/evidence), as_of, fresh_seconds,
 exact pack/dataset hashes, engine/taxonomy identities and limit (history only).
 Detail always uses one hit and rejects a cursor. Address is a literal with no DNS,
-URL, CIDR or zone identifier; URI-encode IPv6 when composing paths. No source UUID
-or evidence-blob download route exists. Detail is bounded search metadata, not raw
+URL, CIDR or zone identifier; URI-encode IPv6 when composing paths. Inspection accepts
+the source UUID/digest in its JSON body; no evidence-blob download route exists. Detail is bounded search metadata, not raw
 inspection or a merge of latest attempt/evidence/geo from different sources.
 
 Example local read (no measurement):
@@ -68,11 +72,12 @@ place ID/name/country/representative point and explicit accuracy radius/basis.
 Pack/dataset metadata retains versions, hashes in selection, validity windows and
 origin attribution/licenses/source hashes. Missing matches/radii remain null/unknown.
 No candidate winner, verified identity, vulnerability, physical-device count or
-precise location is inferred. Candidate confidence/evidence traces await Phase 9.
+precise location is inferred. Candidate confidence/evidence traces are available through exact-source inspection.
 
-Only declared response fields cross the boundary. Source envelopes, scanner/contact
-metadata, headers, cookies, bodies, certificate bytes, evidence offsets and private
-paths are excluded. Place lists omit full boundary coordinates, but include kind,
+Only declared response fields cross the boundary. Search metadata excludes protocol
+content; the separate inspection contract permits bounded reviewed previews, certificate
+assertions and exact evidence offsets. Source envelopes, scanner/contact metadata,
+cookies, certificate bytes and private paths remain excluded. Place lists omit full boundary coordinates, but include kind,
 admin code, origin, boundary interpretation and availability. The existing search
 boundary filter accepts stable place IDs without transmitting polygons to clients.
 
@@ -197,3 +202,7 @@ Phase 8 does not change these read contracts. Only package/health metadata chang
 the generated OpenAPI digest was updated. The UI shares one cancellable read lane,
 uses original queries for continuation, and displays only one page with explicit
 map scope. See [GEOGRAPHIC_UI.md](GEOGRAPHIC_UI.md).
+
+Phase 9 adds `endpointInspection` to the generated client and shares all admission,
+error and output policies. Exact-source binding, preview/redaction/truncation limits,
+certificate semantics, trace integrity and browser clearing are in [INSPECTION.md](INSPECTION.md).

@@ -208,7 +208,7 @@ is implied by the local demonstration.
 - **No real-data ingestion is authorized or enabled.** Keep bounded collection,
   authored synthetic inputs and separate credentials. Never use captured tokens.
 - Evidence stays private; only counts, UUIDs/digests and generic diagnostics cross the
-  operator CLI output boundary. There is no raw-content display/export/API and no
+  operator CLI output boundary. Phase 9 adds a reviewed bounded inspection projection, but no raw download or
   automatic partial redaction that would silently change canonical source evidence.
   Product/HTTP/SSH metadata, pack labels and hashes also remain sensitive.
 - The removal policy for sensitive evidence is whole-observation deletion, including
@@ -333,3 +333,12 @@ The explicit `make demo` operator command appends authored fixtures through the
 unchanged pipeline after ordinary expiry maintenance. It never resets owner data,
 credentials or volumes, and is unreachable from HTTP/UI actions. No migration is
 added; see [GEOGRAPHIC_UI.md](GEOGRAPHIC_UI.md) for provenance and expiry semantics.
+
+## Phase 9 inspection compatibility
+
+No migration or source rewrite. `storage/inspection.py` provides endpoint/UUID/digest-bound
+reads under the existing lock, checks actual expiry/persistent suppression before and
+after projection, and reconstructs original sources through verified blob references.
+Exact selected derivations remain immutable and source-bound. No arbitrary blob/path
+read or raw export exists. The preview policy is separate from canonical truth;
+see [INSPECTION.md](INSPECTION.md). Whole-record removal and all copy/backup policies persist.

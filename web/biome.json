@@ -4,6 +4,8 @@
     "includes": [
       "**",
       "!dist",
+      "!test-results",
+      "!playwright-report",
       "!node_modules",
       "!package-lock.json",
       "!src/api/schema.ts"

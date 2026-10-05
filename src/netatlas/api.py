@@ -15,11 +15,13 @@ from starlette.exceptions import HTTPException
 
 from netatlas import __version__
 from netatlas.config import Settings, load_settings
-from netatlas.domain import Model
+from netatlas.domain import Endpoint, Model
 from netatlas.examples import example_observation
+from netatlas.inspection.models import InspectionRequest, InspectionResponse
 from netatlas.observation import Observation
 from netatlas.read_api.boundary import ReadBoundary, SafeJSONResponse, error
 from netatlas.read_api.cursors import Cursors, ReadError
+from netatlas.read_api.inspection import inspect_source
 from netatlas.read_api.models import (
     EndpointRequest,
     ErrorResponse,
@@ -31,20 +33,27 @@ from netatlas.read_api.models import (
     SearchResponse,
 )
 from netatlas.read_api.service import Reader
+from netatlas.storage.blobs import BlobStore
 from netatlas.storage.database import local_engine
+from netatlas.storage.pipeline import Pipeline
 
 
 class Health(Model):
     status: Literal["ok"] = "ok"
     version: str = __version__
-    phase: Literal[8] = 8
+    phase: Literal[9] = 9
     measurement_enabled: Literal[False] = False
 
 
 ReadHeader = Annotated[Literal["1"], Header(alias="X-NetAtlas-Read")]
 
 
-def create_app(settings: Settings | None = None, *, engine: Engine | None = None) -> FastAPI:
+def create_app(
+    settings: Settings | None = None,
+    *,
+    engine: Engine | None = None,
+    blobs: BlobStore | None = None,
+) -> FastAPI:
     resolved = settings or load_settings()
     owned: Engine | None = None
     cursors = Cursors()
@@ -60,7 +69,9 @@ def create_app(settings: Settings | None = None, *, engine: Engine | None = None
         version=__version__,
         lifespan=lifespan,
         default_response_class=SafeJSONResponse,
-        description="Local synthetic metadata only. No measurement, raw capture, or public access.",
+        description=(
+            "Local synthetic search and bounded inspection. No measurement or public access."
+        ),
         responses={
             status: {"model": ErrorResponse}
             for status in (400, 403, 404, 405, 408, 410, 413, 415, 422, 429, 500, 503)
@@ -189,5 +200,33 @@ def create_app(settings: Settings | None = None, *, engine: Engine | None = None
         x_read: ReadHeader,
     ) -> SearchResponse:
         return endpoint(body, address, transport, port, "history")
+
+    @app.post(
+        "/api/v1/endpoints/{address}/{transport}/{port}/inspection",
+        response_model=InspectionResponse,
+        operation_id="endpointInspection",
+    )
+    def inspection(
+        address: str,
+        transport: Literal["tcp", "udp"],
+        port: int,
+        body: InspectionRequest,
+        x_read: ReadHeader,
+    ) -> InspectionResponse:
+        try:
+            if "%" in address:
+                raise ValueError("literal address required")
+            key = Endpoint.model_validate(
+                {"address": address, "transport": transport, "port": port}
+            )
+        except ValueError:
+            raise ReadError(422, "invalid_request") from None
+        try:
+            pipeline = Pipeline(
+                reader().engine, blobs or BlobStore(Path("data/storage/blobs"), create=False)
+            )
+            return inspect_source(pipeline, key, body)
+        except OSError, ValueError:
+            raise ReadError(503, "unavailable") from None
 
     return app

@@ -616,3 +616,35 @@ footer {
     scroll-behavior: auto;
   }
 }
+
+.inspection {
+  margin: 1rem 0;
+  padding: 1.5rem;
+  background: #fff;
+  border: 1px solid #d8e2e6;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+.inspection pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+  background: #f2f6f7;
+  padding: 1rem;
+  max-height: 20rem;
+  overflow: auto;
+}
+.inspection dt {
+  font-weight: 600;
+}
+.inspection dd {
+  margin-left: 0;
+}
+.inspection .capture,
+.inspection .certificate {
+  border-top: 1px solid #d8e2e6;
+  margin-top: 1rem;
+}
+.inspection details {
+  margin: 0.75rem 0;
+}

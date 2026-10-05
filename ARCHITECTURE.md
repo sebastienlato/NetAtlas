@@ -1,6 +1,7 @@
 # Architecture
 
-Status: Phase 8 adds the geographic explorer and offline MapLibre demonstration over
+Status: Phase 9 adds source-bound evidence inspection and a retained endpoint timeline
+to the geographic explorer and offline MapLibre demonstration over
 the bounded local API, indexed PostgreSQL and independent derivations. Only the
 modules listed as implemented in `PROJECT_STATE.md` exist today. A monorepo and modular Python package keep early
 development small; process/network boundaries are introduced when justified.
@@ -91,7 +92,7 @@ storage, FastAPI or UI. The engine supplies admission for every connection; pass
 syntax parsers implement a small Collector interface and TLS uses an active handshake
 adapter. Raw sockets and SSLObject/MemoryBIO give explicit byte accounting and closure.
 Configuration v3 leaves protocol collection disabled until explicitly selected. API
-health identifies Phase 8; the geographic UI exposes only retained synthetic metadata,
+health identifies Phase 9; the UI exposes retained synthetic metadata and reviewed previews,
 with no measurement controls.
 
 ## Evidence and derivations
@@ -202,10 +203,20 @@ views are cleared. No persistent result cache or instant push-removal guarantee.
 `netatlas.demo` is a separate explicit operator fixture seed, unreachable from reads.
 See [GEOGRAPHIC_UI.md](docs/GEOGRAPHIC_UI.md) and [MAP_ASSETS.md](docs/MAP_ASSETS.md).
 
-Planned Phase 9 service inspection will show reviewed metadata, escaped text/hex, certificates, and
-bounded response previews. Never execute returned HTML/scripts, automatically
-embed remote images, or open captured URLs. Sensitive content requires redaction,
-access control, retention rules, and an operator removal workflow before real ingestion.
+Phase 9 implements pure `inspection/` models/projection, a source-bound storage reader,
+and a separate read-transport orchestrator. Exact endpoint/UUID/digest and optional
+source-bound derivation IDs gate reconstruction under the existing lock. Actual
+expiry/suppression is checked before and after projection. Bounded UTF-8 text and
+certificate assertions use a versioned, ephemeral minimization policy separate from
+canonical evidence. No arbitrary file/blob/URL reads or raw downloads exist.
+
+The UI shows all retained attempts in a one-page timeline and inspects one immutable
+source at a time. Exact trace slices/hashes are checked without rerunning rules.
+Cryptography parses whole bounded DER only; verification remains not_performed.
+No certificate/resource fetches, active HTML, images or captured links. Withheld
+headers, recognized sensitive-marker redaction and explicit unsupported formats are
+not comprehensive sanitization; synthetic-only ingestion remains mandatory.
+See [INSPECTION.md](docs/INSPECTION.md) for exact limits and failure semantics.
 
 ## API, observability, and deployment
 
@@ -214,7 +225,8 @@ example and OpenAPI. Phase 7 adds POST search/facets/places/endpoint detail/hist
 `read_api/` owns explicit allowlisted transport models, signed query-bound keysets,
 metadata projection, error and local access/cost policy; `search/` owns SQL and
 selection semantics. The search connection adapter reuses the shared lock/snapshot.
-No source envelopes, raw blob reads, collection or enrichment execution is reachable.
+No source envelopes, arbitrary blob reads, collection or enrichment execution is reachable.
+The inspection route alone performs reviewed source-bound reconstruction and projection.
 
 Cursors pin a measurement cutoff and expire after 15 minutes; actual source retention
 and implicit-current dataset validity are rechecked per page. Counts/facets cover

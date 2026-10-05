@@ -1,8 +1,7 @@
 # Architecture decision record
 
 Accepted 2026-10-04. Revisit with evidence; record consequences rather than silently
-changing the design. Phase 8 adds local geographic exploration; evidence inspection and distributed
-infrastructure remain planned.
+changing the design. Phase 9 adds local bounded evidence inspection; distributed infrastructure remains planned.
 
 | ID | Choice and reason | Consequences / reconsider when |
 | --- | --- | --- |
@@ -68,8 +67,15 @@ infrastructure remain planned.
 | ADR-053 | Shared cancellable read lane, generation guard and original-query continuation; no persistent cache. | Filter edits, hidden views and 60-second expiry clear data. Server-side work may outlive abort; 429 uses explicit retry. Read-time snapshots, not immediate deletion notification. |
 | ADR-054 | Native accessible forms/list and inert metadata with visible control characters. | No arbitrary metadata links/resources; WebGL fallback retains list. Browser tests exercise actual API/PostgreSQL and production build, mobile/desktop Axe, hostile content and zero external requests. |
 
+| ADR-055 | Package 0.10.0, additive schema-1 endpoint/source/digest/derivation-bound inspection; no migration or collection change. | Exact source reconstruction and final expiry/suppression check share the storage lock; no arbitrary blob/path endpoint or source envelope export. |
+| ADR-056 | Separate pure synthetic-preview-1 projection, UTF-8 text only, 2,048-byte content/256-byte scalar bounds, visible controls, no raw fallback. | Withhold unreviewed headers/SSH comments/encoded formats; recognized sensitive markers redact the whole value before truncation. Not comprehensive sanitization; real ingestion remains prohibited and removal stays whole-observation. |
+| ADR-057 | Locked cryptography 48.0.1 for local bounded DER assertion parsing only. | No verification APIs/extensions/network; parsed/failure/unsupported/truncation states and not_performed remain explicit. Additional native dependency; no custom ASN.1 parser or shell/OpenSSL subprocess in requests. |
+| ADR-058 | Exact stored candidate trace with canonical derivation/source hashes and checked pointer/range/slice hashes; no rules rerun or trace excerpt bypass. | All ambiguity and ordinal confidence preserved; cryptographic equality does not establish identity or rule accuracy. |
+| ADR-059 | Timeline and inspection replace the prior view, sharing the browser read lane, generation guards, hidden/60-second clearing and active-view keyboard focus. | No cache, active captured links/resources or automatic retries. Read-time truth can remain visible until expiry; no push deletion notification. |
+
 ## Primary references consulted
 
+- [Cryptography X.509 parsing/accessors](https://cryptography.io/en/latest/x509/reference/)
 - [Python task groups/timeouts](https://docs.python.org/3/library/asyncio-task.html)
 - [FastAPI asynchronous execution](https://fastapi.tiangolo.com/async/)
 - [Pydantic models](https://docs.pydantic.dev/latest/concepts/models/)

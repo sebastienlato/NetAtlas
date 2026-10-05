@@ -7,6 +7,7 @@ from pathlib import Path
 from uuid import uuid4
 
 import uvicorn
+from inspection_fixture import seed_inspection
 from sqlalchemy import create_engine, text
 
 from netatlas.api import create_app
@@ -27,10 +28,11 @@ def main() -> None:
             migrate(engine)
             pipeline = Pipeline(engine, BlobStore(Path(temp) / "blobs"))
             sha = seed(pipeline, datetime.now(UTC))
+            seed_inspection(pipeline, sha)
             Path(".cache").mkdir(exist_ok=True)
             Path(".cache/web-demo.json").write_text(json.dumps({"dataset_sha256": sha}))
             uvicorn.run(
-                create_app(engine=engine),
+                create_app(engine=engine, blobs=pipeline.blobs),
                 host="127.0.0.1",
                 port=8000,
                 proxy_headers=False,

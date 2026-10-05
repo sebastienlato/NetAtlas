@@ -5,16 +5,19 @@ import {
   useRef,
   useState,
 } from "react";
-import { readQuery } from "./api/client";
+import { type Endpoint, readEndpoint, readQuery } from "./api/client";
 import type {
   Category,
+  EndpointQuery,
   Hit,
+  InspectionResponse,
   PlaceSummary,
   PlacesQuery,
   PlacesResponse,
   SearchQuery,
   SearchResponse,
 } from "./api/schema";
+import { Inspection } from "./explorer/Inspection";
 import { ResultMap } from "./explorer/Map";
 import { Dataset, Provenance, Result } from "./explorer/Metadata";
 import {
@@ -52,6 +55,12 @@ export function App() {
   const [boundary, setBoundary] = useState(false);
   const [places, setPlaces] = useState<PlacesResponse | null>(null);
   const [result, setResult] = useState<SearchResponse | null>(null);
+  const [inspection, setInspection] = useState<InspectionResponse | null>(null);
+  const [timeline, setTimeline] = useState<{
+    endpoint: Endpoint;
+    query: EndpointQuery;
+    response: SearchResponse;
+  } | null>(null);
   const [focus, setFocus] = useState<Hit | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState(
@@ -73,6 +82,8 @@ export function App() {
       setResult(null);
       setPlaces(null);
       setFocus(null);
+      setInspection(null);
+      setTimeline(null);
       if (clearPlace) {
         setChosen(null);
         setBoundary(false);
@@ -102,7 +113,7 @@ export function App() {
     };
   }, [invalidate]);
   useEffect(() => {
-    if (!result && !places && !chosen) return;
+    if (!result && !places && !chosen && !inspection && !timeline) return;
     const timer = setTimeout(
       () =>
         invalidate(
@@ -112,7 +123,7 @@ export function App() {
       60000,
     );
     return () => clearTimeout(timer);
-  }, [result, places, chosen, invalidate]);
+  }, [result, places, chosen, inspection, timeline, invalidate]);
 
   function change(name: keyof Fields, value: string) {
     invalidate();
@@ -137,6 +148,8 @@ export function App() {
     setResult(null);
     setPlaces(null);
     setFocus(null);
+    setInspection(null);
+    setTimeline(null);
     setError("");
     setBusy(true);
     setNotice(label);
@@ -223,6 +236,59 @@ export function App() {
       "Finding exact place names…",
     );
   }
+  function endpointQuery(): EndpointQuery {
+    return {
+      selection: "attempt",
+      pack_sha256: fields.pack.trim() || null,
+      dataset_sha256: fields.dataset.trim() || null,
+      limit: 20,
+    };
+  }
+  function history(endpoint: Endpoint, continuation = false) {
+    const q = continuation && timeline ? timeline.query : endpointQuery();
+    const cursor = continuation ? timeline?.response.next_cursor : null;
+    void run(
+      (signal) =>
+        readEndpoint(
+          "endpointHistory",
+          endpoint,
+          { schema_version: 1, query: q, cursor },
+          { signal },
+        ),
+      (value) => {
+        setTimeline({ endpoint, query: q, response: value });
+        requestAnimationFrame(() =>
+          document.getElementById("timeline-title")?.focus(),
+        );
+      },
+      "Reading retained endpoint timeline…",
+    );
+  }
+  function inspectHit(hit: Hit) {
+    void run(
+      (signal) =>
+        readEndpoint(
+          "endpointInspection",
+          hit,
+          {
+            schema_version: 1,
+            query: {
+              observation_id: hit.id,
+              source_sha256: hit.source_sha256,
+              derivation_id: hit.derivation_id,
+            },
+          },
+          { signal },
+        ),
+      (value) => {
+        setInspection(value);
+        requestAnimationFrame(() =>
+          document.getElementById("inspection-title")?.focus(),
+        );
+      },
+      "Reading bounded evidence…",
+    );
+  }
   const hits = result?.hits ?? emptyHits;
   const mapped = features(hits).features.length;
   function selectHit(id: string) {
@@ -232,8 +298,17 @@ export function App() {
 
   return (
     <div className="app-shell">
-      <a className="skip" href="#results">
-        Skip to results
+      <a
+        className="skip"
+        href={
+          inspection
+            ? "#inspection-title"
+            : timeline
+              ? "#timeline-title"
+              : "#results"
+        }
+      >
+        Skip to {inspection ? "inspection" : timeline ? "timeline" : "results"}
       </a>
       <header>
         <a className="brand" href="/" aria-label="NetAtlas home">
@@ -245,7 +320,7 @@ export function App() {
       <main>
         <section className="intro">
           <div>
-            <p className="eyebrow">GEOGRAPHIC EXPLORER / PHASE 8</p>
+            <p className="eyebrow">GEOGRAPHIC EXPLORER / PHASE 9</p>
             <h1>Exposure, in context.</h1>
             <p>Explore retained service observations by place and category.</p>
           </div>
@@ -559,167 +634,237 @@ export function App() {
                 <Dataset data={places.dataset} hash={places.dataset_sha256} />
               </section>
             )}
-            <ResultMap hits={hits} focus={focus} onSelect={selectHit} />
-            <div className="map-scope">
-              <strong>
-                {mapped} mapped / {hits.length} displayed observations
-              </strong>
-              <span>
-                Page {page} only · clusters count displayed observations ·{" "}
-                {hits.length - mapped} without usable points
-              </span>
-            </div>
-            <p className="map-legend">
-              <span className="legend web" /> Web{" "}
-              <span className="legend ssh" /> SSH{" "}
-              <span className="legend mail" /> Mail{" "}
-              <span className="legend multi" /> Multiple{" "}
-              <span className="legend unknown" /> Unknown{" "}
-              <span className="legend other" /> Other categories
-            </p>
-            <p className="uncertainty">
-              Points represent approximate areas, never precise people or
-              devices. Missing accuracy radii are unknown. Area filters test
-              representative points, not uncertainty-disk overlap.
-            </p>
-            <section
-              id="results"
-              aria-labelledby="results-title"
-              aria-busy={busy}
-            >
-              <div className="results-heading">
-                <h2 ref={heading} tabIndex={-1} id="results-title">
-                  {result ? "Search results" : "Observation results"}
+            {inspection && (
+              <Inspection
+                data={inspection}
+                onHistory={() => history(inspection)}
+                onClose={() =>
+                  invalidate("Inspection cleared. Run a fresh search.", true)
+                }
+              />
+            )}
+            {timeline && (
+              <section className="inspection" aria-labelledby="timeline-title">
+                <h2 id="timeline-title" tabIndex={-1}>
+                  Endpoint timeline
                 </h2>
-                {result && (
-                  <span>
-                    PAGE {page} / {hits.length} SHOWN
-                  </span>
+                <p>
+                  {timeline.endpoint.address} :{timeline.endpoint.port} /{" "}
+                  {timeline.endpoint.transport}
+                </p>
+                <p>
+                  All retained attempts, newest first. Negative and empty
+                  attempts remain separate from earlier evidence. Showing{" "}
+                  {timeline.response.hits.length} of{" "}
+                  {timeline.response.counts.observations} observations.
+                </p>
+                {!timeline.response.hits.length && (
+                  <p>No retained observations for this endpoint.</p>
                 )}
-              </div>
-              {result ? (
-                <>
-                  <div className="counts">
-                    <div>
-                      <strong>{result.counts.endpoints}</strong>
-                      <span>Endpoint keys</span>
-                    </div>
-                    <div>
-                      <strong>{result.counts.observations}</strong>
-                      <span>Source observations</span>
-                    </div>
-                    <div>
-                      <strong>{result.counts.candidates}</strong>
-                      <span>All selected candidates</span>
-                    </div>
-                  </div>
-                  <p className="hint">
-                    Totals cover all matches. Map and list show only this page.
-                    Counts describe retained synthetic observations.
-                  </p>
-                  {!!result.facets.length && (
-                    <details className="facets">
-                      <summary>Categories & network counts</summary>
-                      <p>
-                        Post-filter counts include each facet's own filter.
-                        Multiple values and history can exceed totals.
-                      </p>
-                      {[
-                        "category",
-                        "asn",
-                        "country",
-                        "prefix",
-                        "geography",
-                      ].map((kind) => {
-                        const rows = result.facets.filter(
-                          (f) => f.kind === kind,
-                        );
-                        if (!rows.length) return null;
-                        return (
-                          <div key={kind}>
-                            <h3>{kind}</h3>
-                            <p>
-                              Showing {rows.length} of {rows[0].total_buckets}{" "}
-                              buckets
-                              {rows.length < rows[0].total_buckets
-                                ? " · truncated"
-                                : ""}
-                            </p>
-                            <ul>
-                              {rows.map((f) => (
-                                <li key={f.value}>
-                                  {inert(f.value)}: {f.endpoints} endpoints /{" "}
-                                  {f.observations} observations
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        );
-                      })}
-                    </details>
-                  )}
-                  {!hits.length && (
-                    <div className="empty">
-                      <h3>No matching observations</h3>
-                      <p>
-                        Try fewer filters or a different current source. Unknown
-                        geography does not trigger a lookup.
-                      </p>
-                    </div>
-                  )}
-                  {hits.map((hit) => (
-                    <Result
-                      key={hit.id}
-                      hit={hit}
-                      onFocus={() => {
-                        setFocus(hit);
-                        document
-                          .querySelector(".map-panel")
-                          ?.scrollIntoView({ block: "center" });
-                      }}
-                    />
-                  ))}
-                  <div className="pagination">
-                    <button type="button" onClick={() => search()}>
-                      Refresh / first page
-                    </button>
-                    {result.next_cursor && (
-                      <button
-                        type="button"
-                        onClick={() => search(undefined, true)}
-                      >
-                        Next results page
-                      </button>
+                {timeline.response.hits.map((hit) => (
+                  <Result
+                    key={hit.id}
+                    hit={hit}
+                    onInspect={() => inspectHit(hit)}
+                    onHistory={() => history(hit)}
+                  />
+                ))}
+                {timeline.response.next_cursor && (
+                  <button
+                    type="button"
+                    onClick={() => history(timeline.endpoint, true)}
+                  >
+                    Next timeline page
+                  </button>
+                )}
+                {timeline.response.page_limit_reached && (
+                  <p>10,000-hit traversal limit reached.</p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => history(timeline.endpoint)}
+                >
+                  Refresh timeline
+                </button>{" "}
+                <button
+                  type="button"
+                  onClick={() =>
+                    invalidate("Timeline cleared. Run a fresh search.", true)
+                  }
+                >
+                  Close timeline
+                </button>
+                <Provenance response={timeline.response} />
+              </section>
+            )}
+            {!inspection && !timeline && (
+              <>
+                <ResultMap hits={hits} focus={focus} onSelect={selectHit} />
+                <div className="map-scope">
+                  <strong>
+                    {mapped} mapped / {hits.length} displayed observations
+                  </strong>
+                  <span>
+                    Page {page} only · clusters count displayed observations ·{" "}
+                    {hits.length - mapped} without usable points
+                  </span>
+                </div>
+                <p className="map-legend">
+                  <span className="legend web" /> Web{" "}
+                  <span className="legend ssh" /> SSH{" "}
+                  <span className="legend mail" /> Mail{" "}
+                  <span className="legend multi" /> Multiple{" "}
+                  <span className="legend unknown" /> Unknown{" "}
+                  <span className="legend other" /> Other categories
+                </p>
+                <p className="uncertainty">
+                  Points represent approximate areas, never precise people or
+                  devices. Missing accuracy radii are unknown. Area filters test
+                  representative points, not uncertainty-disk overlap.
+                </p>
+                <section
+                  id="results"
+                  aria-labelledby="results-title"
+                  aria-busy={busy}
+                >
+                  <div className="results-heading">
+                    <h2 ref={heading} tabIndex={-1} id="results-title">
+                      {result ? "Search results" : "Observation results"}
+                    </h2>
+                    {result && (
+                      <span>
+                        PAGE {page} / {hits.length} SHOWN
+                      </span>
                     )}
                   </div>
-                  {result.page_limit_reached && (
-                    <p role="status">
-                      The 10,000-hit traversal limit was reached. Narrow the
-                      filters to inspect more observations.
-                    </p>
+                  {result ? (
+                    <>
+                      <div className="counts">
+                        <div>
+                          <strong>{result.counts.endpoints}</strong>
+                          <span>Endpoint keys</span>
+                        </div>
+                        <div>
+                          <strong>{result.counts.observations}</strong>
+                          <span>Source observations</span>
+                        </div>
+                        <div>
+                          <strong>{result.counts.candidates}</strong>
+                          <span>All selected candidates</span>
+                        </div>
+                      </div>
+                      <p className="hint">
+                        Totals cover all matches. Map and list show only this
+                        page. Counts describe retained synthetic observations.
+                      </p>
+                      {!!result.facets.length && (
+                        <details className="facets">
+                          <summary>Categories & network counts</summary>
+                          <p>
+                            Post-filter counts include each facet's own filter.
+                            Multiple values and history can exceed totals.
+                          </p>
+                          {[
+                            "category",
+                            "asn",
+                            "country",
+                            "prefix",
+                            "geography",
+                          ].map((kind) => {
+                            const rows = result.facets.filter(
+                              (f) => f.kind === kind,
+                            );
+                            if (!rows.length) return null;
+                            return (
+                              <div key={kind}>
+                                <h3>{kind}</h3>
+                                <p>
+                                  Showing {rows.length} of{" "}
+                                  {rows[0].total_buckets} buckets
+                                  {rows.length < rows[0].total_buckets
+                                    ? " · truncated"
+                                    : ""}
+                                </p>
+                                <ul>
+                                  {rows.map((f) => (
+                                    <li key={f.value}>
+                                      {inert(f.value)}: {f.endpoints} endpoints
+                                      / {f.observations} observations
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            );
+                          })}
+                        </details>
+                      )}
+                      {!hits.length && (
+                        <div className="empty">
+                          <h3>No matching observations</h3>
+                          <p>
+                            Try fewer filters or a different current source.
+                            Unknown geography does not trigger a lookup.
+                          </p>
+                        </div>
+                      )}
+                      {hits.map((hit) => (
+                        <Result
+                          key={hit.id}
+                          hit={hit}
+                          onInspect={() => inspectHit(hit)}
+                          onHistory={() => history(hit)}
+                          onFocus={() => {
+                            setFocus(hit);
+                            document
+                              .querySelector(".map-panel")
+                              ?.scrollIntoView({ block: "center" });
+                          }}
+                        />
+                      ))}
+                      <div className="pagination">
+                        <button type="button" onClick={() => search()}>
+                          Refresh / first page
+                        </button>
+                        {result.next_cursor && (
+                          <button
+                            type="button"
+                            onClick={() => search(undefined, true)}
+                          >
+                            Next results page
+                          </button>
+                        )}
+                      </div>
+                      {result.page_limit_reached && (
+                        <p role="status">
+                          The 10,000-hit traversal limit was reached. Narrow the
+                          filters to inspect more observations.
+                        </p>
+                      )}
+                      <Provenance response={result} />
+                    </>
+                  ) : (
+                    <div className="empty">
+                      <h3>
+                        {busy
+                          ? "Reading local observations…"
+                          : "Your search starts here"}
+                      </h3>
+                      <p>
+                        Choose a dataset hash to explore places, or search
+                        without one for unenriched results. The offline Fiji
+                        basemap is available even without a database.
+                      </p>
+                      <p>
+                        For the authored offline demo, run{" "}
+                        <code>make demo</code> locally and paste its dataset
+                        hash. No Internet access or paid map service is needed
+                        after setup.
+                      </p>
+                    </div>
                   )}
-                  <Provenance response={result} />
-                </>
-              ) : (
-                <div className="empty">
-                  <h3>
-                    {busy
-                      ? "Reading local observations…"
-                      : "Your search starts here"}
-                  </h3>
-                  <p>
-                    Choose a dataset hash to explore places, or search without
-                    one for unenriched results. The offline Fiji basemap is
-                    available even without a database.
-                  </p>
-                  <p>
-                    For the authored offline demo, run <code>make demo</code>{" "}
-                    locally and paste its dataset hash. No Internet access or
-                    paid map service is needed after setup.
-                  </p>
-                </div>
-              )}
-            </section>
+                </section>
+              </>
+            )}
           </div>
         </div>
       </main>

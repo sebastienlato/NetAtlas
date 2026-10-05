@@ -7,12 +7,16 @@ commercial search database is used.
 
 ## Current delivery
 
-Phase 8 delivers a local geographic explorer with exact country/region/city place
+Phase 9 adds endpoint timelines, protocol inspection, bounded inert previews,
+unverified certificate assertions and exact confidence/evidence traces to the local
+geographic explorer with exact country/region/city place
 search, MapLibre page clusters, categorized results, provenance and uncertainty.
 The offline Fiji map and explicit synthetic seed use no paid services or external
 browser resources. **Discovery defaults to preview; durable ingestion accepts
-synthetic fixtures only.** Read requests cannot initiate scans. Evidence inspection
-remains Phase 9. No Internet campaign has run. See [the explorer/demo guide](docs/GEOGRAPHIC_UI.md),
+synthetic fixtures only.** Read requests cannot initiate scans. Inspection preserves
+canonical evidence and enforces a separate synthetic preview policy. No Internet
+campaign has run. See [inspection and preview policy](docs/INSPECTION.md),
+[the explorer/demo guide](docs/GEOGRAPHIC_UI.md),
 [asset licenses](docs/MAP_ASSETS.md), [API policy](docs/API.md), [search](docs/SEARCH.md),
 [benchmark](docs/SEARCH_BENCHMARK.md), [enrichment](docs/ENRICHMENT.md) and [storage](docs/STORAGE.md).
 

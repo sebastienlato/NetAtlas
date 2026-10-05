@@ -24,7 +24,7 @@ implementation validation uses synthetic/loopback fixtures.
   Internet sweep. Later real campaigns document network/institutional permissions
   and operating constraints separately from ordinary development.
 
-## Measurement enforcement through Phase 8
+## Measurement enforcement through Phase 9
 
 The immutable campaign configuration pins exclusion and opt-out CIDRs. Denials
 precede any allowlist; lab mode only accepts explicit `127.0.0.1` and `::1` literals.
@@ -59,7 +59,8 @@ are defined by the Phase 4 synthetic-only storage boundary. Test keys are genera
 Responses are untrusted and may contain personal data, secrets, hostile scripts, or
 terminal escapes. Capture only bounded necessary evidence. Do not authenticate,
 enumerate private data, fetch camera streams, or crawl files. Never execute captured
-content or render active HTML; use escaped text/hex and explicit safe downloads.
+content or render active HTML. Phase 9 permits only reviewed bounded inert text;
+raw/hex/base64 downloads and captured resource links are not exposed.
 Do not include raw response content, credentials, or full query strings in logs.
 
 Phase 4 implements the local synthetic-only storage boundary described below.
@@ -168,17 +169,18 @@ identity headers. Stored reads require the non-secret `X-NetAtlas-Read: 1` brows
 guard. No CORS, cookie credentials or public authentication is supplied. Local users
 and administrators remain trusted; do not forward this service to remote users.
 
-The HTTP layer exports declared metadata fields only. Raw blobs/source envelopes,
-protocol headers/bodies/certificates, scanner contact metadata and evidence selectors
-are excluded. JSON escapes controls/non-ASCII/HTML delimiters and responses are
+Search/detail/history export declared metadata only. Phase 9 inspection separately
+permits reviewed protocol fields, bounded previews, certificate assertions and exact
+trace selectors. Raw blobs/source envelopes and scanner contact metadata remain excluded. JSON escapes controls/non-ASCII/HTML delimiters and responses are
 no-store/nosniff. Decoded labels/URLs remain hostile text, not sanitized HTML or safe
 links. This does not redact arbitrary sensitive information embedded in labels,
-authorize real-data ingestion, or replace Phase 9 evidence-display review.
+authorize real-data ingestion, or establish comprehensive sensitive-content sanitization.
 
 Every page rechecks source expiry and suppression. Signed cursors are short-lived,
 query/route-bound and contain no cached results; deletion cannot be reversed by
 continuation. Requests cannot initiate target traffic, DNS, downloads, enrichment,
-raw reads or writes. One in-flight read, streamed body/time bounds, 5-second DB
+arbitrary raw reads or writes. Inspection alone reconstructs a bound retained source
+under the shared lock and exports its reviewed projection. One in-flight read, streamed body/time bounds, 5-second DB
 statements, 10-second lock waits and 4 MiB output bounds limit local cost. Errors
 omit inputs/SQL/credentials and access logs stay disabled. Production service roles,
 authentication, TLS and broader resource controls remain Phase 12. See [API.md](docs/API.md).
@@ -198,8 +200,30 @@ metadata, selected-place labels and map points. There is no persistent or previo
 page remains read-time truth until refresh/clear, not a push-synchronized deletion
 view. Every subsequent API read rechecks actual retention/suppression. Synthetic
 input remains mandatory; escaping/allowlists do not sanitize embedded sensitive
-content. Phase 9 must explicitly review bounded evidence access/redaction before
-adding protocol/certificate/raw previews. No real input is authorized.
+content. Phase 9 adds the reviewed boundary below. No real input is authorized.
+
+## Inspection display boundary (Phase 9)
+
+`synthetic-preview-1` is specified in [INSPECTION.md](docs/INSPECTION.md). Inspection
+requires exact endpoint/UUID/source digest, checks actual expiry and suppression
+before and after projection inside the storage lock, and verifies selected derivation
+identity and trace slices. Canonical evidence remains immutable; preview redaction
+is ephemeral. Whole-observation removal, 30-day source retention, 90-day tombstones,
+7-day backups and independently managed copies remain required.
+
+Only complete reparsed allowlisted HTTP fields and supported unencoded UTF-8 bodies,
+SSH version/software and bounded SMTP greetings can be displayed. All unreviewed
+headers, SSH comments, unsupported/encoded formats and trace excerpts are withheld.
+Recognized sensitive markers withhold the entire field/body before truncation.
+These conservative checks cannot detect arbitrary secrets; this is not approval for
+real input or public access. No raw download, hex or base64 fallback exists.
+
+Bounded DER parsing exports subject/issuer/time/serial/algorithm assertions only;
+verification remains not_performed even for parsed expired/self-signed certificates.
+No extensions, resource links, trust/hostname/signature/revocation checks, AIA/OCSP/CRL
+fetches or DNS. Parser warnings/errors omit peer text. All preview/control/bidi text
+is inert in React, with no HTML/resource embedding or captured URL activation.
+Timeline/inspection share the browser read lane and hidden/60-second clearing.
 
 ## Reporting and response
 

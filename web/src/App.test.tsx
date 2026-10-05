@@ -258,3 +258,161 @@ it("clears the selected place metadata when the view is hidden", async () => {
   expect(screen.queryByText("Selected place")).toBeNull();
   expect(screen.queryByText(/Example Harbor · city/)).toBeNull();
 });
+
+const inspected = {
+  schema_version: 1,
+  preview_policy: "synthetic-preview-1",
+  observation_id: response.hits[0].id,
+  source_sha256: response.hits[0].source_sha256,
+  source_schema_version: 2,
+  address: "192.0.2.1",
+  port: 80,
+  transport: "tcp",
+  outcome: "open",
+  started_at: "2026-10-04T11:59:59Z",
+  finished_at: "2026-10-04T12:00:00Z",
+  expires_at: "2026-11-03T12:00:00Z",
+  retention_checked_at: "2026-10-04T12:00:00Z",
+  legacy_capture: {
+    pointer: "/response/body_base64",
+    sha256: "a".repeat(64),
+    byte_length: 100,
+    capture_truncated: true,
+    parse_state: "http",
+    fields: [],
+    withheld_headers: 2,
+    body_start: 50,
+    preview: {
+      state: "text",
+      text: '<img src="https://hostile.invalid" onerror="alert(1)">\u202e',
+      original_bytes: 50,
+      shown_bytes: 50,
+      truncated: false,
+    },
+  },
+  exchanges: [],
+  derivation_id: null,
+  derivation: null,
+  trace_integrity: "not_requested",
+};
+it("opens exact source inspection, escapes previews, and clears hidden evidence", async () => {
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(ok(response))
+    .mockResolvedValueOnce(ok(inspected));
+  vi.stubGlobal("fetch", fetch);
+  const { container } = render(<App />);
+  submit();
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Inspect this observation" }),
+  );
+  await screen.findByRole("heading", { name: "Service & evidence inspection" });
+  expect(fetch.mock.calls[1][0]).toBe(
+    "/api/v1/endpoints/192.0.2.1/tcp/80/inspection",
+  );
+  expect(JSON.parse(fetch.mock.calls[1][1].body).query).toEqual({
+    observation_id: response.hits[0].id,
+    source_sha256: response.hits[0].source_sha256,
+    derivation_id: response.hits[0].derivation_id,
+  });
+  expect(container.querySelector("pre")?.textContent).toContain("[U+202E]");
+  expect(container.querySelector("img, iframe, video")).toBeNull();
+  expect(screen.queryByRole("article")).toBeNull();
+  act(() => window.dispatchEvent(new Event("pagehide")));
+  expect(container.querySelector("pre")).toBeNull();
+  expect(
+    screen.queryByRole("heading", { name: "Service & evidence inspection" }),
+  ).toBeNull();
+});
+it("continues the timeline with its original query and preserves negative attempts", async () => {
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(ok(response))
+    .mockResolvedValueOnce(
+      ok({
+        ...response,
+        hits: [
+          { ...response.hits[0], outcome: "timeout", has_evidence: false },
+        ],
+      }),
+    )
+    .mockResolvedValueOnce(ok({ ...response, hits: [], next_cursor: null }));
+  vi.stubGlobal("fetch", fetch);
+  render(<App />);
+  submit();
+  fireEvent.click(
+    await screen.findByRole("button", { name: "View endpoint timeline" }),
+  );
+  await screen.findByRole("heading", { name: "Endpoint timeline" });
+  expect(screen.getByText("timeout")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Next timeline page" }));
+  await screen.findByText("No retained observations for this endpoint.");
+  const first = JSON.parse(fetch.mock.calls[1][1].body),
+    next = JSON.parse(fetch.mock.calls[2][1].body);
+  expect(next.query).toEqual(first.query);
+  expect(next.query.as_of).toBeUndefined();
+  expect(next.query.selection).toBe("attempt");
+  expect(next.cursor).toBe(response.next_cursor);
+});
+it("discards a late inspection after a filter change and expiry clears evidence", async () => {
+  let resolve: (value: unknown) => void = () => {};
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(ok(response))
+    .mockImplementationOnce(
+      () =>
+        new Promise((r) => {
+          resolve = r;
+        }),
+    )
+    .mockResolvedValueOnce(ok(response))
+    .mockResolvedValueOnce(ok(inspected));
+  vi.stubGlobal("fetch", fetch);
+  render(<App />);
+  submit();
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Inspect this observation" }),
+  );
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+  fireEvent.change(screen.getByLabelText("Product labels"), {
+    target: { value: "new" },
+  });
+  expect(fetch.mock.calls[1][1].signal.aborted).toBe(true);
+  await act(async () => resolve(ok(inspected)));
+  expect(screen.queryByText("Service & evidence inspection")).toBeNull();
+  submit();
+  await screen.findByRole("button", { name: "Inspect this observation" });
+  vi.useFakeTimers();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Inspect this observation" }),
+  );
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  expect(screen.getByText("Service & evidence inspection")).toBeTruthy();
+  await act(async () => vi.advanceTimersByTime(60001));
+  expect(screen.queryByText("Service & evidence inspection")).toBeNull();
+});
+it("removal errors clear previews and offer an explicit fresh read", async () => {
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(ok(response))
+    .mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      json: async () => ({ error: { code: "not_found" }, raw: "SECRET" }),
+    });
+  vi.stubGlobal("fetch", fetch);
+  render(<App />);
+  submit();
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Inspect this observation" }),
+  );
+  await screen.findByText(
+    /source or dataset is unavailable, expired, removed or suppressed/,
+  );
+  expect(screen.queryByText("SECRET")).toBeNull();
+  expect(screen.queryByRole("article")).toBeNull();
+  expect(screen.getByRole("button", { name: "Restart search" })).toBeTruthy();
+});

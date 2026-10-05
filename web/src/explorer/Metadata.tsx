@@ -79,7 +79,17 @@ export function Provenance({ response: r }: { response: SearchResponse }) {
     </>
   );
 }
-export function Result({ hit: h, onFocus }: { hit: Hit; onFocus: () => void }) {
+export function Result({
+  hit: h,
+  onFocus,
+  onInspect,
+  onHistory,
+}: {
+  hit: Hit;
+  onFocus?: () => void;
+  onInspect: () => void;
+  onHistory: () => void;
+}) {
   return (
     <article
       className="result-card"
@@ -130,11 +140,17 @@ export function Result({ hit: h, onFocus }: { hit: Hit; onFocus: () => void }) {
         {h.fresh ? "Fresh" : "Stale"} relative to query cutoff ·{" "}
         {inert(h.finished_at)} · {h.candidate_count} candidates
       </p>
-      {h.geography_state === "known" && h.place?.point && (
+      {onFocus && h.geography_state === "known" && h.place?.point && (
         <button type="button" className="text-button" onClick={onFocus}>
           Locate approximate point
         </button>
       )}
+      <button type="button" onClick={onInspect}>
+        Inspect this observation
+      </button>{" "}
+      <button type="button" onClick={onHistory}>
+        View endpoint timeline
+      </button>
       <details>
         <summary>Observation provenance</summary>
         <p className="hash">

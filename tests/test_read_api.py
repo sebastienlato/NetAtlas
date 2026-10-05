@@ -29,7 +29,9 @@ HEADERS = {"X-NetAtlas-Read": "1"}
 
 def client_for(pipeline: Pipeline | None = None) -> TestClient:
     return TestClient(
-        create_app(engine=pipeline.engine if pipeline else None),
+        create_app(
+            engine=pipeline.engine if pipeline else None, blobs=pipeline.blobs if pipeline else None
+        ),
         base_url="http://127.0.0.1:8000",
         client=("127.0.0.1", 51000),
         headers=HEADERS,

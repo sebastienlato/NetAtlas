@@ -159,3 +159,12 @@ all important generic failure paths. Existing API/PostGIS tests remain authorita
 for suppression, actual expiry, source-choice ordering, polygon holes and area truth.
 
 Asset source hashes, selection procedure and licenses are in [MAP_ASSETS.md](MAP_ASSETS.md).
+
+## Phase 9 integration
+
+The existing map/search behavior is preserved. Result cards now open an all-attempt
+endpoint timeline or exact observation inspection. Both use the shared request lane
+and replace the previous view, with the same hidden/pagehide/60-second clearing.
+Keyboard focus and the skip link target the active view. See [INSPECTION.md](INSPECTION.md)
+for protocol/certificate/trace contracts and preview limitations. Package is now
+0.10.0 and health reports Phase 9; the original operator seed remains unchanged.

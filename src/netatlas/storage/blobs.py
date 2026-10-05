@@ -13,9 +13,14 @@ DIGEST = re.compile(r"[0-9a-f]{64}")
 
 
 class BlobStore:
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, *, create: bool = True):
         self.root = root
-        private_directory(root)
+        if create:
+            private_directory(root)
+        else:
+            info = root.lstat()
+            if not stat.S_ISDIR(info.st_mode) or info.st_mode & 0o077:
+                raise ValueError("existing private blob directory required")
 
     def read(self, sha256: str) -> bytes:
         if not DIGEST.fullmatch(sha256):

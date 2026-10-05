@@ -75,7 +75,7 @@ For limits, selection, statuses and exact accounting, see
 
 ## Configuration and manifests
 
-Configuration is **version 3**, package **0.9.0**. Old explicit version-2 files fail
+Configuration is **version 3**, package **0.10.0**. Old explicit version-2 files fail
 closed. To migrate a local file, change its version to 3, compare against
 `config/default.toml`, and explicitly choose `measurement.protocol_evidence`. It
 remains false by default; old partial files that omit a version retain connect-only
@@ -169,3 +169,11 @@ dictionaries and source envelopes are not wire models. Query-bound signed keyset
 exact counts/uncertainty, generic errors and OpenAPI-derived TypeScript types are
 documented in [API.md](API.md). No raw evidence is exposed. Phase 8 adds the geographic UI without changing
 these schemas; package 0.9.0 updates only health/metadata and its generated digest.
+
+## Phase 9 inspection projection
+
+`inspection/models.py` defines the additive HTTP schema-1 inspection request/response
+and versioned synthetic-preview-1 contract. Canonical source/derivation/enrichment
+schemas remain unchanged. Exact measurement/derivation identities, checked selectors,
+explicit preview/parse/truncation states and certificate verification=not_performed
+are detailed in [INSPECTION.md](INSPECTION.md). No raw source serialization is exposed.

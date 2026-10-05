@@ -12,7 +12,14 @@ from typing import Any
 
 from netatlas.api import create_app
 
-OPERATIONS = {"search", "facets", "places", "endpointDetail", "endpointHistory"}
+OPERATIONS = {
+    "search",
+    "facets",
+    "places",
+    "endpointDetail",
+    "endpointHistory",
+    "endpointInspection",
+}
 DESTINATION = Path("web/src/api/schema.ts")
 
 
