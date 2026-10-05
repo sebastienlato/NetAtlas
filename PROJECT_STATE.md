@@ -1,12 +1,35 @@
 # Project state
 
-Updated: 2026-10-04. **Phase 10 — Distributed measurement is complete.**
-Phase 11 has not started. Package **0.11.0**; control envelope **1**; HTTP schema **1**; local query schema **1**; config **3**;
+Updated: 2026-10-04. **Phase 11 — Coverage and refresh scheduling is complete.**
+Phase 12 has not started. Package **0.12.0**; schedule input/plan **1**,
+algorithm **coverage-refresh-1**, IPv6 **explicit-authored-seeds-only-1**;
+control envelope **1**; HTTP schema **1**; local query schema **1**; config **3**;
 observation/manifest **2** with explicit v1 reads; fingerprint pack/result schemas
 **1**, engine **fingerprints-1**, taxonomy **netatlas-categories-1**; enrichment
-bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0005**.
+bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0006**.
 
 ## Delivered
+
+- **Phase 11:** separate I/O-free scheduling over bounded authored routed/unrouted/unknown
+  regions, SHA-ranked sampling/sharding, explicit sourced IPv6 seeds, /24-/48 prefix
+  round-robin ordering and explicit round rotation for bounded queues. No live routing.
+- Versioned universe/policy/config/seed/input hashes and exact clocks make offline plans
+  replayable. Coverage denominators distinguish declared IPv4 addresses, IPv6 regions/
+  seeds, exclusions, blocked/fresh/eligible, sampled-out and queue-deferred endpoints.
+- Latest retained attempt determines outcome-based refresh cooldown, including negative/
+  empty history. Each refresh is a new schedule/job/attempt/observation linked to the
+  original prior-source UUID/hash; source truth and delivery retries stay unchanged.
+- Explicit DB snapshots and atomic loopback schedule admission recheck actual history,
+  suppression, expiry, unresolved issued attempts and inherited shared queue budgets.
+  Exact replay returns the original campaign, even after cancellation/restore. No daemon.
+- Migration 0006 adds schedule provenance, persistent queue positions, source references
+  and durable global stop. Reopening permits only new work; suppression/removal cancels
+  matching jobs atomically. Empty-DB restores now also set global stop before use.
+- Offline plans remain separate from at most 32 literal-loopback execution endpoints;
+  --synthetic, --measure, explicit lab marker and enabled operator identity are required.
+  Worker credentials/boot fencing, permits, budgets, leases, 128/1024 job caps and spool
+  bounds persist. No UI/read controls. UDP explicitly deferred without a qualified
+  protocol-specific budget/corpus. See [SCHEDULING.md](docs/SCHEDULING.md).
 
 - **Phase 10:** independent authenticated loopback control plane and two local worker
   processes; generated private per-worker credentials stay outside DB/config hashes.
@@ -23,7 +46,8 @@ bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0005**.
 - Explicit enabled identity, --measure, --synthetic and literal-loopback scope required
   for enqueue; preview remains offline/default. Existing standalone discovery policy
   is preserved. One active campaign, at most two sockets, 128 pending/1024 retained jobs
-  (lab scope itself at most 32). No routed-space/refresh/UDP/global scheduling.
+  (lab scope itself at most 32). Phase 11 adds the offline scheduling described above;
+  UDP/global distribution remain absent.
 - Cancellation and DB suppression revoke subsequent admission/delivery. Heartbeat loss
   cancels active sockets; already-issued grants/in-flight traffic have documented bounded
   stop latency, not instantaneous physical fencing. Uncertain slots retain their hard
@@ -160,12 +184,38 @@ Read [STORAGE.md](docs/STORAGE.md), [ENRICHMENT.md](docs/ENRICHMENT.md),
 [PROTOCOL_EVIDENCE.md](docs/PROTOCOL_EVIDENCE.md) and [FINGERPRINTS.md](docs/FINGERPRINTS.md)
 for inherited contracts. `make db-up COMPOSE=docker-compose` preserves the existing
 volume/secret and builds native arm64/amd64 PostGIS from the pinned PostgreSQL base
-and direct extension packages; `make db-migrate` applies 0005. Compose-plugin hosts
+and direct extension packages; `make db-migrate` applies 0006. Compose-plugin hosts
 omit the override. The image context contains only docker/; transitive APT packages
 are not fully pinned. Runtime pins are unchanged; Phase 9 adds cryptography 48.0.1
 and its locked dependencies for local certificate parsing.
 
 ## Verified validation
+
+- Full **make check-db COMPOSE=docker-compose** passed with **374 Python tests,
+  26 web unit/component tests and five production Chromium tests**. Ruff/format,
+  strict mypy, Biome/TypeScript, generated OpenAPI drift, Python/Vite builds and all
+  CLI smoke checks passed. The complete inherited retention/restore/browser suite ran.
+- **25 scheduling cases** verify independent authored coverage truth, IPv6 seed gaps,
+  deterministic shards/identities, sampling/fairness/round rotation, exclusions and
+  outcome-based refresh priorities. They exercise private offline files, current source
+  binding, changed history, negative evidence preservation, actual retention, atomic
+  opt-out, durable stop/reopen, expiry before/during/after admission, unavailable storage,
+  queue bounds, rollback/lost ACK, uncertainty blocking and populated 0005/stopped restore.
+- The real **two-worker-process HTTP/TLS** failure drill additionally runs through
+  schedule admission: two original delivered sources, three centrally spaced permits
+  (including TLS), two lost delivery ACKs, no extra measurements or outbox duplicates.
+  All earlier fencing/restart/kill/heartbeat/concurrency/source-integrity cases pass.
+- Existing dedicated Colima netatlas profile, native arm64 PostGIS image, owner volume
+  and private secret preserved. Operator DB migrated and verified at **0006**. Runtime
+  remains Python 3.14.7, uv 0.12.19, Node 26.8.1 and npm 11.19.0. No new dependency.
+- Read/inspection/UI schemas remain 1; package/health is 0.12.0/Phase 11 and generated
+  OpenAPI digest was refreshed. Existing approximately 1.30-MB JS / 511-kB worker
+  warning remains. All fixtures were authored/loopback, with private temporary outputs;
+  no live routing/geography acquisition, real ingestion, Internet sweep or deployment.
+- No implementation blocker, release or tag. Git/Actions and the final report identify
+  the delivery commit, remote HEAD equality, clean-tree verification and CI status.
+
+### Phase 10 baseline (retained historical record)
 
 - Full **make check-db COMPOSE=docker-compose** passed with **348 Python tests,
   26 web unit/component tests and 5 production Chromium tests**. Ruff/format, strict
@@ -301,7 +351,7 @@ file cannot contain its own final hash. Verify local HEAD against
 
 ## Limitations and blockers
 
-No Phase 10 implementation blocker. No raw download, real-data ingestion,
+No Phase 11 implementation blocker. No raw download, real-data ingestion,
 comprehensive sensitive-content sanitizer, public authentication, production
 role isolation, encrypted backup, worldwide workers, release or tag exists.
 The new authenticated control plane is trusted-local and uses only literal-loopback
@@ -338,5 +388,5 @@ failover, distributed throughput and production durability remain unqualified.
 
 ## Next
 
-**Phase 11 — Coverage and refresh scheduling**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
-Do not begin Phase 11 in this Phase 10 chat.
+**Phase 12 — Operational hardening**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
+Do not begin Phase 12 in this Phase 11 chat.

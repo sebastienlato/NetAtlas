@@ -707,8 +707,9 @@ def test_populated_upgrade_preserves_source_and_restore_cancels_jobs(
         )
 
 
+@pytest.mark.parametrize("scheduled", [False, True])
 def test_two_worker_processes_share_budget_and_collect_tls(
-    pipeline: Pipeline, tmp_path: Path
+    pipeline: Pipeline, tmp_path: Path, scheduled: bool
 ) -> None:
     import socket
     import ssl
@@ -804,19 +805,33 @@ def test_two_worker_processes_share_budget_and_collect_tls(
                 fixture(http_peer, tls=context) as tls_endpoint,
                 fixture(http_peer) as http_endpoint,
             ):
-                queue(
-                    c,
-                    tls_endpoint.port,
-                    http_endpoint.port,
-                    settings=config(
-                        protocol_evidence=True,
-                        greeting_timeout_seconds=0.05,
-                        interaction_timeout_seconds=2,
-                        endpoint_timeout_seconds=8,
-                        global_connections_per_second=10,
-                        per_prefix_connections_per_second=4,
-                    ),
+                settings = config(
+                    protocol_evidence=True,
+                    greeting_timeout_seconds=0.05,
+                    interaction_timeout_seconds=2,
+                    endpoint_timeout_seconds=8,
+                    global_connections_per_second=10,
+                    per_prefix_connections_per_second=4,
                 )
+                if scheduled:
+                    from test_scheduler import change, lab_request
+
+                    from netatlas.scheduler.service import enqueue, report
+
+                    request = lab_request()
+                    request = change(
+                        request,
+                        settings=settings,
+                        universe=request.universe.model_dump()
+                        | {
+                            "regions": [request.universe.regions[0]],
+                            "seeds": [],
+                            "ports": [tls_endpoint.port, http_endpoint.port],
+                        },
+                    )
+                    campaign = enqueue(c, request, measure=True, synthetic=True)
+                else:
+                    campaign = queue(c, tls_endpoint.port, http_endpoint.port, settings=settings)
                 processes = []
                 try:
                     for number in (1, 2):
@@ -845,6 +860,11 @@ def test_two_worker_processes_share_budget_and_collect_tls(
                             process.kill()
                             await process.wait()
             assert c.status() == {"delivered": 2}
+            if scheduled:
+                counts = report(c, campaign)["execution"]
+                assert isinstance(counts, dict)
+                assert counts["scheduled"] == counts["measured"] == counts["retained"] == 2
+                assert counts["permits_issued"] == 3
             with pipeline.engine.connect() as conn:
                 owners: Any = (
                     conn.execute(text("SELECT DISTINCT worker_id FROM control_attempts"))

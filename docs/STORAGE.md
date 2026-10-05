@@ -363,3 +363,20 @@ separate empty destination applies 0005 and cancels every restored job/campaign 
 verification, preventing historical queue replay from remeasuring targets. Keep the restored
 DB offline until the full operation succeeds and current suppressions are reapplied. Existing
 volume, DB password, source retention, tombstones, blob GC and backup policy are unchanged.
+
+## Phase 11 schedule and stop compatibility
+
+Migration 0006 adds bounded private schedule input/hash snapshots, queue positions,
+prior-source UUID/digest references and the singleton durable global stop. Admission
+uses the existing advisory lock and all-or-nothing transaction; exact schedule replay
+returns its original campaign without new jobs. Source summaries are control metadata
+with the explicit 90-day prune policy; original source/raw retention remains 30 days.
+
+Suppression/removal and matching job revocation now commit in the same transaction.
+Workers also consult persistent suppression on every authority boundary. Restores
+apply 0006, cancel all historical jobs/campaigns, expire leases and set global stop;
+keep the destination offline until full verification/current suppression review,
+then explicitly allow-new-work. Do not reset owner volumes, credentials or worker
+boot files. Independent schedule files/spools/backups need deletion/quarantine.
+No automatic retention daemon, external outbox effect or raw-source rewrite is added.
+Detailed semantics and actual coverage/report clocks are in SCHEDULING.md.

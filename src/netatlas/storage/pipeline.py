@@ -381,6 +381,13 @@ class Pipeline:
                 """),
                     {"network": network},
                 )
+            # Keep old-migration maintenance usable during upgrade acceptance.
+            if connection.execute(text("SELECT to_regclass('control_jobs')")).scalar():
+                # Removal and revocation commit together; permits also check suppressions.
+                connection.execute(
+                    text("""UPDATE control_jobs j SET state='cancelled'
+                    WHERE EXISTS (SELECT 1 FROM suppressions s WHERE j.address <<= s.network)""")
+                )
             removed = (
                 connection.execute(
                     text("""

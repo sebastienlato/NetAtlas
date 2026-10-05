@@ -1,10 +1,11 @@
-# Phase 10 — local distributed measurement
+# Local distributed measurement — through Phase 11
 
-Package **0.11.0**, control envelope **1**, Alembic **0005**. Two independent local
+Package **0.12.0**, control envelope **1**, Alembic **0006**. Two independent local
 worker processes use an authenticated coordinator on literal loopback. This is a
 bounded synthetic laboratory implementation, not global collection, public access,
 production role isolation or a benchmark of distributed throughput. No paid service,
-broker, routed-space sampling, UDP, refresh scheduler or real-input ingestion is added.
+broker, UDP or real-input ingestion is added. Phase 11 adds separate authored offline
+coverage/refresh planning and lab admission; see [SCHEDULING.md](SCHEDULING.md).
 
 ## Run explicitly
 
@@ -67,7 +68,8 @@ Status reports state counts and reconciles expired leases. Cancel is durable and
 irreversible for that campaign; it stops further authority, including late delivery.
 It does not erase previously committed observations: use ordinary suppression/removal
 for that. Prune removes control jobs/attempts/campaign metadata older than 90 days;
-it preserves worker generations and pacing. No automatic queue or history scheduler.
+it preserves worker generations and pacing. No automatic queue/history daemon.
+Phase 11 explicit schedule adapters are separate.
 
 ## Identities, states and fencing
 
@@ -186,8 +188,8 @@ can leave at most one completed result per worker, not an unbounded memory/disk 
 | Control history / source / tombstone / backup | 90 / 30 / 90 / 7 days respectively |
 
 The queue is one bounded explicit scope; fullness rejects new work. There is no bulk
-real-data upload, silent spill queue, copied dead-letter payload, refresh scheduling
-or broker. SQL retains the shared 10-second lock wait and 60-second statement bound;
+real-data upload, silent spill queue, copied dead-letter payload, autonomous refresh
+daemon or broker. SQL retains the shared 10-second lock wait and 60-second statement bound;
 worker timeouts may abort safely earlier under contention. One lock remains a deliberate
 correctness bottleneck, not a scalable concurrent control/read design.
 
@@ -208,12 +210,14 @@ handle standalone discovery spools/outputs/datasets/backups separately. **Keep b
 and credentials**; deleting the boot generation is not a restart procedure. An offline
 worker cannot receive deletion; quarantine its spool until reconciled, and never send
 it to another project/service. Delivery expiry is an admission bound, not automatic
-offline file erasure. Unlink is not forensic erasure. Full distributed opt-out/coverage
-scheduling remains Phase 11.
+offline file erasure. Unlink is not forensic erasure. Phase 11 adds atomic job
+revocation with suppression, a durable global stop and
+explicit coverage/refresh schedules; these independent-copy duties remain.
 
 Backups include control metadata/fences but no credential files or worker spools.
 Restore into a separate empty database cancels **all restored jobs/campaigns** and
-expires their leases before verification. It never resumes a historical measurement
+expires their leases and sets the durable global stop before verification. It never
+resumes a historical measurement
 queue. Keep that destination offline until the entire restore succeeds; reapply current
 suppressions before use. Continue to apply the seven-day backup and copy quarantine
 policy. Existing owner volumes/data are never reset by phase setup or acceptance.
@@ -235,3 +239,14 @@ killed during a fixture interaction and restarted with the same spool; its singl
 issued attempt remains uncertain and the endpoint is not remeasured. Full phase checks
 passed with 348 Python tests, 26 web tests and five production Chromium tests;
 full details are recorded in PROJECT_STATE. No Internet sweep or real input is used.
+
+## Phase 11 scheduling compatibility
+
+See SCHEDULING.md for exact policy, identities, denominators and command examples.
+`netatlas-control stop` durably cancels all work and blocks enqueue; `allow-new-work`
+reopens only future work, never historical authority. `status` now returns `jobs`
+and `global_stopped`. Restore requires explicit reopening after suppression review.
+A scheduled refresh gets a new job/attempt/source and shares every existing permit,
+rate and socket bound. Deterministic queue positions replace random job UUID order
+for newly enqueued campaigns; migrated jobs retain their previous UUID ordering.
+Worker transport, credential, lease, delivery, read and collector contracts are unchanged.

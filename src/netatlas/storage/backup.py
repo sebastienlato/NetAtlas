@@ -148,6 +148,7 @@ def restore(engine: Engine, blobs: BlobStore, source: Path) -> dict[str, int]:
     # A historical queue must never silently authorize a second measurement.
     # This separate empty destination stays offline until restore completes.
     with transaction(engine) as connection:
+        connection.execute(text("UPDATE control_switch SET stopped=true, generation=generation+1"))
         connection.execute(text("UPDATE control_campaigns SET cancelled=true"))
         connection.execute(text("UPDATE control_jobs SET state='cancelled'"))
         connection.execute(text("UPDATE control_attempts SET lease_until=clock_timestamp()"))

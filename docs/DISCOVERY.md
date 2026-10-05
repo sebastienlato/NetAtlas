@@ -150,4 +150,6 @@ in [DISTRIBUTED.md](DISTRIBUTED.md). Its enqueue interface remains preview by de
 and is narrower: enabled identity, --measure, --synthetic and literal-loopback scope.
 Standalone campaigns do not share the distributed budget or consult worker leases;
 do not run them alongside a worker campaign as a way to multiply traffic. No distributed
-Internet campaign, routed-space sampler or automatic refresh is implemented.
+Internet campaign or automatic refresh daemon is implemented. Phase 11 adds separate
+offline authored routing/seed plans and explicit loopback refresh admission; see
+[SCHEDULING.md](SCHEDULING.md). Its logical shards never multiply worker budgets.

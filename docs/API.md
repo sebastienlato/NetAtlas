@@ -1,7 +1,7 @@
-# Local read API — through Phase 10
+# Local read API — through Phase 11
 
-Package 0.11.0 retains HTTP schema 1 over the Phase 6 search engine and synthetic
-PostgreSQL storage. The separate worker control plane adds migration 0005; read semantics are unchanged. No request
+Package 0.12.0 retains HTTP schema 1 over the Phase 6 search engine and synthetic
+PostgreSQL storage. The separate worker control plane uses migrations through 0006; read semantics are unchanged. No request
 can initiate measurement, resolve targets, download datasets, derive new records,
 change stored data or read arbitrary blobs. Reviewed source-bound inspection is
 specified in [INSPECTION.md](INSPECTION.md); the geographic explorer is documented
@@ -13,7 +13,7 @@ Run `make db-up COMPOSE=docker-compose`, `make db-migrate`, then `make dev-api`.
 Compose-plugin hosts omit the override. Reuse the existing private volume and secret.
 The API lazily opens `data/storage` connection settings; unavailable/unmigrated
 storage returns generic 503 errors. `/healthz` reports process liveness, version
-and Phase 10, not database readiness. `/api/v1/examples/observation` remains an
+and Phase 11, not database readiness. `/api/v1/examples/observation` remains an
 explicit authored static example, independent of database retention.
 
 Only literal socket peers 127.0.0.1/::1 and Host names 127.0.0.1, [::1], localhost
@@ -214,3 +214,7 @@ authenticated loopback coordinator has no UI/read routes. Worker delivery preser
 original observation v2 UUID/digest and uses the existing storage lock and retention
 policy; legacy v1 reads/ingestion remain unchanged. No source/read schema changed.
 See [DISTRIBUTED.md](DISTRIBUTED.md).
+
+Phase 11 keeps HTTP schema 1 and all read/inspection contracts unchanged. Only package/
+health metadata and its generated digest change. Scheduling is a private operator
+adapter, not imported by this API or exposed through the browser. See SCHEDULING.md.

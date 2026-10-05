@@ -72,6 +72,8 @@ def main(argv: list[str] | None = None) -> int:
     cancel = commands.add_parser("cancel")
     cancel.add_argument("--campaign", type=UUID, required=True)
     commands.add_parser("status")
+    commands.add_parser("stop", help="Durably cancel all work and block new enqueue")
+    commands.add_parser("allow-new-work", help="Reopen enqueue; never revive cancelled jobs")
     commands.add_parser(
         "prune", help="Remove control history older than 90 days; preserves pacing/generations"
     )
@@ -129,8 +131,17 @@ def main(argv: list[str] | None = None) -> int:
                 print(json.dumps({"campaign_id": str(identity)}))
             elif args.command == "cancel":
                 coordinator.cancel(args.campaign)
+            elif args.command == "stop":
+                coordinator.stop()
+            elif args.command == "allow-new-work":
+                coordinator.allow_new_work()
             elif args.command == "status":
-                print(json.dumps(coordinator.status(), sort_keys=True))
+                print(
+                    json.dumps(
+                        {"jobs": coordinator.status(), "global_stopped": coordinator.is_stopped()},
+                        sort_keys=True,
+                    )
+                )
             elif args.command == "prune":
                 coordinator.prune()
         return 0

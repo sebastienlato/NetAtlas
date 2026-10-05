@@ -8,7 +8,7 @@ actual blockers requiring credentials, permission, or a manual action. Do not us
 conversation history as a substitute for repository documentation.
 
 Run commands in the repository root. `make setup` installs locked dependencies;
-`make check` runs the complete proportional validation through Phase 10.
+`make check` runs the complete proportional validation through Phase 11.
 Use `make check-db` for the complete database acceptance suite; plain `make check`
 reports those tests skipped without `NETATLAS_TEST_DB=1`. See `docs/STORAGE.md` for
 Compose setup, standalone Compose override and isolated database/restore testing. Individual commands
@@ -26,6 +26,9 @@ through separate allowlisted models and a generated client contract; do not test
 See `docs/DISTRIBUTED.md` for authenticated workers, one-use permits, failure drills,
 spool/credential recovery and restore quarantine. Never treat delivery retries as new
 measurements, or reset boot generations/owner volumes to restart.
+See `docs/SCHEDULING.md` for authored universes, exact coverage denominators,
+seed-only IPv6, explicit snapshots/refreshes, bounded queue fairness and durable stop.
+No fixture plan authorizes documentation-address execution or live routing acquisition.
 See `docs/INSPECTION.md` for preview/trace limits and retention checks.
 See `docs/GEOGRAPHIC_UI.md` for the explicit offline seed and browser acceptance.
 Install Chromium once with `npm --prefix web exec -- playwright install chromium`;

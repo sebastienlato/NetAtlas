@@ -75,52 +75,97 @@ class Coordinator:
         }
         if len(json.dumps(document).encode()) > 12288:
             raise ValueError("bounded campaign envelope required")
-        identity = uuid4()
         with transaction(self.pipeline.engine) as connection:
             now = clock(connection)
-            self._reap(connection, now)
-            if rows(
-                connection,
-                "SELECT 1 FROM control_jobs WHERE state IN ('queued','leased','measuring') LIMIT 1",
-            ):
-                raise ControlError(409, "campaign_active")
-            total: int = connection.execute(text("SELECT count(*) FROM control_jobs")).scalar_one()
-            if total + len(endpoints) > MAX_JOBS:
-                raise ControlError(429, "queue_full")
+            return self.enqueue_in_transaction(connection, settings, scope, endpoints, now)
+
+    def enqueue_in_transaction(
+        self,
+        connection: Connection,
+        settings: Settings,
+        scope: Scope,
+        endpoints: tuple[Endpoint, ...],
+        now: datetime,
+        *,
+        deadline: datetime | None = None,
+    ) -> UUID:
+        """Internal adapter. Caller validates lab scope and holds the pipeline lock."""
+        self._reap(connection, now)
+        if connection.execute(text("SELECT stopped FROM control_switch")).scalar_one():
+            raise ControlError(410, "stopped")
+        if rows(
+            connection,
+            "SELECT 1 FROM control_jobs WHERE state IN ('queued','leased','measuring') LIMIT 1",
+        ):
+            raise ControlError(409, "campaign_active")
+        total: int = connection.execute(text("SELECT count(*) FROM control_jobs")).scalar_one()
+        if total + len(endpoints) > MAX_JOBS:
+            raise ControlError(429, "queue_full")
+        identity = uuid4()
+        execute(
+            connection,
+            """
+            INSERT INTO control_campaigns
+            (id, document, config_sha256, policy_sha256, created_at, deadline)
+            VALUES (:id, CAST(:document AS jsonb), :sha, :policy, :now, :deadline)
+        """,
+            id=identity,
+            document=json.dumps(
+                {
+                    "settings": settings.model_dump(mode="json"),
+                    "scope": scope.model_dump(mode="json"),
+                }
+            ),
+            sha=settings.sha256,
+            policy=POLICY_SHA256,
+            now=now,
+            deadline=min(
+                deadline or now + timedelta(seconds=settings.measurement.campaign_timeout_seconds),
+                now + timedelta(seconds=settings.measurement.campaign_timeout_seconds),
+            ),
+        )
+        for position, endpoint in enumerate(endpoints):
+            if self._suppressed(connection, str(endpoint.address)):
+                raise ControlError(410, "stopped")
             execute(
                 connection,
                 """
-                INSERT INTO control_campaigns
-                (id, document, config_sha256, policy_sha256, created_at, deadline)
-                VALUES (:id, CAST(:document AS jsonb), :sha, :policy, :now, :deadline)
+                INSERT INTO control_jobs (id, campaign_id, address, port, state, position)
+                VALUES (:id, :campaign, CAST(:address AS inet), :port, 'queued', :position)
             """,
-                id=identity,
-                document=json.dumps(
-                    {
-                        "settings": settings.model_dump(mode="json"),
-                        "scope": scope.model_dump(mode="json"),
-                    }
-                ),
-                sha=settings.sha256,
-                policy=POLICY_SHA256,
-                now=now,
-                deadline=now + timedelta(seconds=settings.measurement.campaign_timeout_seconds),
+                id=uuid4(),
+                campaign=identity,
+                address=str(endpoint.address),
+                port=endpoint.port,
+                position=position,
             )
-            for endpoint in endpoints:
-                if self._suppressed(connection, str(endpoint.address)):
-                    raise ControlError(410, "stopped")
-                execute(
-                    connection,
-                    """
-                    INSERT INTO control_jobs (id, campaign_id, address, port, state)
-                    VALUES (:id, :campaign, CAST(:address AS inet), :port, 'queued')
-                """,
-                    id=uuid4(),
-                    campaign=identity,
-                    address=str(endpoint.address),
-                    port=endpoint.port,
-                )
         return identity
+
+    def stop(self) -> None:
+        """Durable global stop. Reopening admission never revives cancelled work."""
+        with transaction(self.pipeline.engine) as connection:
+            execute(
+                connection,
+                """UPDATE control_switch SET stopped=true,
+                generation=generation+1, changed_at=clock_timestamp()""",
+            )
+            execute(connection, "UPDATE control_campaigns SET cancelled=true")
+            execute(connection, "UPDATE control_jobs SET state='cancelled'")
+
+    def is_stopped(self) -> bool:
+        with transaction(self.pipeline.engine) as connection:
+            stopped: bool = connection.execute(
+                text("SELECT stopped FROM control_switch")
+            ).scalar_one()
+            return stopped
+
+    def allow_new_work(self) -> None:
+        with transaction(self.pipeline.engine) as connection:
+            execute(
+                connection,
+                """UPDATE control_switch SET stopped=false,
+                generation=generation+1, changed_at=clock_timestamp()""",
+            )
 
     def cancel(self, campaign: UUID) -> None:
         with transaction(self.pipeline.engine) as connection:
@@ -177,7 +222,8 @@ class Coordinator:
             """
             UPDATE control_jobs j SET state='cancelled' FROM control_campaigns c
             WHERE j.campaign_id=c.id AND j.state <> 'cancelled' AND
-                (c.cancelled OR EXISTS (SELECT 1 FROM suppressions s WHERE j.address <<= s.network))
+                (c.cancelled OR (SELECT stopped FROM control_switch)
+                 OR EXISTS (SELECT 1 FROM suppressions s WHERE j.address <<= s.network))
         """,
         )
         execute(
@@ -287,7 +333,7 @@ class Coordinator:
             connection,
             """SELECT j.*, c.document FROM control_jobs j
             JOIN control_campaigns c ON c.id=j.campaign_id WHERE j.state='queued'
-            ORDER BY c.created_at,j.id LIMIT 1""",
+            ORDER BY c.created_at,j.position,j.id LIMIT 1""",
         )
         if not candidates:
             return Reply(status="idle")

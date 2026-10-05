@@ -1,6 +1,8 @@
 # Architecture
 
-Status: Phase 10 adds a separate authenticated local worker control plane over durable
+Status: Phase 11 adds independent offline coverage/refresh planning, deterministic queue
+order, source-bound new measurements and durable global stop (migration 0006).
+Phase 10 added a separate authenticated local worker control plane over durable
 leases, one-use central connection permits and atomic delivery. Phase 9 added
 source-bound evidence inspection and a retained endpoint timeline
 to the geographic explorer and offline MapLibre demonstration over
@@ -37,29 +39,33 @@ only explicit synthetic literal-loopback jobs. See docs/DISTRIBUTED.md.
 Targets are literal IPv4/IPv6 addresses with source and campaign provenance.
 Phase 1 implements explicit addresses/small CIDRs, bounded streaming expansion,
 TCP connect discovery, and local JSONL results. Port sets and campaign size are
-explicit. No raw socket privileges are required. Exhaustive IPv6 enumeration is
-not viable; use documented seeds and routed-prefix sampling later.
+explicit. No raw socket privileges are required. Phase 11 adds seed-only IPv6 and authored routed-space simulation; it never
+enumerates IPv6 prefixes or enables real routing input.
 
 Before measurement, policy intersects requested scope with allowed scope and
 removes IANA special-purpose/non-global ranges, multicast, operator exclusions,
 and opt-outs. `ipaddress.is_global` is one input, not proof of current routing or
 permission: Phase 1 pins a conservative collapsed IANA IPv4/IPv6 deny snapshot,
 explicit multicast checks, and boundary tests. Runtime classification and IPv6
-global-unicast restriction add denials. Routing data is not implemented; later
-coverage/enrichment phases will address it. See `docs/DISCOVERY.md` for bounds.
+global-unicast restriction add denials. Live routing data is not implemented; Phase 11 accepts only authored fixture
+regions labelled routed/unrouted/unknown. See `docs/DISCOVERY.md` for bounds.
 Registry/dataset updates are reviewable maintenance actions, not unpinned network
 downloads during tests.
 Built-in non-routable restrictions cannot be defeated by a user allowlist.
 A narrowly scoped loopback lab mode permits fixture servers; it must not create
 a broad private-network bypass. No lab targets may enter production campaigns.
 
-Later scheduling uses deterministic, seeded permutation of eligible targets,
-sharded by campaign/worker without duplicate leases. Enforce global, per-node,
-and per-prefix (/24 IPv4, /48 IPv6 initially) token budgets. Add endpoint cooldown,
-bounded retries with jitter, prefix fairness, job deadlines, expiration, and a
-central stop switch. Refresh priorities use age, observed change rate, previous
-outcome, coverage goals, and capacity. A timeout is not proof a service vanished.
-Global leases must prevent workers multiplying the intended traffic budget.
+Phase 11 `scheduler/` separates I/O-free versioned planning from explicit private file
+and local DB adapters. SHA-ranked sampling, logical shards, /24-/48 round-robin
+ordering and explicit round rotation operate on bounded authored universes. Retained
+latest attempts determine outcome cooldowns; refreshes have new schedule/job/attempt/
+observation identities and preserve their original prior-source UUID/digest. A plan is
+not authority: the loopback adapter rechecks actual history, suppression, unresolved
+issued attempts, deadlines and queue bounds under the control/pipeline lock. Workers
+still need the same one-use permit for every connection. Counts separate candidates,
+exclusions, scheduled, admitted, measured, uncertain, retained and refreshed sources.
+See docs/SCHEDULING.md for denominators, fairness guarantees and explicit limitations.
+No autonomous refresh daemon, learned change-rate policy or real routing feed exists.
 
 ## Measurement and protocol collectors
 
@@ -95,7 +101,7 @@ storage, FastAPI or UI. The engine supplies admission for every connection; pass
 syntax parsers implement a small Collector interface and TLS uses an active handshake
 adapter. Raw sockets and SSLObject/MemoryBIO give explicit byte accounting and closure.
 Configuration v3 leaves protocol collection disabled until explicitly selected. API
-health identifies Phase 10; the UI exposes retained synthetic metadata and reviewed previews,
+health identifies Phase 11; the UI exposes retained synthetic metadata and reviewed previews,
 with no measurement controls.
 
 ## Distributed worker boundary (Phase 10)
@@ -123,7 +129,10 @@ Queue/spool caps stop new work under backpressure. PostgreSQL restart retains au
 restored backup queues are cancelled before reuse. Authenticated workers remain trusted;
 remote sockets cannot offer instantaneous physical fencing. See DISTRIBUTED for stop
 latency, retention, copy quarantine, limits, recovery commands and acceptance evidence.
-No routed-space sampling, refresh policy, UDP or global distribution is implemented.
+Phase 11 adds offline authored routing plans and explicit refresh admission without
+broadening worker scope. A durable global switch blocks new work; reopening it never
+revives cancelled jobs. Suppression/removal revokes jobs atomically; restore also sets
+global stop. UDP and global distribution remain unimplemented.
 
 ## Evidence and derivations
 
@@ -153,7 +162,7 @@ completed-result flush, final fsync and checksum; no database adapter. Graceful
 stops finalize metadata; hard kills may leave a running manifest or partial line.
 An advisory spool lock prevents concurrent local campaigns sharing that directory.
 Phase 4 implements PostgreSQL with typed endpoint/time/outcome fields and private JSONB
-source envelopes, SQLAlchemy transactions and five packaged Alembic migrations. Raw
+source envelopes, SQLAlchemy transactions and six packaged Alembic migrations. Raw
 response/certificate bytes live in a private content-addressed filesystem; exact
 JSON-pointer references reconstruct and verify the original v1/v2 canonical source.
 Observation UUID plus source digest distinguishes replay from conflict; equal blobs

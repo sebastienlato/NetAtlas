@@ -75,7 +75,7 @@ For limits, selection, statuses and exact accounting, see
 
 ## Configuration and manifests
 
-Configuration is **version 3**, package **0.11.0**. Old explicit version-2 files fail
+Configuration is **version 3**, package **0.12.0**. Old explicit version-2 files fail
 closed. To migrate a local file, change its version to 3, compare against
 `config/default.toml`, and explicitly choose `measurement.protocol_evidence`. It
 remains false by default; old partial files that omit a version retain connect-only
@@ -185,3 +185,14 @@ authenticated loopback coordinator has no UI/read routes. Worker delivery preser
 original observation v2 UUID/digest and uses the existing storage lock and retention
 policy; legacy v1 reads/ingestion remain unchanged. No source/read schema changed.
 See [DISTRIBUTED.md](DISTRIBUTED.md).
+
+## Phase 11 schedule contracts
+
+Schedule input/plan schema 1, coverage-refresh-1 and explicit-authored-seeds-only-1
+are separate pure contracts in scheduler/. Settings remains 3; no source/manifest,
+fingerprint, enrichment or worker-control schema changes. Canonical input/universe/
+policy/seed/config hashes and exact prior-source UUID/digest bind each scheduled
+refresh; it reserves a new observation UUID at claim and never mutates the previous
+source. Migration 0006 stores schedule snapshots/identity, queue order, refresh
+references and global stop. No raw evidence is copied into schedule documents.
+See SCHEDULING.md for counts, validation, limits and retention of control metadata.

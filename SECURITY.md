@@ -247,7 +247,7 @@ Cancellation and DB suppression revoke future authority. Already-issued 250-ms p
 and active connections may precede the next heartbeat; no instantaneous remote socket
 fence is claimed. Heartbeat/control failure cancels active I/O, normally within about
 three seconds subject to scheduling. Existing standalone discovery still needs explicit
-stop/config update; it does not consult worker leases. Full scheduling is Phase 11.
+stop/config update; it does not consult worker leases. Phase 11 adds separate authored scheduling; see SCHEDULING.md.
 
 A worker has one fsynced pending slot and bounded delivery retries; storage outage stops
 new claims. Independently delete/quarantine pending.json/pending.stage on removal after
@@ -265,3 +265,27 @@ captured secrets, or exploit instructions in public issues. A public security
 contact and operator opt-out URL must be established before public deployment.
 If a credential is accidentally committed, revoke/rotate it and remove it from
 active use; merely deleting the current file does not remove Git history.
+
+## Coverage and refresh boundary (Phase 11)
+
+Offline planning accepts only bounded authored documentation/loopback universes.
+Routed/unrouted/unknown labels and IPv6 seeds are fixture assertions, never downloaded
+route truth or measurement authorization. Only explicit lab_loopback inputs can execute,
+with --synthetic, --measure and enabled identity, at the exact literal loopback endpoints.
+Logical shards and new refresh measurements share the original central socket permits.
+The read API/UI imports no scheduler execution and has no new controls. UDP is deferred.
+
+Schedule admission binds latest retained source identity, rejects unresolved issued
+attempts and checks current suppressions under the pipeline lock. Source snapshots,
+plans and schedule documents are private metadata; generated files stay ignored and
+need independent removal. Control metadata, including prior-source summaries, retains
+the explicit 90-day policy; raw sources remain 30 days, backups seven days.
+
+Global stop persists across coordinator restart and cancels all existing work. Explicit
+allow-new-work only reopens future admission. Suppression and matching job revocation
+commit together. Restore sets global stop as well as cancelling historical jobs; keep
+it offline through full verification and current suppression reapplication. DB outage
+can prevent committing stop: terminate workers locally; normal heartbeat/control loss
+already cancels active cooperative sockets. Existing 250-ms grants/in-flight traffic
+prevent instantaneous fencing. Keep worker credentials/boot generations and separately
+quarantine or delete pending copies. Exact commands/limits are in docs/SCHEDULING.md.
