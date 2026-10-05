@@ -31,8 +31,10 @@ from netatlas.storage.enrichment import store_enrichment
 from netatlas.storage.pipeline import Pipeline
 
 
-def seed(pipeline: Pipeline, count: int, at: datetime) -> Query:
-    """Three attempts/endpoint, half IPv6; fixed identities/order and source contents."""
+def seed(pipeline: Pipeline, count: int, at: datetime, *, start: int = 0) -> Query:
+    """Three attempts/endpoint; start permits bounded incremental evaluation growth."""
+    if not 0 <= start < count <= 4096:
+        raise ValueError("bounded nonempty seed interval required")
     data = json.loads(Path("tests/fixtures/enrichment/synthetic.json").read_text())
     data.update(valid_from=at - timedelta(days=10), expires_at=at + timedelta(days=10))
     dataset = Dataset.model_validate(data)
@@ -47,7 +49,7 @@ def seed(pipeline: Pipeline, count: int, at: datetime) -> Query:
     }
     pack = RulePack.model_validate(pack.model_dump() | {"rules": [*pack.rules, rare]})
     template = example_observation(Settings()).model_dump(mode="json")
-    for i in range(count):
+    for i in range(start, count):
         address = f"192.0.2.{(i // 2) % 256}" if i % 2 == 0 else f"2001:db8::{i:x}"
         for attempt in range(3):
             row = json.loads(json.dumps(template))

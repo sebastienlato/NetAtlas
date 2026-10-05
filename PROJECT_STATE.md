@@ -1,7 +1,7 @@
 # Project state
 
-Updated: 2026-10-05. **Phase 12 — Operational hardening is complete.**
-Phase 13 has not started. Package **0.13.0**; schedule input/plan **1**,
+Updated: 2026-10-05. **Phase 13 — Thesis evaluation is complete.**
+Phase 14 has not started. Package **0.14.0**; schedule input/plan **1**,
 algorithm **coverage-refresh-1**, IPv6 **explicit-authored-seeds-only-1**;
 control envelope **1**; HTTP schema **1**; local query schema **1**; config **3**;
 observation/manifest **2** with explicit v1 reads; fingerprint pack/result schemas
@@ -9,6 +9,26 @@ observation/manifest **2** with explicit v1 reads; fingerprint pack/result schem
 bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0006**.
 
 ## Delivered
+
+- **Phase 13:** independent `evaluation/` operator harness/report schema 1,
+  `thesis-evaluation-1`, and a 30-case separately labelled authored corpus. Fixed core
+  rules are scored against product assertions and scenario roles separately, with
+  per-class TP/FP/FN/precision/recall, undefined denominators, unknowns, ambiguity,
+  unsupported classes, per-case failures and small-sample uncertainty. Same-author
+  scenarios are not blind independent-rater validation or real-world accuracy.
+- Explicit recent clock, source/tree/lock/config/rule/dataset/engine/seed provenance,
+  exact source/count/facet oracles, three disposable-DB repetitions, 32/128-endpoint
+  growth checkpoints, complete durable pipeline/query timings and four-service
+  standalone loopback capture-to-search measurements. No production bound changed.
+- Freshness preserves latest negatives versus old evidence; geographic gaps/radii,
+  source/endpoint/candidate denominators, seed-only IPv6, exclusions, sampling and
+  queue bias remain explicit. Injected reserve failure verifies no partial commit;
+  existing worker/control/operations failure qualification remains separate.
+- [EVALUATION.md](docs/EVALUATION.md) fixes methodology/reproduction and an unexecuted,
+  separately authorized institutional-study proposal. [EVALUATION_REPORT.md](docs/EVALUATION_REPORT.md)
+  records actual qualified findings and hashes. Detailed JSON/spools/blobs stay private;
+  no new runtime dependency, migration, rule semantics or source/read contract.
+
 
 - **Phase 12:** independent `operations/` module provides dependency readiness,
   read-only aggregate snapshots and fixed-cardinality HTTP telemetry. Liveness remains
@@ -222,6 +242,41 @@ and its locked dependencies for local certificate parsing.
 
 ## Verified validation
 
+- Full **make check-db COMPOSE=docker-compose** passes: **394 Python tests, 28 web
+  tests and six production Chromium tests**, including strict static checks, generated
+  contract drift, both builds and all CLI smoke. Nine new evaluation tests verify
+  scoring denominators, truth mutation sensitivity, unknown/spoof/ambiguity cases,
+  source/count/facet and schedule oracles, private output, complete loopback/database
+  experiments and cleanup after failure. All inherited worker, scheduling, operations,
+  source integrity, opt-out, restricted-role deployment and stopped-restore cases pass.
+- Completed three-repetition thesis evaluation at **2026-10-05T17:07:00Z**, 10 timed
+  samples per query/repetition after warm-up. Current-evidence p50 **7.878–8.317 ms**,
+  history p50 **14.163–14.305 ms** at 128 endpoints/384 sources. Durable three-commit
+  pipeline **108.6–112.5 sources/s**; standalone four-service loopback pipeline
+  **1.298–1.306 sources/s** under ordinary spacing. These are local fixture results,
+  not distributed/global capacity. All exact oracles pass; no unplanned trial failure.
+- Product-assertion recall: nginx **6/7**, OpenSSH **3/4**, Postfix **1/1**, unsupported
+  Apache **0/1**. Their observed precision is **6/6, 3/3, 1/1, undefined** respectively.
+  Category role precision/recall is separately lower; eight unsupported classes remain
+  misses. **21/30** sources produce no candidates; one has multiple products/roles.
+  Spoofs demonstrate that correct marker detection cannot establish actual identity.
+- Application relation footprint grows from **565,248 B** empty to **4,276,224 B** at
+  384 sources (indexes included); repeated payloads use only **94 B / two blobs**.
+  WAL, backups/VM/physical blocks are excluded. This narrow deduplication-heavy fixture
+  is not a storage forecast. Source population/dataset hashes repeat across all runs.
+- Existing Colima profile/native PostGIS image, owner volume/credentials/service roles
+  and migration **0006** preserved. Owner DB remains **two sources, one fingerprint,
+  one enrichment** after evaluation/regression verification. No leftover evaluation DBs.
+  No owner worker credentials/coordinator, Internet sweep or external dataset added.
+- Package/health now **0.14.0 / Phase 13**; generated OpenAPI digest updated, wire
+  schemas unchanged. Runtime/dependency pins unchanged; no fresh advisory audit is
+  claimed in this phase. Phase 12 audit remains historical. Existing **1.304-MB JS /
+  511-kB worker** bundle warning persists.
+- No Phase 13 implementation blocker. Git/Actions and the completion report identify
+  the exact delivery commit, push/remote equality, clean tree and CI status.
+
+### Phase 12 baseline (retained historical record)
+
 - Full **make check-db COMPOSE=docker-compose** passes with **385 Python tests,
   28 web unit/component tests and six production Chromium tests**, including lint,
   format, strict typing, generated contract drift, both builds and CLI smoke.
@@ -418,7 +473,7 @@ file cannot contain its own final hash. Verify local HEAD against
 
 ## Limitations and blockers
 
-No Phase 12 implementation blocker. No raw download, real-data ingestion,
+No Phase 13 implementation blocker. No raw download, real-data ingestion,
 comprehensive sensitive-content sanitizer, public authentication, production
 role isolation, encrypted backup, worldwide workers, release or tag exists.
 The new authenticated control plane is trusted-local and uses only literal-loopback
@@ -455,5 +510,5 @@ failover, distributed throughput and production durability remain unqualified.
 
 ## Next
 
-**Phase 13 — Thesis evaluation**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
-Do not begin Phase 13 in this Phase 12 chat.
+**Phase 14 — Thesis-ready demonstration/release**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
+Do not begin Phase 14 or create a release/tag in this Phase 13 chat.

@@ -45,7 +45,7 @@ from netatlas.storage.pipeline import Pipeline
 class Health(Model):
     status: Literal["ok"] = "ok"
     version: str = __version__
-    phase: Literal[12] = 12
+    phase: Literal[13] = 13
     measurement_enabled: Literal[False] = False
 
 

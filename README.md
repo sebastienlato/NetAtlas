@@ -7,11 +7,18 @@ commercial search database is used.
 
 ## Current delivery
 
-**Phase 12 — Operational hardening** adds privacy-safe fixed-cardinality telemetry,
+**Phase 13 — Thesis evaluation** adds a reproducible synthetic evaluation harness,
+a separately labelled 30-case authored corpus, per-class precision/recall and explicit
+unknowns/spoofing, repeated bounded performance/storage trials, freshness and
+geography/coverage bias analysis. Read the [evaluation protocol](docs/EVALUATION.md)
+and [measured report](docs/EVALUATION_REPORT.md). Package **0.14.0**, migration **0006**;
+no real-world accuracy, worldwide capacity, release or public deployment is claimed.
+
+**Phase 12 — Operational hardening** added privacy-safe fixed-cardinality telemetry,
 separate readiness, a local operations dashboard, optional restricted read/control DB
 accounts, resource/backpressure limits and a same-origin production-build local path.
 See [operations and retention/restore runbook](docs/OPERATIONS.md) and
-[dependency review](docs/DEPENDENCIES.md). Package **0.13.0**, migration **0006**;
+[dependency review](docs/DEPENDENCIES.md). Its delivery was package **0.13.0**, migration **0006**;
 cryptography is now **50.0.2**. No public deployment or real ingestion is enabled.
 
 
@@ -90,6 +97,7 @@ example do not need the database; `/readyz` checks dependencies separately. The 
 | `uv run --locked netatlas-enrich --help` | Offline dataset inspection, exact place lookup and enrichment |
 | `uv run --locked netatlas-schedule --help` | Offline plans, explicit DB snapshots, lab enqueue and coverage reports |
 | `uv run --locked netatlas-control --help` | Separate authenticated local worker/control commands |
+| `uv run --locked python -m netatlas.evaluation --help` | Bounded synthetic thesis evaluation; explicit clock, private output and optional loopback measurement |
 | `make demo` | Append authored demo fixtures; print the exact dataset hash to paste into the UI |
 | `make db-migrate` | Apply packaged Alembic migrations to the local database |
 | `uv run --locked netatlas config-check` | Validate defaults and print configuration digest |

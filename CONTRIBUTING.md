@@ -8,7 +8,7 @@ actual blockers requiring credentials, permission, or a manual action. Do not us
 conversation history as a substitute for repository documentation.
 
 Run commands in the repository root. `make setup` installs locked dependencies;
-`make check` runs the complete proportional validation through Phase 12.
+`make check` runs the complete proportional validation through Phase 13.
 Use `make check-db` for the complete database acceptance suite; plain `make check`
 reports those tests skipped without `NETATLAS_TEST_DB=1`. See `docs/STORAGE.md` for
 Compose setup, standalone Compose override and isolated database/restore testing. Individual commands
@@ -48,6 +48,13 @@ Use Python type hints and explicit schemas at I/O boundaries. Keep domain types
 free from I/O and side effects at import. React renders captured content as text,
 never injected HTML. Keep implementation and tests small and focused on observable
 behavior, limits, failure handling, and meaningful contracts.
+
+Phase 13 evaluation is a separate operator command: read `docs/EVALUATION.md`, then
+run the fixed bounded experiment with an explicit recent UTC clock, `--synthetic`,
+optional `--measure` for four authored loopback services, and a new ignored output.
+Commit authored aggregate analysis, never measured sources, JSON reports or temporary
+datasets. Do not change production rules to improve this purposive corpus's scores.
+Keep zero-denominator precision/recall undefined and unsupported classes visible.
 
 ## Dependency changes
 

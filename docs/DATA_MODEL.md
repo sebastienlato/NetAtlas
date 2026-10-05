@@ -75,7 +75,7 @@ For limits, selection, statuses and exact accounting, see
 
 ## Configuration and manifests
 
-Configuration is **version 3**, package **0.13.0**. Old explicit version-2 files fail
+Configuration is **version 3**, package **0.14.0**. Old explicit version-2 files fail
 closed. To migrate a local file, change its version to 3, compare against
 `config/default.toml`, and explicitly choose `measurement.protocol_evidence`. It
 remains false by default; old partial files that omit a version retain connect-only
@@ -204,3 +204,11 @@ counts only; it is independent of source/measurement contracts. Backup manifest 
 adds creation and seven-day expiry, with legacy v1 reads and independent age review.
 No observation/manifest/config/derivation/schedule schema changes or new migration.
 See OPERATIONS.md for the exact state/count definitions and retention/restore boundary.
+
+## Phase 13 evaluation contract
+
+Private evaluation report schema 1 (`thesis-evaluation-1`) records independent truth,
+per-class denominators/unknowns, exact provenance and raw timing samples. It is an
+operator artifact, never an HTTP/storage source contract. Observation/config/control/
+schedule/read/inspection/operations schemas and migration 0006 are unchanged.
+See EVALUATION.md for reproducibility and publication limits.

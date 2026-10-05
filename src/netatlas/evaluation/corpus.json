@@ -1,0 +1,463 @@
+{
+  "schema_version": 1,
+  "version": "authored-thesis-1",
+  "method": "Purposive authored scenarios labelled before evaluation. Labels are separate from rule IDs and outputs. Not a blinded independent-rater study or random sample. Null means unlabelled; [] means labelled absence of the evaluated assertion. No physical-device labels.",
+  "cases": [
+    {
+      "id": "http-exact",
+      "stratum": "supported",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: nginx\r\nContent-Type: text/plain\r\n\r\nfixture"
+      ],
+      "products": [
+        "nginx"
+      ],
+      "roles": [
+        "web_server"
+      ],
+      "underlying_products": [
+        "nginx"
+      ],
+      "rationale": "Authored nginx web role with an explicit product assertion."
+    },
+    {
+      "id": "http-version",
+      "stratum": "supported",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: nginx/1.0\r\nContent-Type: text/plain\r\n\r\nfixture"
+      ],
+      "products": [
+        "nginx"
+      ],
+      "roles": [
+        "web_server"
+      ],
+      "underlying_products": [
+        "nginx"
+      ],
+      "rationale": "Version text is asserted, not a verified version."
+    },
+    {
+      "id": "ssh",
+      "stratum": "supported",
+      "captures": [
+        "SSH-2.0-OpenSSH_9.0\r\n"
+      ],
+      "products": [
+        "OpenSSH"
+      ],
+      "roles": [
+        "ssh_server"
+      ],
+      "underlying_products": [
+        "OpenSSH"
+      ],
+      "rationale": "Authored SSH service; no operating-system label."
+    },
+    {
+      "id": "smtp",
+      "stratum": "supported",
+      "captures": [
+        "220 mail.example ESMTP Postfix\r\n"
+      ],
+      "products": [
+        "Postfix"
+      ],
+      "roles": [
+        "mail_server"
+      ],
+      "underlying_products": [
+        "Postfix"
+      ],
+      "rationale": "Postfix asserted after the hostname."
+    },
+    {
+      "id": "case-variant",
+      "stratum": "variant",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: NGINX\r\nContent-Type: text/plain\r\n\r\nfixture"
+      ],
+      "products": [
+        "nginx"
+      ],
+      "roles": [
+        "web_server"
+      ],
+      "underlying_products": [
+        "nginx"
+      ],
+      "rationale": "Human product assertion labels ignore capitalization; core literals are case-sensitive. Deliberate recall gap."
+    },
+    {
+      "id": "ssh-legacy",
+      "stratum": "unsupported-protocol",
+      "captures": [
+        "SSH-1.5-OpenSSH_1.0\r\n"
+      ],
+      "products": [
+        "OpenSSH"
+      ],
+      "roles": [
+        "ssh_server"
+      ],
+      "underlying_products": [
+        "OpenSSH"
+      ],
+      "rationale": "An authored SSH-1 assertion lies outside the supported SSH-2 parser."
+    },
+    {
+      "id": "hidden-nginx",
+      "stratum": "hidden-product",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: undisclosed\r\nContent-Type: text/plain\r\n\r\nfixture"
+      ],
+      "products": [],
+      "roles": [
+        "web_server"
+      ],
+      "underlying_products": [
+        "nginx"
+      ],
+      "rationale": "Scenario runs nginx but hides its marker; no captured nginx assertion."
+    },
+    {
+      "id": "spoof-nginx",
+      "stratum": "spoof",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: nginx\r\nContent-Type: text/plain\r\n\r\nfixture"
+      ],
+      "products": [
+        "nginx"
+      ],
+      "roles": [
+        "iot"
+      ],
+      "underlying_products": [
+        "FixtureEmulator"
+      ],
+      "rationale": "An authored IoT emulator impersonates nginx; marker detection cannot establish actual role or product."
+    },
+    {
+      "id": "spoof-ssh",
+      "stratum": "spoof",
+      "captures": [
+        "SSH-2.0-OpenSSH_fake\r\n"
+      ],
+      "products": [
+        "OpenSSH"
+      ],
+      "roles": [
+        "iot"
+      ],
+      "underlying_products": [
+        "FixtureEmulator"
+      ],
+      "rationale": "An authored emulator emits an SSH marker without providing an SSH service."
+    },
+    {
+      "id": "body-decoy",
+      "stratum": "decoy",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: Other\r\nContent-Type: text/plain\r\n\r\nDocumentation mentions nginx, OpenSSH and Postfix."
+      ],
+      "products": [],
+      "roles": [
+        "web_server"
+      ],
+      "underlying_products": [
+        "Other"
+      ],
+      "rationale": "Quoted body documentation is not a product identity assertion."
+    },
+    {
+      "id": "ssh-comment",
+      "stratum": "decoy",
+      "captures": [
+        "SSH-2.0-Other_1 OpenSSH_9.0\r\n"
+      ],
+      "products": [],
+      "roles": [
+        "ssh_server"
+      ],
+      "underlying_products": [
+        "Other"
+      ],
+      "rationale": "Comment mentions another product; software token asserts Other."
+    },
+    {
+      "id": "smtp-host",
+      "stratum": "decoy",
+      "captures": [
+        "220 Postfix.example ESMTP Other\r\n"
+      ],
+      "products": [],
+      "roles": [
+        "mail_server"
+      ],
+      "underlying_products": [
+        "Other"
+      ],
+      "rationale": "A hostname containing Postfix is not a Postfix product assertion."
+    },
+    {
+      "id": "incomplete-header",
+      "stratum": "incomplete",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: nginx"
+      ],
+      "products": null,
+      "roles": [
+        "web_server"
+      ],
+      "underlying_products": [
+        "nginx"
+      ],
+      "rationale": "Truncated field has no closed assertion label; excluded from assertion precision/recall, underlying role remains known.",
+      "truncated": true
+    },
+    {
+      "id": "complete-header-short-body",
+      "stratum": "incomplete",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: nginx\r\nContent-Type: text/plain\r\nContent-Length: 99\r\n\r\nx"
+      ],
+      "products": [
+        "nginx"
+      ],
+      "roles": [
+        "web_server"
+      ],
+      "underlying_products": [
+        "nginx"
+      ],
+      "rationale": "Header assertion is complete even though the body is incomplete.",
+      "truncated": true
+    },
+    {
+      "id": "bare-220",
+      "stratum": "ambiguous-protocol",
+      "captures": [
+        "220 fixture.example ready\r\n"
+      ],
+      "products": [],
+      "roles": null,
+      "underlying_products": null,
+      "rationale": "Bare greeting permits SMTP/FTP alternatives; actual role intentionally unlabelled."
+    },
+    {
+      "id": "two-products",
+      "stratum": "multiple",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: nginx\r\nContent-Type: text/plain\r\n\r\nfixture",
+        "SSH-2.0-OpenSSH_9.0\r\n"
+      ],
+      "products": [
+        "nginx",
+        "OpenSSH"
+      ],
+      "roles": [
+        "web_server",
+        "ssh_server"
+      ],
+      "underlying_products": [
+        "nginx",
+        "OpenSSH"
+      ],
+      "rationale": "Two authored captures carry coexisting roles; neither is a winner or a physical device count."
+    },
+    {
+      "id": "duplicate-marker",
+      "stratum": "duplicate",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: nginx\r\nContent-Type: text/plain\r\nServer: nginx/1.0\r\n\r\nfixture"
+      ],
+      "products": [
+        "nginx"
+      ],
+      "roles": [
+        "web_server"
+      ],
+      "underlying_products": [
+        "nginx"
+      ],
+      "rationale": "Two candidate records can refer to the same product and role; score unique source-label pairs."
+    },
+    {
+      "id": "unknown-bytes",
+      "stratum": "unknown",
+      "captures": [
+        "opaque fixture\r\n"
+      ],
+      "products": [],
+      "roles": null,
+      "underlying_products": null,
+      "rationale": "No supported product assertion and no authored latent class."
+    },
+    {
+      "id": "empty-open",
+      "stratum": "empty",
+      "captures": [],
+      "products": [],
+      "roles": null,
+      "underlying_products": null,
+      "rationale": "TCP-open without evidence cannot classify a service."
+    },
+    {
+      "id": "timeout",
+      "stratum": "negative",
+      "captures": [],
+      "products": [],
+      "roles": null,
+      "underlying_products": null,
+      "rationale": "Timeout is not absence or a closed service.",
+      "outcome": "timeout"
+    },
+    {
+      "id": "closed",
+      "stratum": "negative",
+      "captures": [],
+      "products": [],
+      "roles": null,
+      "underlying_products": null,
+      "rationale": "Refusal is an observation outcome, not product truth.",
+      "outcome": "closed"
+    },
+    {
+      "id": "unsupported-camera_nvr",
+      "stratum": "unsupported-class",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: FixtureRole\r\nContent-Type: text/plain\r\n\r\nAuthored camera_nvr scenario"
+      ],
+      "products": [],
+      "roles": [
+        "camera_nvr"
+      ],
+      "underlying_products": [
+        "FixtureRole"
+      ],
+      "rationale": "Scenario label is authored independently of output. No shipped core rule supports this class; body text is not a detection rule."
+    },
+    {
+      "id": "unsupported-router",
+      "stratum": "unsupported-class",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: FixtureRole\r\nContent-Type: text/plain\r\n\r\nAuthored router scenario"
+      ],
+      "products": [],
+      "roles": [
+        "router"
+      ],
+      "underlying_products": [
+        "FixtureRole"
+      ],
+      "rationale": "Scenario label is authored independently of output. No shipped core rule supports this class; body text is not a detection rule."
+    },
+    {
+      "id": "unsupported-nas",
+      "stratum": "unsupported-class",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: FixtureRole\r\nContent-Type: text/plain\r\n\r\nAuthored nas scenario"
+      ],
+      "products": [],
+      "roles": [
+        "nas"
+      ],
+      "underlying_products": [
+        "FixtureRole"
+      ],
+      "rationale": "Scenario label is authored independently of output. No shipped core rule supports this class; body text is not a detection rule."
+    },
+    {
+      "id": "unsupported-printer",
+      "stratum": "unsupported-class",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: FixtureRole\r\nContent-Type: text/plain\r\n\r\nAuthored printer scenario"
+      ],
+      "products": [],
+      "roles": [
+        "printer"
+      ],
+      "underlying_products": [
+        "FixtureRole"
+      ],
+      "rationale": "Scenario label is authored independently of output. No shipped core rule supports this class; body text is not a detection rule."
+    },
+    {
+      "id": "unsupported-vpn_appliance",
+      "stratum": "unsupported-class",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: FixtureRole\r\nContent-Type: text/plain\r\n\r\nAuthored vpn_appliance scenario"
+      ],
+      "products": [],
+      "roles": [
+        "vpn_appliance"
+      ],
+      "underlying_products": [
+        "FixtureRole"
+      ],
+      "rationale": "Scenario label is authored independently of output. No shipped core rule supports this class; body text is not a detection rule."
+    },
+    {
+      "id": "unsupported-database",
+      "stratum": "unsupported-class",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: FixtureRole\r\nContent-Type: text/plain\r\n\r\nAuthored database scenario"
+      ],
+      "products": [],
+      "roles": [
+        "database"
+      ],
+      "underlying_products": [
+        "FixtureRole"
+      ],
+      "rationale": "Scenario label is authored independently of output. No shipped core rule supports this class; body text is not a detection rule."
+    },
+    {
+      "id": "unsupported-iot",
+      "stratum": "unsupported-class",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: FixtureRole\r\nContent-Type: text/plain\r\n\r\nAuthored iot scenario"
+      ],
+      "products": [],
+      "roles": [
+        "iot"
+      ],
+      "underlying_products": [
+        "FixtureRole"
+      ],
+      "rationale": "Scenario label is authored independently of output. No shipped core rule supports this class; body text is not a detection rule."
+    },
+    {
+      "id": "unsupported-industrial",
+      "stratum": "unsupported-class",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: FixtureRole\r\nContent-Type: text/plain\r\n\r\nAuthored industrial scenario"
+      ],
+      "products": [],
+      "roles": [
+        "industrial"
+      ],
+      "underlying_products": [
+        "FixtureRole"
+      ],
+      "rationale": "Scenario label is authored independently of output. No shipped core rule supports this class; body text is not a detection rule."
+    },
+    {
+      "id": "unrecognized-product",
+      "stratum": "unsupported-product",
+      "captures": [
+        "HTTP/1.1 200 OK\r\nServer: Apache\r\nContent-Type: text/plain\r\n\r\nfixture"
+      ],
+      "products": [
+        "Apache"
+      ],
+      "roles": [
+        "web_server"
+      ],
+      "underlying_products": [
+        "Apache"
+      ],
+      "rationale": "A familiar but unsupported product assertion remains a measured false negative, not removed from the denominator."
+    }
+  ]
+}

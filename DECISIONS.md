@@ -92,6 +92,10 @@ changing the design. Phase 10 adds bounded local distributed workers; worldwide 
 | ADR-074 | Backup manifest 2 adds exact seven-day timestamps; omit DB ownership and ACLs from dump/restore. | Restored historical queues are cancelled/globally stopped and new service grants need explicit provisioning. Legacy manifest 1 reads remain; age requires independent operator evidence. No automatic archive deletion or encrypted backup. |
 | ADR-075 | Upgrade cryptography 48.0.1 to locked 50.0.2 after three upstream audit findings. | Affected PKCS#7/verifier features were not called; parsing-only inspection semantics remain. Final npm/Python audits report no known vulnerabilities, not proof of security; detailed scope/licenses in DEPENDENCIES. |
 
+| ADR-076 | Package 0.14.0; independent evaluation harness/schema 1, fixed core pack and a separately authored 30-case labelled corpus. | Product assertions, scenario roles and latent-software counterexamples have distinct denominators; unsupported classes, null truth and ambiguity remain visible. No physical-device identity or random-population inference. |
+| ADR-077 | Three bounded disposable DB repetitions at 32/128 endpoints, complete durable source operations and serialized exact queries; separate four-service standalone loopback pipeline. | Warm-up/setup exclusions, exact source/count oracles, clock/tree/lock/config/dataset provenance, resource bounds, storage exclusions and observed variation accompany every result. Historical Phase 6 remains historical; no distributed/worldwide throughput extrapolation. |
+| ADR-078 | Keep measured outputs private; commit small authored fixtures, harness and aggregate thesis report. External validation remains a separately scoped proposal. | No owner reset, real inputs, new vantage points, paid service, public listener, unapproved campaign or Phase 14 release work. Same-author labels are not independent-rater validation. |
+
 ## Primary references consulted
 
 - [Cryptography X.509 parsing/accessors](https://cryptography.io/en/latest/x509/reference/)

@@ -1,5 +1,8 @@
 # Phase 6 synthetic search benchmark
 
+**Historical Phase 6 result.** Phase 13 adds separately scoped repeated experiments
+in [EVALUATION_REPORT.md](EVALUATION_REPORT.md); the numbers below are not reruns.
+
 Measured 2026-10-04, workload `synthetic-search-1`, package 0.7.0 / migration 0004.
 All observations, IP/ASN associations and labels are authored fixtures. No target
 measurement, Internet lookup, commercial discovery dataset or raw-capture export.

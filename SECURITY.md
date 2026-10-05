@@ -317,3 +317,16 @@ offline through current suppression review, and require explicit new service gra
 Unencrypted local backups and independent offline copies remain limitations.
 Cryptography is now 50.0.2 following the [dependency review](docs/DEPENDENCIES.md).
 No real-input/public deployment authorization or comprehensive sanitizer is added.
+
+## Phase 13 evaluation boundary
+
+The explicit `netatlas.evaluation` harness requires `--synthetic`; `--measure` additionally
+permits only its four bounded authored literal-loopback services, with enabled fixture
+identity, ordinary protocol/rate budgets and private spools. No arbitrary target option
+exists. It creates/drops only newly named disposable evaluation DBs, and keeps blobs,
+spools and measured outputs temporary/private. Normal failures clean owned fixtures;
+forced termination can leave identifiable disposable DBs for operator cleanup. Resource
+faults are injected in isolated fixtures, never by filling or disrupting owner storage.
+Committed raw text is authored inert corpus content, not network evidence. Published
+analysis remains fixture-qualified; external studies require separate owner/institutional
+authorization described in EVALUATION.md. No real ingestion, public deployment or release.

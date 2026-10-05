@@ -1,6 +1,9 @@
 # Architecture
 
-Status: Phase 12 adds an independent operations projection, fixed-cardinality HTTP telemetry,
+Status: Phase 13 adds a separate explicit `evaluation/` operator harness, authored
+truth and qualified synthetic reports (docs/EVALUATION.md). It is never imported by
+the API, workers, domain or derivation engines. Runtime schemas and migration 0006
+are unchanged. Phase 12 adds an independent operations projection, fixed-cardinality HTTP telemetry,
 readiness/dashboard, restricted local service DB roles and same-origin production assets.
 See docs/OPERATIONS.md for access, resource, deployment and recovery limits.
 Phase 11 adds independent offline coverage/refresh planning, deterministic queue
@@ -104,7 +107,7 @@ storage, FastAPI or UI. The engine supplies admission for every connection; pass
 syntax parsers implement a small Collector interface and TLS uses an active handshake
 adapter. Raw sockets and SSLObject/MemoryBIO give explicit byte accounting and closure.
 Configuration v3 leaves protocol collection disabled until explicitly selected. API
-health identifies Phase 12; the UI exposes retained synthetic metadata and reviewed previews,
+health identifies Phase 13; the UI exposes retained synthetic metadata and reviewed previews,
 with no measurement controls.
 
 ## Distributed worker boundary (Phase 10)
@@ -320,3 +323,12 @@ and protocol coverage gaps, vantage bias, IP churn, NAT, anycast, virtual hostin
 geolocation error, and the distinction between reachable exposure and vulnerability.
 Worldwide continuous operation has real bandwidth, infrastructure, and staffing
 costs even when all software and demonstration data are free.
+
+Phase 13 evaluates captured product assertions separately from authored scenario roles
+and latent software counterexamples; physical identity remains unqualified. Corpus
+labels are independent of predictions, not independent-rater or random-sample truth.
+Disposable DBs, private temporary blobs and explicit four-service loopback campaigns
+measure complete operations without extending any production bound. Per-class unknowns,
+unsupported classes, seed-only IPv6, negative latest attempts and geographic gaps remain
+visible. Warm-cache single-client measurements and nominal small-sample intervals do
+not establish population accuracy or worldwide capacity. See EVALUATION_REPORT.
