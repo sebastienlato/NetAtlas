@@ -1,12 +1,36 @@
 # Project state
 
-Updated: 2026-10-04. **Phase 9 — Service and evidence inspection is complete.**
-Phase 10 has not started. Package **0.10.0**; HTTP schema **1**; local query schema **1**; config **3**;
+Updated: 2026-10-04. **Phase 10 — Distributed measurement is complete.**
+Phase 11 has not started. Package **0.11.0**; control envelope **1**; HTTP schema **1**; local query schema **1**; config **3**;
 observation/manifest **2** with explicit v1 reads; fingerprint pack/result schemas
 **1**, engine **fingerprints-1**, taxonomy **netatlas-categories-1**; enrichment
-bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0004**.
+bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0005**.
 
 ## Delivered
+
+- **Phase 10:** independent authenticated loopback control plane and two local worker
+  processes; generated private per-worker credentials stay outside DB/config hashes.
+  No UI controls or changes to read authentication; no public/real-input service.
+- Migration 0005 adds campaign/job/attempt/worker identities, durable boot fencing,
+  leases/heartbeats and persistent global/per-prefix connection pacing. Each dial,
+  including TLS, needs a committed one-use 250-ms permit. Delayed grants cannot burst.
+- Only unstarted leases can be reassigned (three assignments maximum). Once any permit
+  is issued, loss becomes uncertain and never silently remeasures. Restart may recover
+  delivery-only authority for the original UUID/digest within 24 hours of claim.
+- One fsynced spool slot per worker and bounded retry/backoff provide backpressure.
+  Delivery authority, fsynced blobs, source/projection/outbox and acknowledgement receipt
+  share one synchronous transaction. Lost acknowledgements replay exact original truth.
+- Explicit enabled identity, --measure, --synthetic and literal-loopback scope required
+  for enqueue; preview remains offline/default. Existing standalone discovery policy
+  is preserved. One active campaign, at most two sockets, 128 pending/1024 retained jobs
+  (lab scope itself at most 32). No routed-space/refresh/UDP/global scheduling.
+- Cancellation and DB suppression revoke subsequent admission/delivery. Heartbeat loss
+  cancels active sockets; already-issued grants/in-flight traffic have documented bounded
+  stop latency, not instantaneous physical fencing. Uncertain slots retain their hard
+  horizon. Coordinator restart preserves authority/rates; old restores cancel all jobs.
+- Worker copies/credentials remain ignored and independently managed; keep boot counters
+  on restart, delete/quarantine pending copies for removal, prune control metadata after
+  90 days. Read [DISTRIBUTED.md](docs/DISTRIBUTED.md) for commands and precise limits.
 
 - Bounded literal IPv4/IPv6 discovery, pinned policy, exclusions/opt-outs, narrow
   literal-loopback lab mode, shared pacing/queue/deadlines/cancellation, private spool.
@@ -26,7 +50,7 @@ bundle/result schemas **1**, engine **enrichment-1**; Alembic head **0004**.
 - Fsynced files precede synchronous commits; acknowledgements follow each row's commit.
   One advisory lock coordinates pipeline operations/GC/backup/search. Transactional
   outbox and same-DB consumer receipts support cursor replay; derivation events cover
-  fingerprints and enrichment at source granularity. External delivery is not claimed.
+  fingerprints and enrichment at source granularity. External outbox delivery is not claimed.
 - Independent last attempt/open/nonempty-evidence pointers ordered by finish/start/UUID.
   Negative/stale/empty attempts preserve evidence. Synthetic-only local ingestion;
   30-day source expiry, whole-record removal, persistent CIDR suppression, 90-day
@@ -123,6 +147,8 @@ on query contracts and the storage connection/lock, never collector execution.
 The read API adapts search and source-bound inspection through explicit models; its HTTP response
 contract is separate from private dictionaries. The explorer owns only view state;
 `netatlas.demo` is a separate explicit operator adapter, never imported by the API.
+`control/` owns authenticated worker orchestration; collectors remain independent of
+storage and the HTTP control transport.
 Read [INSPECTION.md](docs/INSPECTION.md) for the reviewed preview and trace contract.
 Read [GEOGRAPHIC_UI.md](docs/GEOGRAPHIC_UI.md) for demo/setup/scope and
 [MAP_ASSETS.md](docs/MAP_ASSETS.md) for the deliberately reviewed asset exceptions.
@@ -134,12 +160,44 @@ Read [STORAGE.md](docs/STORAGE.md), [ENRICHMENT.md](docs/ENRICHMENT.md),
 [PROTOCOL_EVIDENCE.md](docs/PROTOCOL_EVIDENCE.md) and [FINGERPRINTS.md](docs/FINGERPRINTS.md)
 for inherited contracts. `make db-up COMPOSE=docker-compose` preserves the existing
 volume/secret and builds native arm64/amd64 PostGIS from the pinned PostgreSQL base
-and direct extension packages; `make db-migrate` applies 0004. Compose-plugin hosts
+and direct extension packages; `make db-migrate` applies 0005. Compose-plugin hosts
 omit the override. The image context contains only docker/; transitive APT packages
 are not fully pinned. Runtime pins are unchanged; Phase 9 adds cryptography 48.0.1
 and its locked dependencies for local certificate parsing.
 
 ## Verified validation
+
+- Full **make check-db COMPOSE=docker-compose** passed with **348 Python tests,
+  26 web unit/component tests and 5 production Chromium tests**. Ruff/format, strict
+  mypy, Biome/TypeScript, generated OpenAPI drift, both builds, CLI smoke and existing
+  migration/retention/backup/restore acceptance all pass.
+- **36 new worker cases** cover authenticated bounded control envelopes, private
+  credentials/spools, generations/fencing, lost/reordered registration and claims,
+  lease reclaim limits, late delivery and restart, global/per-prefix/IPv6/second-TLS
+  admission, occupied socket slots after failure, pacing across coordinator restart,
+  clock regression, cancellation/suppression/deadlines, storage backpressure and
+  reordered/duplicate delivery with exact source integrity.
+- Two actual worker subprocesses used the real HTTP coordinator and PostgreSQL with
+  authored HTTP/TLS loopback fixtures. Both lost a delivery acknowledgement and replayed
+  without extra probes or outbox events; the TLS endpoint used exactly two connections.
+  Killing and restarting a worker during capture left one uncertain attempt and no
+  repeated measurement. Heartbeat/cancellation tests verified closure of active sockets.
+- Injected failures around blob publication and commit preserve atomic source/job/outbox
+  receipts. Missing blobs are never acknowledged; replay cannot revive suppression.
+  Populated 0004 upgrade preserves source bytes; restored Phase 10 archives cancel
+  historical work before use, while existing older backup acceptance remains passing.
+- Python 3.14.7, uv 0.12.19, Node 26.8.1 and npm 11.19.0 verified. Existing dedicated
+  Colima netatlas profile, native PostGIS image, volume and secret preserved; operator
+  database migrated and verified at **0005**. Credentials, outputs and captures used by
+  acceptance stayed in temporary/ignored locations. No real inputs or Internet sweep.
+- Read/inspection/UI behavior and inherited browser/Axe acceptance pass unchanged.
+  The approximately 1.30-MB main JS / 511-kB worker warning persists. No new global
+  throughput, real accuracy, public deployment or physical power-failure qualification.
+- No implementation blocker, release or tag. Exact delivery commit, remote HEAD equality,
+  clean-tree verification and CI status are reported after publication; reproduce with
+  make check-db and the delivery checks in CONTRIBUTING.
+
+### Phase 9 baseline (retained historical record)
 
 - Full **make check-db COMPOSE=docker-compose** passed with **312 Python tests,
   26 web unit/component tests and 5 production Chromium tests**. Ruff/format, strict
@@ -243,10 +301,12 @@ file cannot contain its own final hash. Verify local HEAD against
 
 ## Limitations and blockers
 
-No Phase 9 implementation blocker. No raw download, real-data ingestion,
+No Phase 10 implementation blocker. No raw download, real-data ingestion,
 comprehensive sensitive-content sanitizer, public authentication, production
-role isolation, encrypted backup, distributed workers, release or tag exists. Local
-query dictionaries/offsets remain private; HTTP uses separate Phase 7 models. Labels remain
+role isolation, encrypted backup, worldwide workers, release or tag exists.
+The new authenticated control plane is trusted-local and uses only literal-loopback
+fixtures. Authentication trusts provisioned workers; it does not sandbox hostile code.
+Local query dictionaries/offsets remain private; HTTP uses separate Phase 7 models. Labels remain
 untrusted; hashes do not authenticate peers or dataset publishers.
 
 Exact broad aggregates scale with matched rows. One lock serializes operations;
@@ -278,5 +338,5 @@ failover, distributed throughput and production durability remain unqualified.
 
 ## Next
 
-**Phase 10 — Distributed measurement**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
-Do not begin Phase 10 in this Phase 9 chat.
+**Phase 11 — Coverage and refresh scheduling**, in a fresh chat using [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md).
+Do not begin Phase 11 in this Phase 10 chat.

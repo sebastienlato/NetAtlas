@@ -33,6 +33,8 @@ build:
 	npm --prefix web run build
 
 smoke:
+	uv run --locked netatlas-control --help > /dev/null
+	uv run --locked netatlas-control enqueue --target 192.0.2.1 --port 80 > /dev/null
 	uv run --locked netatlas-search --help > /dev/null
 	uv run --locked netatlas fingerprint --inspect > /dev/null
 	uv run --locked netatlas config-check

@@ -141,3 +141,13 @@ the existing measurement section to preview/collect protocols; config version is
 Tests use synthetic policy arithmetic, fake clocks/connect errors, and explicit
 loopback fixture sockets. `make check` includes an offline denied-scope preview.
 No Internet scan is part of implementation validation.
+
+## Phase 10 local workers
+
+The standalone command above is unchanged. A separate authenticated local worker
+adapter now uses durable central admission, leases and exact-result delivery, described
+in [DISTRIBUTED.md](DISTRIBUTED.md). Its enqueue interface remains preview by default
+and is narrower: enabled identity, --measure, --synthetic and literal-loopback scope.
+Standalone campaigns do not share the distributed budget or consult worker leases;
+do not run them alongside a worker campaign as a way to multiply traffic. No distributed
+Internet campaign, routed-space sampler or automatic refresh is implemented.

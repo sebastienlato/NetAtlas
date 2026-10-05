@@ -1,176 +1,187 @@
-# PHASE 10 — FRESH WORK CHAT KICKOFF
+# PHASE 11 — FRESH WORK CHAT KICKOFF
 
 You are the authoritative developer and project manager for NetAtlas — Global Internet
 Exposure Search & Visualization, an independent university thesis project. Complete
-exactly **Phase 10 — Distributed measurement** in this fresh Work chat. Do not begin
-Phase 11. Repository files, not prior chat history, are authoritative. Make routine
-engineering decisions autonomously; ask only for genuine blockers after finishing
-independent authorized work. Respect owner changes. No release or tag.
+exactly **Phase 11 — Coverage and refresh scheduling** in this fresh Work chat. Do not
+begin Phase 12. Repository files, not prior chat history, are authoritative. Make routine
+engineering decisions autonomously; ask only for genuine blockers after independent
+authorized work. Respect owner changes. No release or tag.
 
 Read AGENTS.md, PROJECT_STATE.md, README.md, ROADMAP.md, ARCHITECTURE.md, DECISIONS.md,
-CONTRIBUTING.md, SECURITY.md and docs/API.md, DATA_MODEL.md, STORAGE.md, DISCOVERY.md,
-PROTOCOL_EVIDENCE.md, FINGERPRINTS.md, ENRICHMENT.md, SEARCH.md, SEARCH_BENCHMARK.md,
-GEOGRAPHIC_UI.md, MAP_ASSETS.md and INSPECTION.md first. Inspect Git status/remotes,
-toolchains, existing discovery/budget/collector code, storage transactions/outbox,
-read API, browser client and tests before designing the new control plane.
+CONTRIBUTING.md, SECURITY.md and docs/DISTRIBUTED.md, API.md, DATA_MODEL.md, STORAGE.md,
+DISCOVERY.md, PROTOCOL_EVIDENCE.md, FINGERPRINTS.md, ENRICHMENT.md, SEARCH.md,
+SEARCH_BENCHMARK.md, GEOGRAPHIC_UI.md, MAP_ASSETS.md and INSPECTION.md first. Inspect
+Git status/remotes, runtime/Compose state, worker/control/collector code, transaction/
+outbox/restore behavior, read API/browser contracts and acceptance tests before designing.
 
-Phase 9 delivered package **0.10.0**, HTTP/local query schemas **1**, preview policy
-**synthetic-preview-1**, config **3**, observation/manifest **2** with explicit v1
-reads; fingerprint pack/result **1**, engine fingerprints-1, taxonomy
-netatlas-categories-1; enrichment bundle/result **1**, engine enrichment-1; Alembic
-head **0004**. Python 3.14/FastAPI/Pydantic, PostgreSQL 18.3/PostGIS 3.6.4,
-SQLAlchemy/psycopg, cryptography 48.0.1 and React/TypeScript/Vite/MapLibre 6.12.0
-are implemented. No distributed workers, real-data ingestion, Internet campaign,
-public deployment, production role isolation or encrypted backup exists.
-OpenSearch is deferred by the small local synthetic benchmark.
+Phase 10 delivered package **0.11.0**, control envelope **1**, HTTP/local query schemas
+**1**, preview policy **synthetic-preview-1**, config **3**, observation/manifest **2**
+with explicit v1 reads; fingerprint pack/result **1**, engine fingerprints-1, taxonomy
+netatlas-categories-1; enrichment bundle/result **1**, engine enrichment-1; Alembic head
+**0005**. Python/FastAPI/Pydantic, PostgreSQL 18.3/PostGIS 3.6.4, SQLAlchemy/psycopg,
+cryptography 48.0.1 and React/TypeScript/Vite/MapLibre 6.12.0 are implemented. OpenSearch
+remains deferred by the small synthetic benchmark. No real ingestion, Internet campaign,
+public deployment, worldwide worker network, production role isolation or encrypted
+backup exists.
 
-Implement two local/containerized workers, authenticated registration, durable
-leases/heartbeats, ingestion backpressure and retry/idempotency. Acceptance includes
-worker failure/restart and duplicate delivery drills, centrally budgeted rates and
-no paid infrastructure or real global campaign. Keep control-plane authentication
-separate from the unauthenticated trusted-local read API. Do not extend UI reads
-into measurement controls or expose them publicly. Use generated ignored local
-credentials; never log/store secrets in configuration hashes, fixtures or Git.
+Implement reproducible routed-space sampling/sharding, an explicit IPv6 seed policy,
+prefix fairness, stale-service refresh priorities, opt-out propagation and stop controls.
+Acceptance uses a **small authored synthetic address universe** to demonstrate coverage,
+schedule determinism, expiration and shared global budgets. Evaluate one bounded UDP
+collector only if its protocol budget and fixture evidence fit this phase; otherwise
+explicitly defer it. Do not infer authorization for live routing/geography downloads,
+real targets or an Internet campaign. Keep offline schedule planning separate from the
+existing narrower literal-loopback execution adapter. Do not implement Phase 12 telemetry,
+public deployment or production access-hardening as incidental scope.
 
-Design explicit worker/job/attempt identities and versioned bounded envelopes;
-lease ownership, expiry, fencing, restart/reclaim and late-result semantics; durable
-acknowledgement and bounded queue/spool/backpressure behavior. Delivery retries must
-not silently become extra target measurements. Preserve original observation UUIDs
-and digests across replay, reject identity conflicts and stale authority, and test
-lost acknowledgements, duplicate/reordered delivery, cancellation, worker death,
-coordinator restart and storage unavailability. Central admission must prevent
-workers multiplying global/per-prefix connection budgets, including TLS/second
-connections. Define safe behavior when coordination or heartbeats are unavailable.
-Use reviewed migrations; never edit shipped migrations. Do not build Phase 11 routed
-space sampling, coverage/refresh scheduling, UDP probing or global distribution.
+Define coverage denominators, exclusions, unknown/unrouted areas, seed/source provenance,
+versioned policy/config/seed identities and deterministic ordering. Distinguish scheduled,
+admitted, measured, incomplete/uncertain, retained and refreshed sources; these are not
+devices, worldwide completeness or prevalence. Refresh is an explicit new scheduled
+measurement with its own identity and budget, never a delivery retry. Preserve original
+attempt/source identities and negative/empty history semantics. Define fairness and
+expiration under bounded queues, cancellation, coordinator failure, changing exclusions
+and unavailable storage. Test those behaviors against independent authored truth.
 
-Never add credential guessing, authentication bypass, exploitation, persistence or
-remote modification. Measurement remains bounded normal unauthenticated interaction.
-Default all development/tests to authored synthetic or literal-loopback fixtures.
-No Internet sweeps or real ingestion are authorized. Discovery stays disabled and
-dry-run by default, requiring enabled operator identity plus --measure; protocol
-capture additionally requires measurement.protocol_evidence. Preserve literal IP/
-small CIDR scopes, pinned policy, exclusions/opt-outs, shared budgets and lab mode
-limited to literal 127.0.0.1/::1. At most two connections, two GET / requests and one
-TLS handshake per endpoint. No DNS/SNI, cookies, authentication, mail, STARTTLS,
-crawling, streams, device commands or retries that amplify traffic.
+Preserve Phase 10 worker authority. Two local processes authenticate to a separate
+loopback coordinator using generated private per-worker bearer credentials; workers do
+not get DB credentials. Tokens never enter Settings hashes, logs, fixtures or Git. The
+read API/UI has no measurement controls and remains separate. Registration uses stable
+worker UUID, persisted increasing boot generation and session UUID; older/reordered
+registration cannot restore authority. Jobs have attempt UUID, reserved observation UUID,
+increasing fence, lease/hard horizon and delivery session. Only unstarted leases can be
+reassigned, at most three assignments. Once any connection permit is issued, failure
+becomes uncertain and **never automatically remeasures**. Saved original results can
+recover delivery-only authority within 24 hours of claim; stale/reassigned/cancelled/
+suppressed work cannot regain measurement authority.
 
-Keep collectors, domain, derivations, storage/search, API, worker control plane and
-UI separable. Storage preserves immutable v1/v2 sources in private raw blobs and
-hash-placeholder JSONB/evidence_refs. UUID plus canonical digest separates replay
-from conflict. Fsynced blobs precede synchronous row commits; acknowledge only after
-commit. One advisory lock currently coordinates reads, writes, GC, maintenance and
-backup. Any distributed adaptation must retain these guarantees and have tested
-failure behavior. Independent latest attempt/open/nonempty-evidence pointers order
-by finish/start/UUID. Negative/empty attempts never erase older evidence. Derivations
-are independently replayable; transactional outbox and same-DB receipts preserve
-local replay. External delivery guarantees must be explicitly designed and tested.
-Migration 0004 indexes authoritative rows directly; deletion has no search lag.
+Every target connection, including TLS/second connections, requires a durable one-use
+central permit. Its 250-ms validity is conservatively measured from the worker's monotonic
+request start; DB reservations cover that window plus global and per-prefix spacing.
+Slow/lost grants are burned. A wait reply consumes no grant. Changed rates respect the
+prior admission and new interval; clock regression fails closed. At most min(2, configured
+concurrency) sockets are admitted; uncertain/cancelled issued attempts retain their possible
+socket slots until their fixed hard horizon. Coordinator restart retains pacing/authority.
+Heartbeats renew 10-second leases once per second; control failure cancels active sockets,
+normally within about three seconds subject to scheduling. Already-issued grants/in-flight
+connections prevent any claim of instantaneous physical fencing. Authenticated workers
+are cooperative trusted code, not a hostile-worker sandbox.
 
-Sources expire after 30 days; actual-time reads reject expiry even before maintenance.
-Persistent CIDR suppression blocks ingestion and removes matching records. Tombstones
-and removal events last 90 days. Whole-observation removal preserves immutable truth;
-never rewrite evidence to claim it was originally sanitized. Spools, downloads,
-worker copies, outputs and backups need explicit independent deletion/quarantine.
-Backups have a seven-day policy; old restores require current suppressions. Do not
-delete existing volumes, secrets or owner data to restart. Opt-out/cancellation
-propagation in workers must fail safely; full coverage scheduling remains Phase 11.
+Workers keep one fsynced pending slot and at most one staging copy, each at most 1 MiB.
+A complete observation is saved before delivery. Five delivery attempts with bounded
+backoff resend the identical UUID/digest; an unavailable backend leaves the slot and
+blocks claims. A new boot drains/reconciles the slot before any work. Keep boot.json and
+credentials on restart; never reset their identity to resolve a failure. Current explicit
+queue bounds are 128 pending/1024 retained jobs, one active campaign, at most 32 literal-
+loopback endpoints, three assignments/job, and two provisioned worker identities. Scheduling
+changes to these bounds/semantics must be deliberate, documented and tested, not silently
+relaxed. Control HTTP has 1-MiB delivery/16-KiB other bodies, depth 32, five-second body
+deadline, eight in-flight requests, no Origin/Cookie/CORS/forwarded trust/access logs.
 
-Preserve Phase 9 inspection: POST /api/v1/endpoints/{address}/{transport}/{port}/inspection
-requires exact observation UUID/source digest and optional exact source-bound derivation
-ID. Wrong endpoint/source/derivation or missing/expired/suppressed records return generic
-404. Reconstruct under the storage lock, check retention before and after projection,
-verify canonical hashes and trace pointer/range/slice hashes. No arbitrary blob/path
-read, source envelope export, raw download or derivation execution from a request.
-Pure inspection projections remain separate from canonical evidence.
+Never add credential guessing, authentication bypass, exploitation, persistence, remote
+modification or destructive actions. Measurement remains bounded normal unauthenticated
+interaction. Default development/tests to authored synthetic or literal-loopback fixtures;
+no Internet sweeps or real ingestion are authorized. Discovery stays disabled and dry-run
+by default, requiring enabled operator identity and --measure. Distributed enqueue also
+requires --synthetic and literal-loopback lab scope. Protocol capture additionally requires
+measurement.protocol_evidence. Preserve literal IP/small CIDR bounds, pinned policy,
+exclusions/opt-outs and lab mode restricted to literal 127.0.0.1/::1. At most two connections,
+two GET / requests and one TLS handshake per endpoint. No DNS/SNI, cookies, authentication,
+mail, STARTTLS, crawling, streams, device commands or traffic-amplifying retries.
 
-synthetic-preview-1 allows only reviewed UTF-8 previews: body/greeting at most 2,048
-original bytes and scalar fields at most 256, with visible controls/bidi. Allowlisted
-HTTP version/status/Server/Content-Type/Content-Length; all other headers and SSH
-comments/preambles withheld. Only supported unencoded text/plain or text/html bodies;
-malformed, binary, JSON/media, duplicate/unreviewed types and encoded bodies have no
-raw/hex/base64 fallback. Recognized sensitive markers redact the entire field/body
-before truncation. This is not comprehensive sensitive-content sanitization and does
-not authorize real input. Captured HTML/URLs are inert text, never executable or
-resource links. No scripts, media, redirects, compression decoding or name resolution.
+Keep collectors, domain, derivations, scheduler, worker control, storage/search, API and
+UI separable. Storage preserves immutable v1/v2 sources in private raw blobs and hash-
+placeholder JSONB/evidence_refs. UUID plus canonical digest separates replay from conflict.
+Fsynced blobs precede synchronous row commit; acknowledge only after commit. Worker
+source/projection/outbox and job receipt commit in the **same transaction** under the
+existing advisory lock. Keep readers, writes, GC, maintenance and backup coordinated.
+Never edit shipped migrations; add reviewed revisions. External outbox effects remain
+unimplemented; same-DB receipts do not imply arbitrary external exactly-once delivery.
+Latest attempt/open/nonempty-evidence pointers independently order by finish/start/UUID;
+negative/empty observations do not erase older evidence. Derivations remain replayable.
+Migration 0004 indexes authoritative rows directly; deletion has no search-copy lag.
 
-Certificate DER parsing exposes bounded subject/issuer/serial/time/algorithm assertions
-only, preserving verification=not_performed. Parsed, parse-failed, unsupported,
-source-truncated, chain-truncated and display-truncated states remain explicit.
-No trusted identity, cryptographic validation, safe-software or vulnerability claim;
-no extensions, AIA/OCSP/CRL/certificate-resource fetching. Confidence asserted/
-corroborated is ordinal, not calibrated probability. Preserve every ambiguous
-candidate and exact source/rule/pack/engine/taxonomy identity; trace excerpts are withheld.
+Sources expire after 30 days; actual-time reads reject expiry before maintenance. Persistent
+CIDR suppression blocks ingestion and revokes worker admission/delivery. Whole-observation
+removal preserves immutable truth; never rewrite evidence to claim original sanitization.
+Tombstones/removal events and explicit control metadata retention last 90 days; backups
+have a seven-day policy. Worker copies, standalone spools, outputs, datasets and backups
+need independent deletion/quarantine. Offline workers cannot receive deletion. Restore
+into a separate empty DB cancels every historical control job/campaign and expires leases;
+keep that destination offline until full restore and current suppression reapplication
+succeed. Never reset owner volumes, secrets or existing data to restart.
 
-Existing search/facets/places and endpoint detail/history remain metadata routes.
-JSON requires schema_version:1, Content-Type:application/json and X-NetAtlas-Read:1.
-The header is a browser guard, not authentication. Preserve literal-loopback socket
-peers, approved local Host/Origin, disabled forwarded trust/access logs, no CORS or
-credentials and same-origin Vite proxy. /healthz is process liveness, not readiness.
-Use generated web/src/api/schema.ts and client.ts; regenerate via
-`uv run --locked python -m netatlas.read_api.contract` after deliberate HTTP changes.
-Types are compile-time contracts, not runtime validation. Preserve AbortSignal,
-omitted credentials, redirect refusal and generic errors; never log queries/raw
-captures/credentials/exception bodies. UI reads must not trigger measurements,
-ingestion, downloads, DNS or derivations.
+Preserve Phase 9 inspection: exact endpoint/observation UUID/source digest and optional
+exact source-bound derivation ID. Wrong/missing/expired/suppressed identities give generic
+404. Reconstruct under the lock, check retention before/after projection, verify canonical
+source hashes and trace pointer/range/slice hashes. No arbitrary blob/path read, source
+export, raw download or derivation execution from a request. Pure inspection stays separate
+from canonical evidence. synthetic-preview-1 permits only reviewed inert UTF-8 fields:
+2,048 original bytes for body/greeting, 256 per scalar, visible controls/bidi. Allowlisted
+HTTP version/status/Server/Content-Type/Content-Length; other headers and SSH comments/
+preambles withheld. Unsupported/encoded/binary/malformed content has no raw/hex/base64
+fallback. Recognized sensitive markers withhold the entire candidate before truncation;
+this is not comprehensive sanitization or real-input authorization. Captured URLs/HTML
+remain inert, never links/resources/scripts/media. Certificate DER exposes bounded
+assertions only with verification=not_performed, explicit parsing/truncation states,
+no identity/trust/vulnerability claim, extensions or network fetching. Preserve all
+ambiguous fingerprint candidates and exact rule/pack/engine/taxonomy/source identities;
+asserted/corroborated confidence is ordinal, trace excerpts withheld.
 
-HTTP bounds remain 16-KiB JSON/depth 32/five-second body deadline, 256-character
-text/name, 1–200 rows, 1–50 facet buckets, 2,048-character cursors, four-MiB responses,
-one in-flight read, five-second SQL timeout and ten-second shared-lock wait.
-Cursors bind original query/route, finish/start/UUID keysets, nonrenewing 15-minute
-lifetime and process-local signing key; traversal ends at 10,000 hits. Resubmit the
-original query, not expanded selection. Pages are live retained views, not snapshots;
-actual retention and implicit-current dataset validity are rechecked every page.
-Historical as_of cannot revive removed data.
+Preserve read API schema 1: JSON Content-Type and non-secret X-NetAtlas-Read:1, literal-
+loopback peer/approved Host/Origin, no CORS/credentials/forwarded trust/access logs and
+same-origin Vite proxy. /healthz is liveness, not readiness. Use generated schema.ts and
+client.ts; regenerate with `uv run --locked python -m netatlas.read_api.contract` after
+intentional HTTP changes. Keep AbortSignal, omitted credentials, redirect refusal and
+generic errors. UI reads cannot measure, ingest, download, resolve or derive. Limits:
+16-KiB JSON/depth 32/five-second body deadline, 256-character text/name, 1–200 rows,
+1–50 facet buckets, 2,048-character cursors, four-MiB responses, one in-flight read,
+five-second SQL and ten-second shared-lock wait. Cursors bind original query/route,
+finish/start/UUID keysets, nonrenewing 15-minute lifetime and process-local signing key;
+traversal stops at 10,000. Pages are live retained views, not snapshots. Actual retention
+and implicit-current dataset validity are rechecked; historical as_of cannot revive removal.
 
-Current attempt/open/evidence is selected before filters, with no older-match fallback.
-Core is the default exact pack; enrichment requires an explicit dataset hash.
-Never choose an arbitrary newest dataset or mix observation/derivation metadata.
-Counts distinguish endpoint keys, sources and all candidates; facets deduplicate per
-source/endpoint and report truncation. These are not devices or prevalence.
-Geography uses approximate representative points and explicit unknown radius, stable
-place IDs/admin/kind/origin and attribution. Country association and boundary matching
-are distinct. No whole-database map aggregate or precise device location is claimed.
+Current source choice precedes filters, with no older-match fallback. Core is the default
+exact pack; enrichment requires an explicit dataset hash, never arbitrary newest versions
+or cross-source metadata. Counts distinguish endpoints/sources/all candidates; facets
+deduplicate per source/endpoint and report truncation. Geography uses approximate
+representative points, explicit unknown radius, stable place IDs/admin/kind/origin and
+attribution. Country association differs from boundary matching. No precise device location
+or whole-database map aggregate is claimed. The UI shares one cancellable read lane with
+generation guards and original-query continuation. One displayed page/view; hidden/pagehide
+or 60-second expiry clears results/places/map/selection/inspection/timeline. No persistent
+cache or push deletion notification. Timeline pages have 20 retained attempts, including
+negative/empty ones. Keep inert rendering, focus after React commits and locally bundled
+map resources. Existing roughly 1.30-MB JS / 511-kB worker warning is documented.
 
-Preserve the geographic explorer and inspection/timeline shared cancellable read lane,
-generation guards, original-query continuation and generic errors. One displayed
-page/view; hidden/pagehide or 60-second expiry clears results/places/selection/map/
-inspection/timeline. No persistent/back-page cache or push deletion notification.
-Aborted requests can leave server work finishing; 429 uses explicit retry. Timeline
-includes all retained attempts with 20-row pages. Inspection links one exact source.
-Keyboard focus runs after React commits the active view; the skip link targets it. Captured/provenance URLs remain
-inert, controls visible, and all map resources/worker are bundled locally.
+The offline basemap covers Fiji only. Tiny reviewed Natural Earth v5.1.2 assets retain
+hashes/licenses in MAP_ASSETS; global/generated data stays ignored. `make demo` explicitly
+expires old data then appends 13 authored sources for 12 endpoints, prints a fresh dataset
+hash and never resets owner data. Demo validity is seed time minus one day through plus
+seven days. No automatic seed, download, refresh, paid service or real routing/geo coverage.
 
-The offline basemap covers Fiji only. Tiny reviewed Natural Earth v5.1.2 Suva/Fiji
-assets retain hashes/licenses in MAP_ASSETS; global/generated datasets stay ignored.
-`make demo` explicitly runs expiry maintenance and appends 13 authored sources for
-12 endpoints, prints a fresh dataset hash and never resets owner data. Demo validity
-is seed time minus one day through plus seven days. No automatic seeding, download,
-refresh, paid service or global routing/geography coverage exists.
+Runtime pins: Python 3.14.7, uv 0.12.19, Node 26.8.1, npm 11.19.0. Inspect Docker/Compose
+and the dedicated Colima netatlas profile before restarting. Run `make db-up
+COMPOSE=docker-compose` and `make db-migrate` (Compose-plugin hosts omit the override).
+Preserve native arm64/amd64 PostGIS, volume and secret. TLS tests generate ephemeral keys
+using OpenSSL. Browser setup: `npm --prefix web exec -- playwright install chromium`
+(CI adds --with-deps). Ports 8000 and 5173 must be free for production browser tests;
+they use a disposable netatlas_test_web_* DB and temporary blobs. Worker tests use random
+loopback ports, generated credentials and isolated databases.
 
-Runtime pins: Python 3.14.7, uv 0.12.19, Node 26.8.1, npm 11.19.0. Inspect Docker,
-Compose and the dedicated Colima netatlas profile before restarting. Run
-`make db-up COMPOSE=docker-compose` and `make db-migrate`; Compose-plugin hosts omit
-the override. Preserve the native arm64/amd64 PostGIS image, volume and secret.
-TLS tests use OpenSSL/ephemeral keys; inspection fixtures generate certificates in
-memory. Browser setup: `npm --prefix web exec -- playwright install chromium`
-(CI adds --with-deps). Ports 8000 and 5173 must be free for production browser tests.
-They create/drop a disposable netatlas_test_web_* database and temporary blobs.
+Phase 10 full make check-db passed with **348 Python tests, 26 web tests and five
+production Chromium tests**; final delivery status is in Git/Actions. The
+worker suite includes real two-process HTTP/TLS capture, lost delivery ACKs, kill/restart,
+no extra probes, authentication/fencing/leases/budgets, storage backpressure, cancellation,
+retention, populated migration and backup/restore quarantine. Full make check-db also
+preserves the earlier Python, web and production Chromium acceptance. No worldwide capacity,
+real-world accuracy or comprehensive assistive-technology qualification is claimed.
 
-Phase 9 validation: full make check-db passed with **312 Python tests, 26 web
-unit/component tests and five production Chromium tests**, strict checks, OpenAPI
-drift, both builds, CLI smoke and migration/backup/restore acceptance. Hostile stored
-content produced no active resources or external browser requests; desktop/mobile
-Axe passed and screenshots were inspected. No comprehensive assistive-technology,
-Internet-scale throughput or real-world accuracy qualification is claimed. The
-roughly 1.30-MB main JS / 511-kB worker build warning remains documented.
-
-At completion run meaningful worker/authentication/lease/budget/failure/restart/
-duplicate/backpressure tests and full make check-db. Review tracked files/diff for
-secrets, captures, generated outputs and datasets. Update authoritative docs with
-actual behavior/results/limits and replace NEXT_PHASE with a complete Phase 11 kickoff.
-Commit with a Phase 10 message, push if a remote exists, verify local HEAD equals
-remote delivery HEAD and a clean tree, inspect CI, report checks/commit/push/blockers/
-current state and the full Phase 11 kickoff, then stop. No release/tag and no Phase 11
-implementation. Ask the owner only for genuine blockers, credentials, permissions
-or unavoidable manual actions after all independent authorized work is done.
+At completion run meaningful scheduling/coverage/fairness/IPv6/refresh/opt-out/stop/failure
+acceptance and full `make check-db`. Review tracked files/diff for secrets, captures,
+outputs and datasets. Update authoritative docs with actual behavior/results/limits and
+replace NEXT_PHASE with a complete Phase 12 kickoff. Commit with a Phase 11 message,
+push if a remote exists, verify local HEAD equals remote delivery HEAD and a clean tree,
+inspect CI, report checks/commit/push/blockers/current state and the full Phase 12 kickoff,
+then stop. No release/tag and no Phase 12 implementation. Ask the owner only for genuine
+blockers, credentials, permissions or unavoidable manual actions after independent work.

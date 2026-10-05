@@ -1,7 +1,7 @@
-# Local read API — through Phase 9
+# Local read API — through Phase 10
 
-Package 0.10.0 retains HTTP schema 1 over the Phase 6 search engine and synthetic
-PostgreSQL storage. No migration is required: Alembic head remains 0004. No request
+Package 0.11.0 retains HTTP schema 1 over the Phase 6 search engine and synthetic
+PostgreSQL storage. The separate worker control plane adds migration 0005; read semantics are unchanged. No request
 can initiate measurement, resolve targets, download datasets, derive new records,
 change stored data or read arbitrary blobs. Reviewed source-bound inspection is
 specified in [INSPECTION.md](INSPECTION.md); the geographic explorer is documented
@@ -13,7 +13,7 @@ Run `make db-up COMPOSE=docker-compose`, `make db-migrate`, then `make dev-api`.
 Compose-plugin hosts omit the override. Reuse the existing private volume and secret.
 The API lazily opens `data/storage` connection settings; unavailable/unmigrated
 storage returns generic 503 errors. `/healthz` reports process liveness, version
-and Phase 9, not database readiness. `/api/v1/examples/observation` remains an
+and Phase 10, not database readiness. `/api/v1/examples/observation` remains an
 explicit authored static example, independent of database retention.
 
 Only literal socket peers 127.0.0.1/::1 and Host names 127.0.0.1, [::1], localhost
@@ -206,3 +206,11 @@ map scope. See [GEOGRAPHIC_UI.md](GEOGRAPHIC_UI.md).
 Phase 9 adds `endpointInspection` to the generated client and shares all admission,
 error and output policies. Exact-source binding, preview/redaction/truncation limits,
 certificate semantics, trace integrity and browser clearing are in [INSPECTION.md](INSPECTION.md).
+
+## Phase 10 control compatibility
+
+Control envelope 1 and migration 0005 are independent of these contracts. The separate
+authenticated loopback coordinator has no UI/read routes. Worker delivery preserves
+original observation v2 UUID/digest and uses the existing storage lock and retention
+policy; legacy v1 reads/ingestion remain unchanged. No source/read schema changed.
+See [DISTRIBUTED.md](DISTRIBUTED.md).

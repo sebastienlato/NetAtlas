@@ -145,6 +145,12 @@ def restore(engine: Engine, blobs: BlobStore, source: Path) -> dict[str, int]:
                 timeout=120,
             )
     migrate(engine)  # Older Phase 4 archives gain spatial tables without rewriting sources.
+    # A historical queue must never silently authorize a second measurement.
+    # This separate empty destination stays offline until restore completes.
+    with transaction(engine) as connection:
+        connection.execute(text("UPDATE control_campaigns SET cancelled=true"))
+        connection.execute(text("UPDATE control_jobs SET state='cancelled'"))
+        connection.execute(text("UPDATE control_attempts SET lease_until=clock_timestamp()"))
     pipeline = Pipeline(engine, blobs)
     # Expired evidence is not made readable on restoration. Reapply any newer opt-outs
     # from the operator's separate suppression register before other use.

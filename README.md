@@ -7,7 +7,12 @@ commercial search database is used.
 
 ## Current delivery
 
-Phase 9 adds endpoint timelines, protocol inspection, bounded inert previews,
+Phase 10 adds two authenticated local worker processes, durable leases/heartbeats,
+centrally budgeted connections and atomic replayable delivery. Workers measure only
+explicit authored literal-loopback fixtures; uncertain attempts are never automatically
+remeasured. See [worker setup and failure semantics](docs/DISTRIBUTED.md).
+
+Phase 9 added endpoint timelines, protocol inspection, bounded inert previews,
 unverified certificate assertions and exact confidence/evidence traces to the local
 geographic explorer with exact country/region/city place
 search, MapLibre page clusters, categorized results, provenance and uncertainty.
@@ -67,6 +72,7 @@ example do not need the database. The API does not auto-reload; restart after Py
 | `make check-db` | Start local Compose; full check including PostgreSQL/restore acceptance |
 | `uv run --locked netatlas-search --help` | Private local search with bounded JSON query/output |
 | `uv run --locked netatlas-enrich --help` | Offline dataset inspection, exact place lookup and enrichment |
+| `uv run --locked netatlas-control --help` | Separate authenticated local worker/control commands |
 | `make demo` | Append authored demo fixtures; print the exact dataset hash to paste into the UI |
 | `make db-migrate` | Apply packaged Alembic migrations to the local database |
 | `uv run --locked netatlas config-check` | Validate defaults and print configuration digest |
@@ -99,7 +105,7 @@ scans. If changing its port, also update the development proxy in `web/vite.conf
 
 | Path | Responsibility |
 | --- | --- |
-| `src/netatlas/` | Domain/evidence models, config, discovery, collectors, derivations, spool, enrichment, storage pipeline, search, CLI/API |
+| `src/netatlas/` | Domain/evidence models, config, discovery, collectors, derivations, spool, enrichment, storage pipeline, search, authenticated worker control plane, CLI/API |
 | `web/` | React/TypeScript geographic explorer, offline MapLibre assets and typed read client |
 | `tests/` | Offline Python tests; web tests live beside web code |
 | `config/default.toml` | Documented default configuration |

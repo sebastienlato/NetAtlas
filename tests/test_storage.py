@@ -424,7 +424,7 @@ def test_upgrade_backfill_and_idempotent_migration(empty_engine: Engine) -> None
         assert result["expires_at"] == row.finished_at + timedelta(days=30)
         assert result["document"] == row.model_dump(mode="json")
         assert (
-            connection.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0004"
+            connection.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0005"
         )
 
 
@@ -746,7 +746,7 @@ def test_enrichment_backup_restore_and_phase4_upgrade(
         recovered = Pipeline(target, blobs)
         assert recovered.load(row.observation_id) == row
         migrate(target)
-        assert scalar(recovered, "SELECT version_num FROM alembic_version") == "0004"
+        assert scalar(recovered, "SELECT version_num FROM alembic_version") == "0005"
         assert scalar(recovered, "SELECT postgis_lib_version()") == "3.6.4"
         store_enrichment(recovered, row.observation_id, dataset(), AT)
         assert recovered.verify()["enrichments"] == 1

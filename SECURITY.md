@@ -29,7 +29,8 @@ implementation validation uses synthetic/loopback fixtures.
 The immutable campaign configuration pins exclusion and opt-out CIDRs. Denials
 precede any allowlist; lab mode only accepts explicit `127.0.0.1` and `::1` literals.
 When receiving a new opt-out, stop any active campaign, update local configuration,
-preview, then restart. No hot-reload or distributed propagation exists yet. Policy
+preview, then restart. Standalone discovery has no hot reload; Phase 10 workers
+add the separate DB suppression/heartbeat behavior documented below. Policy
 is rechecked immediately before each connection. Identity validation checks syntax;
 it does not establish contact ownership or permission to measure a target.
 
@@ -94,7 +95,8 @@ trusted identity, calibrated probability, physical hardware or vulnerabilities.
 
 `netatlas-store ingest` requires `--synthetic` and only accepts documentation-address
 or literal loopback fixtures, with bounded files and explicit v1/v2 validation.
-The adapter is local only; no upload route or real-data override exists. An address
+The standalone adapter is local only; no real-data override exists. Phase 10 adds
+a separate authenticated worker-delivery route limited to literal-loopback fixtures. An address
 allowlist is not proof that content is synthetic; operators must author the fixtures.
 
 Raw responses/certificates are private mode-0600 blobs under mode-0700 directories.
@@ -224,6 +226,36 @@ No extensions, resource links, trust/hostname/signature/revocation checks, AIA/O
 fetches or DNS. Parser warnings/errors omit peer text. All preview/control/bidi text
 is inert in React, with no HTML/resource embedding or captured URL activation.
 Timeline/inspection share the browser read lane and hidden/60-second clearing.
+
+## Local worker control plane (Phase 10)
+
+Read [DISTRIBUTED.md](docs/DISTRIBUTED.md) before operating the workers. This separate
+loopback service authenticates two provisioned worker UUIDs with generated private
+bearer credentials. Tokens remain outside Settings hashes, logs, PostgreSQL and backups.
+Workers have no DB secret. The local OS/DB owner and authenticated worker implementation
+remain trusted; bearer authentication is not a hostile-worker sandbox or public TLS.
+No UI controls or read-API authentication changes. No real-input ingestion is authorized.
+
+Enqueue requires enabled identity, --measure, --synthetic and explicit literal loopback.
+Central one-use permits check pinned policy/exclusions/DB suppression for every socket,
+including TLS. Global/prefix rates and socket slots are shared across workers/campaigns.
+Lost grants are burned; issued attempts never automatically remeasure after failure.
+Boot generations fence reordered registration; saved immutable UUID/digest results can
+recover delivery-only authority. Observation/source/receipt commits share the storage lock.
+
+Cancellation and DB suppression revoke future authority. Already-issued 250-ms permits
+and active connections may precede the next heartbeat; no instantaneous remote socket
+fence is claimed. Heartbeat/control failure cancels active I/O, normally within about
+three seconds subject to scheduling. Existing standalone discovery still needs explicit
+stop/config update; it does not consult worker leases. Full scheduling is Phase 11.
+
+A worker has one fsynced pending slot and bounded delivery retries; storage outage stops
+new claims. Independently delete/quarantine pending.json/pending.stage on removal after
+stopping workers; keep boot.json/credentials to preserve fencing. Offline copies cannot
+receive deletion. Delivery expires after 24 hours, control metadata prunes after 90 days;
+source/tombstone/backup policies remain 30/90/7 days. Restore cancels all historical
+control jobs; keep the destination offline until restore and current suppression review
+complete. No owner data/volumes/secrets are reset by acceptance tests.
 
 ## Reporting and response
 

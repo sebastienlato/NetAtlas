@@ -3,8 +3,9 @@
 Package 0.5.0 adds a local PostgreSQL 18.3 / SQLAlchemy / Alembic adapter, private
 content-addressed evidence, immutable history, current-service projections and a
 transactional outbox. Package 0.6.0 adds PostGIS 3.6.4, independent enrichment and
-gazetteer snapshots (migration 0003). **Only synthetic ingestion is enabled.** Phase 7 adds local metadata read routes; no
-upload route or worker daemon is implemented. Phase 8 adds the local geographic UI.
+gazetteer snapshots (migration 0003). **Only synthetic ingestion is enabled.** Phase 7 adds local metadata read routes; no public
+upload route is implemented. Phase 10 adds a separate authenticated local worker adapter
+with atomic source/job receipts; see DISTRIBUTED.md. Phase 8 adds the local geographic UI.
 Phase 6 adds a bounded local search adapter; see [SEARCH.md](SEARCH.md).
 The collector and offline derivation engine do not import storage.
 
@@ -342,3 +343,23 @@ after projection, and reconstructs original sources through verified blob refere
 Exact selected derivations remain immutable and source-bound. No arbitrary blob/path
 read or raw export exists. The preview policy is separate from canonical truth;
 see [INSPECTION.md](INSPECTION.md). Whole-record removal and all copy/backup policies persist.
+
+## Phase 10 transaction and restore compatibility
+
+Migration 0005 adds independent bounded worker/campaign/job/attempt/pacing tables without
+rewriting shipped migrations or immutable sources. Coordinator delivery holds the existing
+advisory lock and calls Pipeline.ingest_in_transaction; the original ingest wrapper still
+commits/acknowledges exactly as before. Authority, fsynced blobs, row/current/outbox and
+job receipt commit together. Duplicate delivery checks the original source/blob integrity.
+This is an incoming worker-delivery protocol, not an external outbox consumer guarantee.
+
+Stored suppression is now checked by the distributed coordinator on heartbeat, admission
+and delivery; standalone discovery configuration/spools remain independent. Control metadata
+has a 90-day explicit prune policy, bounded to 1024 retained jobs. Worker copies have a
+24-hour delivery horizon and separate deletion/quarantine duties, detailed in DISTRIBUTED.
+
+DB backups include control metadata but no credential files or worker spools. Restore to a
+separate empty destination applies 0005 and cancels every restored job/campaign before
+verification, preventing historical queue replay from remeasuring targets. Keep the restored
+DB offline until the full operation succeeds and current suppressions are reapplied. Existing
+volume, DB password, source retention, tombstones, blob GC and backup policy are unchanged.

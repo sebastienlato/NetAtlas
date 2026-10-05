@@ -1,6 +1,8 @@
 # Architecture
 
-Status: Phase 9 adds source-bound evidence inspection and a retained endpoint timeline
+Status: Phase 10 adds a separate authenticated local worker control plane over durable
+leases, one-use central connection permits and atomic delivery. Phase 9 added
+source-bound evidence inspection and a retained endpoint timeline
 to the geographic explorer and offline MapLibre demonstration over
 the bounded local API, indexed PostgreSQL and independent derivations. Only the
 modules listed as implemented in `PROJECT_STATE.md` exist today. A monorepo and modular Python package keep early
@@ -27,7 +29,8 @@ The domain model has no I/O. Collectors depend on domain contracts, not the web
 framework or database. Ingestion validates untrusted worker output. Derivations
 are versioned and reproducible from evidence. Search is a disposable projection,
 not the system of record (the current indexes are directly on authoritative tables). The API never opens a target connection in response to
-a search/detail request. The future scan control plane is separate and authenticated.
+a search/detail request. The Phase 10 worker control plane is separate and authenticated; its launcher accepts
+only explicit synthetic literal-loopback jobs. See docs/DISTRIBUTED.md.
 
 ## Target policy and scheduling
 
@@ -92,8 +95,35 @@ storage, FastAPI or UI. The engine supplies admission for every connection; pass
 syntax parsers implement a small Collector interface and TLS uses an active handshake
 adapter. Raw sockets and SSLObject/MemoryBIO give explicit byte accounting and closure.
 Configuration v3 leaves protocol collection disabled until explicitly selected. API
-health identifies Phase 9; the UI exposes retained synthetic metadata and reviewed previews,
+health identifies Phase 10; the UI exposes retained synthetic metadata and reviewed previews,
 with no measurement controls.
+
+## Distributed worker boundary (Phase 10)
+
+`control/` owns versioned transport, operator commands, coordinator state and a one-slot
+worker runtime. The port-8001 coordinator authenticates two provisioned workers with
+separate generated private bearer credentials, never stored in Settings or DB backups.
+The port-8000 read service imports no control/collector execution and gains no controls.
+Migration 0005 keeps campaigns, jobs, attempts, boot generations and pacing in PostgreSQL.
+All authority changes and delivery reuse the existing pipeline advisory lock.
+
+Every target connection obtains a one-use short central permit. Reserving its entire
+250-ms usable window plus the configured global/prefix interval prevents delayed replies
+from producing a burst; the worker measures validity from monotonic request start.
+Concurrency is min(2, configuration). Uncertain issued attempts hold possible socket slots
+until their hard horizon. Pre-dial leases alone can be reassigned, with new attempt UUID
+and increasing fence, capped at three. Issued attempts never retry measurement after
+expiry/restart. Original saved observations may recover delivery-only authority within
+24 hours; cancelled/suppressed/reassigned jobs cannot. Heartbeat/control loss cancels I/O.
+
+One private fsynced slot per worker separates collection from delivery. Source ingestion,
+job receipt and outbox/current projections commit atomically after blob fsync; only then
+is delivery acknowledged. Retry sends the same UUID/digest without calling collectors.
+Queue/spool caps stop new work under backpressure. PostgreSQL restart retains authority;
+restored backup queues are cancelled before reuse. Authenticated workers remain trusted;
+remote sockets cannot offer instantaneous physical fencing. See DISTRIBUTED for stop
+latency, retention, copy quarantine, limits, recovery commands and acceptance evidence.
+No routed-space sampling, refresh policy, UDP or global distribution is implemented.
 
 ## Evidence and derivations
 
@@ -123,7 +153,7 @@ completed-result flush, final fsync and checksum; no database adapter. Graceful
 stops finalize metadata; hard kills may leave a running manifest or partial line.
 An advisory spool lock prevents concurrent local campaigns sharing that directory.
 Phase 4 implements PostgreSQL with typed endpoint/time/outcome fields and private JSONB
-source envelopes, SQLAlchemy transactions and four packaged Alembic migrations. Raw
+source envelopes, SQLAlchemy transactions and five packaged Alembic migrations. Raw
 response/certificate bytes live in a private content-addressed filesystem; exact
 JSON-pointer references reconstruct and verify the original v1/v2 canonical source.
 Observation UUID plus source digest distinguishes replay from conflict; equal blobs
@@ -135,8 +165,8 @@ lock. Fsynced blobs precede a synchronous DB commit; acknowledgements follow com
 Rollback may leave orphans; locked cleanup removes only unreferenced bytes. Projection
 and outbox changes share the observation transaction. Current pointers independently
 track latest attempt, open connection and nonempty evidence by finish/start/UUID.
-A DB consumer commits its idempotent effect and receipt together; external delivery,
-distributed leases and a broker remain future work.
+A DB consumer commits its idempotent effect and receipt together; external outbox delivery and a broker remain future work. Phase 10 worker delivery
+uses an atomic same-DB authority/source/receipt transaction; it is not an outbox consumer.
 
 Synthetic-only ingestion, private OS/loopback access, 30-day source expiry, whole-record
 removal, persisted CIDR suppression and 90-day tombstone/event metadata are implemented.
@@ -256,11 +286,10 @@ fixtures, controlled load, and documented benchmark workloads.
 
 The API/geographic UI runs as two local processes. Phase 5 extends Compose with a native arm64/amd64 PostGIS build on the pinned
 PostgreSQL 18.3 base and pinned PostGIS packages. The deployment path is containers, a same-origin TLS reverse
-proxy, internal data services, and separated worker/control-plane networks. Worker
-authentication, lease heartbeats, retry semantics, and backpressure precede multi-node
-operation. Reproducibility includes runtime pins, dependency locks, CI, migrations,
+proxy, internal data services, and separated worker/control-plane networks. Phase 10 implements worker authentication, lease heartbeats, bounded delivery retry
+and backpressure for two local processes; wider deployment remains unimplemented. Reproducibility includes runtime pins, dependency locks, CI, migrations,
 and fixture datasets. A local synthetic database/blob restore drill is tested; production deployment,
-failover and distributed recovery remain future acceptance criteria.
+failover and multi-host recovery remain future acceptance criteria.
 
 ## Capacity and thesis validity
 

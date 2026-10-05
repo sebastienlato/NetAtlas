@@ -168,3 +168,12 @@ Phase 3 moved the syntax parsers without behavioral changes so offline derivatio
 can reuse them without depending on collector execution. See
 [FINGERPRINTS.md](FINGERPRINTS.md). Collector output still contains no product or
 device claims; all new candidates are independent versioned derived records.
+
+## Phase 10 admission adapter
+
+The worker runtime reuses the unchanged collector with a central one-use permit callback
+for every connection, including the second TLS connection. A delayed/lost permit cannot
+be retried into another measurement. Shared rates, occupied socket slots, heartbeat loss,
+result replay and stop latency are defined in [DISTRIBUTED.md](DISTRIBUTED.md). The worker
+adapter only executes explicit authored literal-loopback fixtures. Collector/domain
+contracts and the two-connection protocol plan remain unchanged.

@@ -1,7 +1,7 @@
 # Architecture decision record
 
 Accepted 2026-10-04. Revisit with evidence; record consequences rather than silently
-changing the design. Phase 9 adds local bounded evidence inspection; distributed infrastructure remains planned.
+changing the design. Phase 10 adds bounded local distributed workers; worldwide infrastructure remains planned.
 
 | ID | Choice and reason | Consequences / reconsider when |
 | --- | --- | --- |
@@ -72,6 +72,12 @@ changing the design. Phase 9 adds local bounded evidence inspection; distributed
 | ADR-057 | Locked cryptography 48.0.1 for local bounded DER assertion parsing only. | No verification APIs/extensions/network; parsed/failure/unsupported/truncation states and not_performed remain explicit. Additional native dependency; no custom ASN.1 parser or shell/OpenSSL subprocess in requests. |
 | ADR-058 | Exact stored candidate trace with canonical derivation/source hashes and checked pointer/range/slice hashes; no rules rerun or trace excerpt bypass. | All ambiguity and ordinal confidence preserved; cryptographic equality does not establish identity or rule accuracy. |
 | ADR-059 | Timeline and inspection replace the prior view, sharing the browser read lane, generation guards, hidden/60-second clearing and active-view keyboard focus. | No cache, active captured links/resources or automatic retries. Read-time truth can remain visible until expiry; no push deletion notification. |
+
+| ADR-060 | Package 0.11.0; independent control envelope 1 and migration 0005; two local worker processes with per-worker generated bearer secrets. | Read API/UI stay separate and unauthenticated trusted-local reads. Credentials never enter config hashes, DB or backups. Distributed enqueue is synthetic literal-loopback only. |
+| ADR-061 | Durable job/attempt/observation IDs, increasing per-job fence and persisted per-worker boot generation; heartbeat leases and delivery-only resume. | Only pre-permit work may be reassigned, at most three times. Issued uncertainty never automatically remeasures; lost grants favor bounded traffic over completion. Original delivery can recover within 24 hours, without measurement authority. |
+| ADR-062 | Central one-use permit for every connection, reserving 250-ms validity plus global/prefix spacing; worker starts validity at monotonic request initiation. | Delayed grants cannot burst; process restart preserves pacing. Lower throughput and shared-lock contention are accepted. Cooperative workers required; already-issued/in-flight traffic has bounded stop latency, not physical remote fencing. |
+| ADR-063 | Single fsynced spool slot, five bounded delivery attempts and one shared transaction for authority/source/receipt/outbox. | Storage outage blocks the next claim; replay keeps exact UUID/digest and verifies blobs. No broker, independent external outbox effects or automatic measurement retry. |
+| ADR-064 | Bounded queue/history, persistent suppression on all authority paths, explicit cancellation and quarantine of restored queues. | Restore never resumes historical measurements. Worker spool/boot and credential files are independent of DB backups; offline copies require independent deletion/quarantine. Keep fencing generations on restart. Coverage/refresh scheduling and production hardening remain later phases. |
 
 ## Primary references consulted
 

@@ -101,6 +101,20 @@ class Pipeline:
         self.hook = hook
 
     def ingest(self, raw: bytes, *, synthetic: bool = False, now: datetime | None = None) -> str:
+        with transaction(self.engine) as connection:
+            result = self.ingest_in_transaction(connection, raw, synthetic=synthetic, now=now)
+        self.hook("after_commit")
+        return result
+
+    def ingest_in_transaction(
+        self,
+        connection: Connection,
+        raw: bytes,
+        *,
+        synthetic: bool = False,
+        now: datetime | None = None,
+    ) -> str:
+        """Internal adapter: caller holds transaction(), and acknowledges only after commit."""
         if len(raw) > LINE_BYTES or not synthetic:
             raise ValueError("bounded synthetic ingestion only")
         observation = read_observation(raw)
@@ -111,83 +125,81 @@ class Pipeline:
         expiry = observation.finished_at + timedelta(days=30)
         if expiry <= timestamp or observation.finished_at > timestamp + timedelta(minutes=5):
             raise ValueError("expired or future observation")
-        with transaction(self.engine) as connection:
-            if connection.execute(
-                text("SELECT 1 FROM tombstones WHERE id=:id"), {"id": observation.observation_id}
-            ).first():
-                raise ValueError("removed observation")
-            if connection.execute(
+        if connection.execute(
+            text("SELECT 1 FROM tombstones WHERE id=:id"), {"id": observation.observation_id}
+        ).first():
+            raise ValueError("removed observation")
+        if connection.execute(
+            text("""
+            SELECT 1 FROM suppressions WHERE CAST(:address AS inet) <<= network
+        """),
+            {"address": str(observation.endpoint.address)},
+        ).first():
+            raise ValueError("suppressed address")
+        previous = connection.execute(
+            text("""
+            SELECT source_sha256 FROM observations WHERE id=:id
+        """),
+            {"id": observation.observation_id},
+        ).scalar_one_or_none()
+        if previous is not None:
+            if previous != source_sha:
+                raise ValueError("observation identity conflict")
+            # Never acknowledge a replay when its durable bytes are missing/corrupt.
+            self._load(connection, observation.observation_id)
+            result = "replayed"
+        else:
+            document = observation.model_dump(mode="json")
+            references: list[tuple[str, str, int]] = []
+            for parent, key, pointer in raw_fields(document):
+                data = base64.b64decode(parent[key], validate=True)
+                sha = self.blobs.put(data)
+                parent[key] = sha
+                references.append((pointer, sha, len(data)))
+            self.hook("after_blobs")
+            connection.execute(
                 text("""
-                SELECT 1 FROM suppressions WHERE CAST(:address AS inet) <<= network
+                INSERT INTO observations (id, source_sha256, schema_version, endpoint_key,
+                    address, transport, port, started_at, finished_at, outcome, has_evidence,
+                    document, expires_at)
+                VALUES (:id, :sha, :schema, :key, CAST(:address AS inet), :transport, :port,
+                    :started, :finished, :outcome, :evidence,
+                    CAST(:document AS jsonb), :expires)
             """),
-                {"address": str(observation.endpoint.address)},
-            ).first():
-                raise ValueError("suppressed address")
-            previous = connection.execute(
-                text("""
-                SELECT source_sha256 FROM observations WHERE id=:id
-            """),
-                {"id": observation.observation_id},
-            ).scalar_one_or_none()
-            if previous is not None:
-                if previous != source_sha:
-                    raise ValueError("observation identity conflict")
-                # Never acknowledge a replay when its durable bytes are missing/corrupt.
-                self._load(connection, observation.observation_id)
-                result = "replayed"
-            else:
-                document = observation.model_dump(mode="json")
-                references: list[tuple[str, str, int]] = []
-                for parent, key, pointer in raw_fields(document):
-                    data = base64.b64decode(parent[key], validate=True)
-                    sha = self.blobs.put(data)
-                    parent[key] = sha
-                    references.append((pointer, sha, len(data)))
-                self.hook("after_blobs")
+                {
+                    "id": observation.observation_id,
+                    "sha": source_sha,
+                    "schema": observation.schema_version,
+                    "key": observation.endpoint.key,
+                    "address": str(observation.endpoint.address),
+                    "transport": observation.endpoint.transport.value,
+                    "port": observation.endpoint.port,
+                    "started": observation.started_at,
+                    "finished": observation.finished_at,
+                    "outcome": observation.outcome.value,
+                    "evidence": any(size > 0 for _, _, size in references),
+                    "document": json.dumps(document),
+                    "expires": expiry,
+                },
+            )
+            for pointer, sha, size in references:
                 connection.execute(
                     text("""
-                    INSERT INTO observations (id, source_sha256, schema_version, endpoint_key,
-                        address, transport, port, started_at, finished_at, outcome, has_evidence,
-                        document, expires_at)
-                    VALUES (:id, :sha, :schema, :key, CAST(:address AS inet), :transport, :port,
-                        :started, :finished, :outcome, :evidence,
-                        CAST(:document AS jsonb), :expires)
+                    INSERT INTO blobs (sha256, size) VALUES (:sha, :size)
+                    ON CONFLICT DO NOTHING
                 """),
-                    {
-                        "id": observation.observation_id,
-                        "sha": source_sha,
-                        "schema": observation.schema_version,
-                        "key": observation.endpoint.key,
-                        "address": str(observation.endpoint.address),
-                        "transport": observation.endpoint.transport.value,
-                        "port": observation.endpoint.port,
-                        "started": observation.started_at,
-                        "finished": observation.finished_at,
-                        "outcome": observation.outcome.value,
-                        "evidence": any(size > 0 for _, _, size in references),
-                        "document": json.dumps(document),
-                        "expires": expiry,
-                    },
+                    {"sha": sha, "size": size},
                 )
-                for pointer, sha, size in references:
-                    connection.execute(
-                        text("""
-                        INSERT INTO blobs (sha256, size) VALUES (:sha, :size)
-                        ON CONFLICT DO NOTHING
-                    """),
-                        {"sha": sha, "size": size},
-                    )
-                    connection.execute(
-                        text("""
-                        INSERT INTO evidence_refs VALUES (:id, :pointer, :sha)
-                    """),
-                        {"id": observation.observation_id, "pointer": pointer, "sha": sha},
-                    )
-                rebuild_current(connection, observation.endpoint.key)
-                self._event(connection, observation.observation_id, "observation")
-                self.hook("before_commit")
-                result = "inserted"
-        self.hook("after_commit")
+                connection.execute(
+                    text("""
+                    INSERT INTO evidence_refs VALUES (:id, :pointer, :sha)
+                """),
+                    {"id": observation.observation_id, "pointer": pointer, "sha": sha},
+                )
+            rebuild_current(connection, observation.endpoint.key)
+            self._event(connection, observation.observation_id, "observation")
+            self.hook("before_commit")
+            result = "inserted"
         return result
 
     def _load(self, connection: Connection, observation_id: UUID) -> ObservationRecord:
