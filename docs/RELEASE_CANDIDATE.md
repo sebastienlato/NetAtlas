@@ -103,7 +103,8 @@ explicit in INSTALLATION. Core explorer/operations assets remain fully local.
 
 Owner verification remains **2 sources / 1 fingerprint / 1 enrichment**. Comparison
 against the private pre-work snapshot checks original source UUID/digests, all owner
-storage file hashes (including secret/service files), DB/role inventories, container
+active-storage file hashes (including secret/service files; backup archives were
+excluded from this hash comparison), DB/role inventories, container
 identity and mounts. No persistent owner worker/coordinator was created. The disposable
 rehearsal app was stopped, its specific Compose container/volume/network removed and
 its identified clone deleted. Private aggregate/log evidence and presentation outputs
