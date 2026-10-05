@@ -138,7 +138,7 @@ page/view; hidden/pagehide or 60-second expiry clears results/places/selection/m
 inspection/timeline. No persistent/back-page cache or push deletion notification.
 Aborted requests can leave server work finishing; 429 uses explicit retry. Timeline
 includes all retained attempts with 20-row pages. Inspection links one exact source.
-Keyboard focus/skip link target the active view. Captured/provenance URLs remain
+Keyboard focus runs after React commits the active view; the skip link targets it. Captured/provenance URLs remain
 inert, controls visible, and all map resources/worker are bundled locally.
 
 The offline basemap covers Fiji only. Tiny reviewed Natural Earth v5.1.2 Suva/Fiji

@@ -154,6 +154,8 @@ and its locked dependencies for local certificate parsing.
   zero external requests, no injected resource elements or script execution, correct
   trace/protocol/certificate states, keyboard focus and desktop/mobile Axe with no
   violations. Screenshots were inspected. No full assistive-technology audit claimed.
+- CI exposed a slower-render focus race; active-view focus now runs only after React
+  commits the view, with component and production-browser focus assertions.
 - Unit/component checks cover exact inspection requests, original timeline queries,
   late-response rejection, removed-source errors and hidden/60-second evidence clearing.
   Browser outputs are explicitly excluded from source formatting as well as Git.

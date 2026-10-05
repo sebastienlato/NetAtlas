@@ -119,7 +119,7 @@ notification. Abort may leave server work finishing; 429 requires explicit retry
 Every peer string is inert React text; captured HTML is shown only as literal text
 inside a bounded preformatted area. No injected HTML, resource elements, captured
 URL links, iframe, image/media embedding, redirect, scripts or external resources.
-Controls are visible both server-side and in the UI. Keyboard focus moves to the
+Controls are visible both server-side and in the UI. Keyboard focus moves after React commits the
 new view's heading, native controls support the complete workflow, and long hashes/
 text wrap on small screens. The original geographic/list view remains accessible.
 

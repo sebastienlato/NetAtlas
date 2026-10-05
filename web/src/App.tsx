@@ -125,6 +125,13 @@ export function App() {
     return () => clearTimeout(timer);
   }, [result, places, chosen, inspection, timeline, invalidate]);
 
+  // Focus only after React commits the new view, never from an earlier fetch frame.
+  useEffect(() => {
+    if (inspection) document.getElementById("inspection-title")?.focus();
+    else if (timeline) document.getElementById("timeline-title")?.focus();
+    else if (result) heading.current?.focus();
+  }, [inspection, timeline, result]);
+
   function change(name: keyof Fields, value: string) {
     invalidate();
     setFields((old) => ({
@@ -202,7 +209,6 @@ export function App() {
       (value) => {
         setResult(value);
         setPage(nextPage);
-        requestAnimationFrame(() => heading.current?.focus());
       },
       "Loading observations…",
     );
@@ -257,9 +263,6 @@ export function App() {
         ),
       (value) => {
         setTimeline({ endpoint, query: q, response: value });
-        requestAnimationFrame(() =>
-          document.getElementById("timeline-title")?.focus(),
-        );
       },
       "Reading retained endpoint timeline…",
     );
@@ -282,9 +285,6 @@ export function App() {
         ),
       (value) => {
         setInspection(value);
-        requestAnimationFrame(() =>
-          document.getElementById("inspection-title")?.focus(),
-        );
       },
       "Reading bounded evidence…",
     );

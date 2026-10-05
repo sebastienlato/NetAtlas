@@ -307,6 +307,9 @@ it("opens exact source inspection, escapes previews, and clears hidden evidence"
     await screen.findByRole("button", { name: "Inspect this observation" }),
   );
   await screen.findByRole("heading", { name: "Service & evidence inspection" });
+  expect(document.activeElement).toBe(
+    screen.getByRole("heading", { name: "Service & evidence inspection" }),
+  );
   expect(fetch.mock.calls[1][0]).toBe(
     "/api/v1/endpoints/192.0.2.1/tcp/80/inspection",
   );
@@ -344,6 +347,9 @@ it("continues the timeline with its original query and preserves negative attemp
     await screen.findByRole("button", { name: "View endpoint timeline" }),
   );
   await screen.findByRole("heading", { name: "Endpoint timeline" });
+  expect(document.activeElement).toBe(
+    screen.getByRole("heading", { name: "Endpoint timeline" }),
+  );
   expect(screen.getByText("timeout")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Next timeline page" }));
   await screen.findByText("No retained observations for this endpoint.");
