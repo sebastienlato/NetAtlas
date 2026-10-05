@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from sqlalchemy import text
+from sqlalchemy import Engine, text
 
 from netatlas.derivations.engine import canonical, digest
 from netatlas.evaluation.__main__ import backpressure, disposable, main
@@ -19,6 +19,8 @@ from netatlas.evaluation.performance import distribution, expected, trial
 from netatlas.evaluation.scenarios import coverage, functional
 from netatlas.evaluation.scoring import evaluate, score, wilson
 from netatlas.storage.database import local_engine
+
+pytest_plugins = ["test_storage"]
 
 AT = datetime(2026, 10, 5, 12, tzinfo=UTC)
 
@@ -155,6 +157,28 @@ def test_cli_private_publication_and_generic_failure(
     assert not output.exists()
 
 
+def owner_snapshot(engine: Engine) -> tuple[set[str], int | None]:
+    """A fresh CI owner DB need not have application tables; never migrate it here."""
+    with engine.connect() as conn:
+        tables: set[str] = set(
+            conn.execute(
+                text("SELECT tablename FROM pg_tables WHERE schemaname='public'")
+            ).scalars()
+        )
+        sources: int | None = None
+        if "observations" in tables:
+            sources = conn.execute(text("SELECT count(*) FROM observations")).scalar_one()
+        return tables, sources
+
+
+def test_owner_preservation_with_unmigrated_administration_database(empty_engine: Engine) -> None:
+    before = owner_snapshot(empty_engine)
+    assert before == (set(), None)
+    with disposable(empty_engine) as pipeline:
+        assert pipeline.verify() == {"observations": 0, "derivations": 0, "enrichments": 0}
+    assert owner_snapshot(empty_engine) == before
+
+
 def test_complete_disposable_evaluation_and_failure_cleanup(tmp_path: Path) -> None:
     if os.environ.get("NETATLAS_TEST_DB") != "1":
         pytest.skip("requires local Compose; run make check-db")
@@ -171,11 +195,11 @@ def test_complete_disposable_evaluation_and_failure_cleanup(tmp_path: Path) -> N
             )
 
     before = inventory()
+    owner_before = owner_snapshot(admin)
     with admin.connect() as conn:
         at: datetime = conn.execute(
             text("SELECT clock_timestamp() - interval '30 seconds'")
         ).scalar_one()
-        owner_before: int = conn.execute(text("SELECT count(*) FROM observations")).scalar_one()
     try:
         with disposable(admin) as pipeline:
             result = functional(pipeline, at)
@@ -194,9 +218,6 @@ def test_complete_disposable_evaluation_and_failure_cleanup(tmp_path: Path) -> N
         with pytest.raises(RuntimeError), disposable(admin):
             raise RuntimeError("authored cleanup drill")
         assert inventory() == before
-        with admin.connect() as conn:
-            assert (
-                conn.execute(text("SELECT count(*) FROM observations")).scalar_one() == owner_before
-            )
+        assert owner_snapshot(admin) == owner_before
     finally:
         admin.dispose()

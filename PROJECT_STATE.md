@@ -242,9 +242,9 @@ and its locked dependencies for local certificate parsing.
 
 ## Verified validation
 
-- Full **make check-db COMPOSE=docker-compose** passes: **394 Python tests, 28 web
+- Full **make check-db COMPOSE=docker-compose** passes: **395 Python tests, 28 web
   tests and six production Chromium tests**, including strict static checks, generated
-  contract drift, both builds and all CLI smoke. Nine new evaluation tests verify
+  contract drift, both builds and all CLI smoke. Ten new evaluation tests verify
   scoring denominators, truth mutation sensitivity, unknown/spoof/ambiguity cases,
   source/count/facet and schedule oracles, private output, complete loopback/database
   experiments and cleanup after failure. All inherited worker, scheduling, operations,
@@ -272,6 +272,10 @@ and its locked dependencies for local certificate parsing.
   schemas unchanged. Runtime/dependency pins unchanged; no fresh advisory audit is
   claimed in this phase. Phase 12 audit remains historical. Existing **1.304-MB JS /
   511-kB worker** bundle warning persists.
+- CI caught an evaluation-test assumption that the owner DB was already migrated.
+  The preservation check now compares optional source counts and table inventories
+  without modifying owner schema; an unmigrated disposable-admin case covers it.
+  Evaluation source-tree hash and measured findings are unchanged by this test-only fix.
 - No Phase 13 implementation blocker. Git/Actions and the completion report identify
   the exact delivery commit, push/remote equality, clean tree and CI status.
 

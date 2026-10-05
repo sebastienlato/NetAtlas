@@ -228,8 +228,8 @@ is seed-time minus one day through plus seven days. No auto-download or auto-see
 
 ## Validation and phase handoff
 
-Phase 13 full `make check-db COMPOSE=docker-compose` passed **394 Python tests,
-28 web tests, six production Chromium tests**: nine evaluation cases plus all worker/
+Phase 13 full `make check-db COMPOSE=docker-compose` passed **395 Python tests,
+28 web tests, six production Chromium tests**: ten evaluation cases plus all worker/
 scheduling/operational/restore/integrity checks, restricted-role production deployment,
 zero external browser requests and Axe. TLS uses ephemeral keys; worker tests random
 loopback ports/generated tokens; browser tests ports 8000/5173 and disposable
