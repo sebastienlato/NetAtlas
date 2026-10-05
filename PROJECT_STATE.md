@@ -238,8 +238,10 @@ and its locked dependencies for local certificate parsing.
   zero external requests and Axe; dashboard screenshot inspected. New component
   tests cover no automatic fetch, guarded requests, expiry and late pagehide replies.
 - Existing expiry acceptance had a host-versus-VM exact-boundary assumption; its
-  expired fixture now uses the authoritative DB clock. Production scheduling clocks,
-  refresh semantics and future-plan rejection remain unchanged.
+  expired fixture and fresh negative delivery now use the authoritative DB clock. Production clocks,
+  refresh semantics and future-plan rejection remain unchanged. Hosted CI also exposed
+  a CPU-dependent executor assumption in the controlled eight-call load barrier; the
+  fixture now explicitly supplies eight threads without changing runtime admission.
 - Owner database backed up privately before Compose hardening, then verified with
   **two sources, one fingerprint derivation and one enrichment** unchanged. Existing
   Colima profile, native PostGIS image, volume/password and migration **0006** preserved.

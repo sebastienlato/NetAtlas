@@ -1,5 +1,6 @@
 """Operational load, failure, access and restore drills; authored local fixtures only."""
 
+import asyncio
 import json
 import logging
 import shutil
@@ -432,6 +433,14 @@ def test_control_load_eight_requests_backpressure_recovers(
         ) as client,
         ThreadPoolExecutor(max_workers=16) as pool,
     ):
+        # The HTTP admission bound is independent of asyncio's CPU-dependent default
+        # executor (which can have fewer than eight threads on a small CI runner).
+        # Give the controlled held-call fixture eight threads so its barrier can open.
+        async def configure_executor() -> None:
+            asyncio.get_running_loop().set_default_executor(ThreadPoolExecutor(max_workers=8))
+
+        assert client.portal is not None
+        client.portal.call(configure_executor)
         pending = [pool.submit(client.post, "/control/v1/exchange", json=message) for _ in range(8)]
         assert entered.wait(5)
         try:

@@ -75,7 +75,7 @@ For limits, selection, statuses and exact accounting, see
 
 ## Configuration and manifests
 
-Configuration is **version 3**, package **0.12.0**. Old explicit version-2 files fail
+Configuration is **version 3**, package **0.13.0**. Old explicit version-2 files fail
 closed. To migrate a local file, change its version to 3, compare against
 `config/default.toml`, and explicitly choose `measurement.protocol_evidence`. It
 remains false by default; old partial files that omit a version retain connect-only
@@ -196,3 +196,11 @@ refresh; it reserves a new observation UUID at claim and never mutates the previ
 source. Migration 0006 stores schedule snapshots/identity, queue order, refresh
 references and global stop. No raw evidence is copied into schedule documents.
 See SCHEDULING.md for counts, validation, limits and retention of control metadata.
+
+## Phase 12 operational contracts
+
+Operations request/snapshot schema 1 exposes fixed dependency states and aggregate
+counts only; it is independent of source/measurement contracts. Backup manifest 2
+adds creation and seven-day expiry, with legacy v1 reads and independent age review.
+No observation/manifest/config/derivation/schedule schema changes or new migration.
+See OPERATIONS.md for the exact state/count definitions and retention/restore boundary.

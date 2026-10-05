@@ -448,7 +448,10 @@ def test_refresh_real_source_binding_negative_history_and_retained_counts(
     lease = claim(c, b)
     assert lease.observation_id != source.observation_id
     assert permit(c, b, lease).status == "granted"
-    sent = delivery(b, lease)
+    # Keep authored delivery within the snapshot clock on host/VM deployments.
+    with pipeline.engine.connect() as connection:
+        measured_at: datetime = connection.execute(text("SELECT clock_timestamp()")).scalar_one()
+    sent = delivery(b, lease, at=measured_at)
     c.exchange(sent)
     c.exchange(sent)
     assert pipeline.load(source.observation_id) == source

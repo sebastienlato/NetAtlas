@@ -90,7 +90,7 @@ in place to make it look sanitized. HTTP escaping is not anonymization.
 
 ## Certificate interpretation
 
-The locked `cryptography` **48.0.1** dependency provides local DER parsing. It is
+The locked `cryptography` **50.0.2** dependency (upgraded from 48.0.1 during Phase 12) provides local DER parsing. It is
 used only through [documented certificate parsing/accessors](https://cryptography.io/en/latest/x509/reference/),
 not verification, trust stores or network APIs. Subject, issuer, serial, not-before,
 not-after and signature algorithm OID are parsed assertions. DER parse failure,

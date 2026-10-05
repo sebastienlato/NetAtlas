@@ -107,8 +107,8 @@ def permit(c: Coordinator, b: Boot, lease: Lease, number: int = 1) -> Reply:
     )
 
 
-def delivery(b: Boot, lease: Lease) -> Deliver:
-    now = datetime.now(UTC)
+def delivery(b: Boot, lease: Lease, *, at: datetime | None = None) -> Deliver:
+    now = at or datetime.now(UTC)
     source = Observation(
         observation_id=lease.observation_id,
         endpoint=lease.endpoint,
