@@ -1,6 +1,6 @@
 # Architecture decision record
 
-Accepted through 2026-10-05. Revisit with evidence; record consequences rather than silently
+Accepted through 2026-10-06. Revisit with evidence; record consequences rather than silently
 changing the design. Phase 10 adds bounded local distributed workers; worldwide infrastructure remains planned.
 
 | ID | Choice and reason | Consequences / reconsider when |
@@ -99,6 +99,15 @@ changing the design. Phase 10 adds bounded local distributed workers; worldwide 
 | ADR-079 | Package 0.15.0 / health 14; optional authored thesis-demo-1 extends the original additive seed with stale/ambiguous/closed examples. | No dependency, migration, production rule or wire semantic changes. Read UI stays separate from collection; exact source identities and demo clocks remain explicit. |
 | ADR-080 | Rehearse isolated checkout, fresh dependency directories/caches and disposable Compose storage; prime once then reinstall/build with offline package modes. | Existing pinned host tools/image/Chromium may be reused and are disclosed. No virgin-machine, uncached image reproducibility or host-wide air-gap claim; preserve owner state. |
 | ADR-081 | Deliver private presentation sources, generated local deck/screenshots, qualified evidence and publication checklist. | All engineering phases complete; no invented next phase. No project redistribution license selected. Public sharing/tag/release requires separate applicable owner/university decisions. |
+
+ADR-082 (Phase 14 publication follow-up): the owner explicitly chose **public source
+code only** for classmates on October 6. Publish the existing reviewed Git history,
+add a concise local class-demo guide, enable GitHub security reporting/scanning/push
+protection/dependency alerts, and preserve all local runtime boundaries. This
+supersedes ADR-011/081's pending source-publication status; it selects no project
+license, tag/release, hosted service or real-measurement permission. Full acceptance,
+fresh dependency audits and history/Actions-log secret review precede publication.
+See docs/PUBLICATION.md for evidence and limitations.
 
 ## Primary references consulted
 

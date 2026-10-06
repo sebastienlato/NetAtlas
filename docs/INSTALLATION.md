@@ -28,8 +28,8 @@ The explorer, operations dashboard, OpenAPI JSON and local data paths need no CD
 
 ## New local installation
 
-Clone the existing private repository through already authorized Git access. Do not
-publish a fork. In the new checkout, with no conflicting DB port 55432 or app ports
+Clone `https://github.com/sebastienlato/NetAtlas.git`; see [CLASS_DEMO](CLASS_DEMO.md)
+for the short classroom path. In the new checkout, with no conflicting DB port 55432 or app ports
 8000/5173/8001:
 
 ```sh

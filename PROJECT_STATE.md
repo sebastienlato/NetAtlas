@@ -1,8 +1,11 @@
 # Project state
 
-Updated: 2026-10-05. **Phase 14 — Thesis-ready demonstration/release candidate
-engineering is complete.** Publication/license and tag/release decisions
-remain with the owner/university. No tag or release exists. Package **0.15.0**; schedule input/plan **1**,
+Updated: 2026-10-06. **Phase 14 — Thesis-ready demonstration/release candidate
+engineering and public source handoff are complete.** The owner explicitly selected
+public source code only for classmates; GitHub visibility is public. The application
+remains local. No project redistribution license, tag or release exists.
+See [publication review](docs/PUBLICATION.md) and [class setup](docs/CLASS_DEMO.md).
+Package **0.15.0**; schedule input/plan **1**,
 algorithm **coverage-refresh-1**, IPv6 **explicit-authored-seeds-only-1**;
 control envelope **1**; HTTP schema **1**; local query schema **1**; config **3**;
 observation/manifest **2** with explicit v1 reads; fingerprint pack/result schemas
@@ -257,6 +260,24 @@ are not fully pinned. Runtime pins are unchanged; Phase 9 adds cryptography 48.0
 and its locked dependencies for local certificate parsing.
 
 ## Verified validation
+
+- October 6 publication recheck: complete `make check-db COMPOSE=docker-compose`
+  passed again (396 Python, 28 web, six Chromium tests), including static/type/format/
+  contract checks, builds and smoke. Separate fresh disposable thesis browser rehearsal
+  passed with zero external requests. Owner storage still verifies 2/1/1 sources/
+  fingerprints/enrichments. Runtime code, pins, schemas and migration are unchanged.
+- Fresh npm/pip-audit checks found no known dependency vulnerabilities. Gitleaks 8.30.1
+  reviewed all 21 pre-publication commits: eight findings were verified generated
+  OpenAPI checksum comments, with no credential finding. All 21 existing Actions log
+  archives scanned without findings; no Actions artifacts/releases/PRs/issues existed.
+  Historical path review found no private data/generated output paths. This is a
+  bounded review, not a security certification. See PUBLICATION for scope.
+- GitHub public visibility, private vulnerability reporting, secret scanning, push
+  protection and dependency alerts enabled for source sharing. No hosted app, license
+  selection, release/tag or measurement authorization was added. Final Git/CI delivery
+  is verified against the exact committed HEAD at handoff.
+
+### Phase 14 baseline (retained historical record)
 
 - Full **make check-db COMPOSE=docker-compose** passed **396 Python tests, 28 web
   tests and six production Chromium tests**, static/format/type/contract checks,
@@ -521,15 +542,16 @@ claim a new capacity benchmark.
   20 GiB disk. Python 3.14.7, uv 0.12.19, Node 26.8.1, npm 11.19.0; PostgreSQL 18.3 /
   PostGIS 3.6.4. Toolchain and database availability verified this phase.
 
-Private repository: https://github.com/sebastienlato/NetAtlas; delivery branch `main`.
+Public source repository: https://github.com/sebastienlato/NetAtlas; delivery branch `main`.
 The completion report and Git/Actions identify exact commit/push/CI status; this
 file cannot contain its own final hash. Verify local HEAD against
 `git ls-remote origin refs/heads/main` and confirm empty `git status --porcelain`.
 
 ## Limitations and blockers
 
-No Phase 14 engineering blocker. Publication/license and tag/release remain
-owner/university decisions; the private candidate does not authorize them. No raw download, real-data ingestion,
+No Phase 14 engineering blocker. Source publication is authorized and complete;
+project licensing and tag/release remain separate owner/university decisions.
+No raw download, real-data ingestion,
 comprehensive sensitive-content sanitizer, public authentication, production
 role isolation, encrypted backup, worldwide workers, release or tag exists.
 The new authenticated control plane is trusted-local and uses only literal-loopback
@@ -566,7 +588,7 @@ failover, distributed throughput and production durability remain unqualified.
 
 ## Maintenance handoff
 
-All roadmap engineering phases are complete through the Phase 14 private candidate.
+All roadmap engineering phases and the Phase 14 public source handoff are complete.
 [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) is the self-contained maintenance/publication
-handoff, not a new implementation phase. Await explicit owner decisions before public
-publication or tagging. No new campaign or automatic follow-up is authorized.
+handoff, not a new implementation phase. Await explicit owner decisions before
+licensing, tagging or hosting an application. No new campaign or automatic follow-up is authorized.

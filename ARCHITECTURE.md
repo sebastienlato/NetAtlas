@@ -1,9 +1,11 @@
 # Architecture
 
-Status: Phase 14 packages a private thesis candidate, optional authored demo profile,
+Status: Phase 14 packages a thesis candidate, optional authored demo profile,
 installation/rehearsal and presentation material (docs/RELEASE_CANDIDATE.md). No new
-runtime boundary, dependency, schema or migration is introduced. Publication remains
-pending owner/university decisions. Phase 13 adds a separate explicit `evaluation/`
+runtime boundary, dependency, schema or migration is introduced. Publication is
+authorized for source code only as of October 6, 2026; GitHub is public. Runtime
+deployment stays local; licensing and tags/releases remain separate decisions.
+See docs/PUBLICATION.md. Phase 13 adds a separate explicit `evaluation/`
 operator harness, authored truth and qualified synthetic reports (docs/EVALUATION.md). It is never imported by
 the API, workers, domain or derivation engines. Runtime schemas and migration 0006
 are unchanged. Phase 12 adds an independent operations projection, fixed-cardinality HTTP telemetry,

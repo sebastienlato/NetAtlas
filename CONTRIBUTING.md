@@ -97,9 +97,10 @@ the completed local commit and ask only for the minimum missing owner action.
 
 ## After the final roadmap phase
 
-Phase 14 hands off a private candidate, not a new implementation phase. Follow
-`docs/NEXT_PHASE.md` and `docs/RELEASE_CANDIDATE.md`. Publication/license and explicit
-tag/release authorization are separate owner/university decisions. Commit authored
+Phase 14 hands off a candidate with public source, not a new implementation phase. Follow
+`docs/NEXT_PHASE.md`, `docs/PUBLICATION.md` and `docs/RELEASE_CANDIDATE.md`. Source-only
+publication was authorized October 6, 2026. Licensing, public hosting and explicit
+tag/release authorization remain separate owner/university decisions. Commit authored
 demo/presentation sources, not generated decks, screenshots, measured JSON or local
 identity ledgers. `docs/INSTALLATION.md` qualifies fresh-checkout rehearsal and first
 downloads versus offline reuse. Keep the original evaluation report historical.

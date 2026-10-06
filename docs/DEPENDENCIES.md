@@ -61,3 +61,11 @@ This checks available advisories for installed application/dev dependencies, not
 container/OS packages or supply-chain completeness. Third-party notices and the
 unselected project redistribution license remain as above. No new live geographic
 source or external map resource was added.
+
+## Public source recheck — 2026-10-06
+
+Repeated the npm audit and isolated pip-audit 2.9.0 commands above: zero npm
+findings and no known vulnerabilities in 38 Python dependencies. Unpublished
+NetAtlas remains outside the advisory audit. No dependency was changed.
+GitHub dependency alerts are enabled; automatic dependency updates remain disabled.
+See [PUBLICATION](PUBLICATION.md) for source/history review and functional evidence.

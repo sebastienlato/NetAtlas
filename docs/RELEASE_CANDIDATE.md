@@ -1,5 +1,11 @@
 # Phase 14 private release candidate
 
+**October 6 follow-up:** the owner authorized public source code only; publication
+and class-demo verification are recorded in [PUBLICATION](PUBLICATION.md).
+[CLASS_DEMO](CLASS_DEMO.md) is the classroom setup guide. The October 5 rehearsal
+below remains historical; its pending source-publication status is superseded.
+Project licensing and tags/releases remain unselected.
+
 Prepared **2026-10-05**. Package **0.15.0**, health **14**, Alembic **0006**.
 **Engineering/demo work complete; publication/license and tag/release decisions remain
 with the owner/university.** No tag, GitHub Release, public repository, hosted listener,

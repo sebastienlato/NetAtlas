@@ -7,15 +7,18 @@ commercial search database is used.
 
 ## Current delivery
 
-**Phase 14 — Thesis-ready demonstration/release candidate** is complete as a
-private engineering package: **0.15.0**, health **14**, migration **0006**. Start with
+**Phase 14 — Thesis-ready demonstration/release candidate** is complete:
+**0.15.0**, health **14**, migration **0006**. The owner authorized public source
+sharing for the class demonstration on October 6, 2026. **Classmates: start with
+the [class demo setup](docs/CLASS_DEMO.md).** This is a locally run application;
+there is no hosted public scanner or website. Start with
 [installation and offline rehearsal](docs/INSTALLATION.md), the
 [12-minute walkthrough](docs/DEMONSTRATION.md), and the
 [release candidate/checklist](docs/RELEASE_CANDIDATE.md). `make thesis-demo` adds
 stale, ambiguous and closed examples to the original seed. Presentation sources are
 in [docs/presentation](docs/presentation/README.md); generated outputs stay private.
-Publication/license and tag/release decisions remain with the owner/university.
-No public release, real campaign or worldwide capacity claim is made.
+No project license or tagged release has been selected. Source publication does
+not authorize real campaigns or establish worldwide capacity.
 
 **Phase 13 — Thesis evaluation** added a reproducible synthetic evaluation harness,
 a separately labelled 30-case authored corpus, per-class precision/recall and explicit
@@ -166,6 +169,6 @@ worldwide collection is a separate capacity problem requiring bandwidth, compute
 storage, suitable hosting/network policy, and operational staffing. No worldwide
 performance or coverage claim is made by this bounded local engine.
 
-No project redistribution license has been selected. Keep the repository
-private pending the owner's/university's publication and licensing decision. This
-does not block implementation; dependency and dataset licenses still apply.
+Source sharing is authorized; no project redistribution license has been selected.
+Public visibility is not an open-source license grant. Dependency and dataset
+licenses still apply. See [the publication review](docs/PUBLICATION.md).

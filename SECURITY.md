@@ -260,10 +260,12 @@ complete. No owner data/volumes/secrets are reset by acceptance tests.
 
 ## Reporting and response
 
-This is currently a private research repository. Report issues privately to its
-owner through an existing trusted channel. Do not post real device addresses,
-captured secrets, or exploit instructions in public issues. A public security
-contact and operator opt-out URL must be established before public deployment.
+The source repository is public; the application remains local and synthetic-only.
+Report security issues privately through
+[GitHub private vulnerability reporting](https://github.com/sebastienlato/NetAtlas/security/advisories/new).
+Do not post real device addresses, captured secrets or exploit instructions in public
+issues. An operator opt-out path must be established before any separately authorized
+real measurement or public service deployment. Public source sharing enables neither.
 If a credential is accidentally committed, revoke/rotate it and remove it from
 active use; merely deleting the current file does not remove Git history.
 
@@ -342,3 +344,9 @@ sanitization. Generated presentations, screenshots, source ledgers and evaluatio
 outputs remain ignored/private. A private candidate grants no redistribution license,
 publication permission, tagging authority or real-input permission. See
 [RELEASE_CANDIDATE.md](docs/RELEASE_CANDIDATE.md) for the remaining owner decisions.
+
+On October 6, 2026, the owner separately authorized public source code only. That
+publication is complete; the local runtime, data and measurement boundaries above
+are unchanged. GitHub secret scanning, push protection, dependency alerts and private
+vulnerability reporting are enabled. See [PUBLICATION](docs/PUBLICATION.md) for the
+review and its limits. No project license or release/tag was selected.

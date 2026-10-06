@@ -1,8 +1,10 @@
 # Post-Phase-14 maintenance / publication handoff
 
 There is **no next implementation phase**. Phase 14's independently deliverable
-engineering and thesis demonstration are complete as a **private release candidate**.
-No project redistribution license, public publication or tag/release is authorized.
+engineering, thesis demonstration and **public source handoff** are complete.
+The owner explicitly authorized public source code only on October 6, 2026. GitHub
+is public; classmates use CLASS_DEMO.md to run it locally. No project redistribution
+license, public application deployment or tag/release is authorized.
 Stop implementation after this handoff. A later chat must have an explicit maintenance
 request or applicable owner/university publication and release decisions.
 
@@ -19,7 +21,7 @@ DISCOVERY.md, PROTOCOL_EVIDENCE.md, FINGERPRINTS.md, ENRICHMENT.md, SEARCH.md,
 SEARCH_BENCHMARK.md, GEOGRAPHIC_UI.md, MAP_ASSETS.md and INSPECTION.md as relevant.
 Inspect actual Git/status/remotes/CI, runtime/Compose and implementation before changes.
 
-Current delivery: **Phase 14 private candidate**, package **0.15.0**, health **14**.
+Current delivery: **Phase 14 candidate with public source**, package **0.15.0**, health **14**.
 Alembic **0006**; evaluation report **1**, thesis-evaluation-1; operations request/
 snapshot **1**; backup manifest **2** (explicit v1 compatibility/age review); schedule
 input/plan **1**, coverage-refresh-1, explicit-authored-seeds-only-1; control envelope
@@ -75,6 +77,13 @@ The deck authoring library comes from Codex's Presentations runtime, not NetAtla
 Follow the artifact skill again if revising the exported presentation.
 
 ## Verified evidence and validity limits
+
+October 6 source-publication maintenance reran the complete checks below and the
+fresh isolated thesis browser walkthrough successfully. Dependency audits found no
+known findings. All 21 prior commits and 21 Actions log archives were reviewed for
+secrets; eight history matches were generated OpenAPI checksum comments. GitHub
+secret scanning/push protection, dependency alerts and private vulnerability reporting
+are enabled. Read PUBLICATION.md for scope and limitations. Runtime is unchanged.
 
 Full **make check-db COMPOSE=docker-compose** passed **396 Python tests, 28 web tests,
 six production Chromium tests**, plus static/type/format/contract checks, builds and
@@ -177,15 +186,13 @@ persists. Natural Earth v5.1.2 notices/hashes remain in MAP_ASSETS.
 
 ## Authorized next action only
 
-Owner/university must decide whether to keep the candidate private or authorize a
-specific publication audience/scope, approve redistribution license/embargo rights,
-and separately authorize any tag/release for an exact reviewed commit. Do not infer
-those decisions from the word candidate, completed roadmap, a dependency license,
-or a request to rehearse. A publication decision grants no measurement permission.
+Public source sharing is complete. Any future license, tag/release, public hosted
+application or real measurement requires its own applicable owner decision. Do not
+infer those decisions from public source visibility. No new phase is authorized.
 
 For later maintenance, work only on the explicitly requested fix, preserve state and
 run proportionate checks. Review tracked files for secrets/data/outputs, update these
-authoritative records, commit, push to the existing private remote if applicable,
+authoritative records, commit, push to the existing public remote if applicable,
 verify remote HEAD and clean tree, inspect CI and report honestly. The completion
 report/Git history identify the final Phase 14 commit; do not invent a circular hash
 here. No new roadmap phase, release automation or recurring follow-up is authorized.
